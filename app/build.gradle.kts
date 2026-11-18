@@ -19,7 +19,7 @@ android {
         getByName("debug") {
             storeFile = rootProject.file("debug.p12")
             storePassword = "android"
-            keyAlias = "key"
+            keyAlias = "1"
             keyPassword = "android"
             storeType = "pkcs12"
         }
