@@ -49,15 +49,17 @@ class ShizukuShell : Shell {
 }
 
 fun openShell(ctx: Context, log: (String) -> Unit): Shell? {
+    var err = ""
     try {
         log("ADB 127.0.0.1:5555 bağlanıyor… TV'de izin isteğini onaylayın")
         val s = DadbShell(ctx)
         if (s.run("echo ok").trim() == "ok") return s
-    } catch (e: Throwable) { log("ADB hata: ${e.javaClass.simpleName} ${e.message}") }
+    } catch (e: Throwable) { err = "ADB: ${e.javaClass.simpleName} ${e.message} ${e.cause?.message ?: ""}" }
+    val shz = runCatching { Shizuku.pingBinder() }.getOrDefault(false)
     if (ShizukuShell.ready()) {
         val s = ShizukuShell()
         if (runCatching { s.run("echo ok").trim() }.getOrNull() == "ok") return s
     }
-    log("Kabuk yok (ADB/Shizuku başarısız)")
+    log("Kabuk yok.\n$err\nShizuku: ${if (shz) "çalışıyor, izin yok/başarısız" else "çalışmıyor"}")
     return null
 }
