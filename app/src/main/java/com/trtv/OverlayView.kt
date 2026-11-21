@@ -60,6 +60,7 @@ class OverlayView(ctx: Context) : View(ctx) {
     private var bgMode = "black"
     private var bannerText: String? = null
     private var bannerGeneration = 0
+    private var connectionWarning = false
     private val typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = this@OverlayView.typeface }
     private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -78,6 +79,7 @@ class OverlayView(ctx: Context) : View(ctx) {
     fun clearAll() { zones.clear(); invalidate() }
 
     fun setShown(v: Boolean) { shown = v; invalidate() }
+    fun setConnectionWarning(v: Boolean) { connectionWarning = v; invalidate() }
 
     fun setStyle(o: JSONObject) {
         fun col(k: String, d: Int) = try { Color.parseColor(o.optString(k)) } catch (_: Exception) { d }
@@ -120,11 +122,28 @@ class OverlayView(ctx: Context) : View(ctx) {
     override fun onDraw(c: Canvas) {
         val W = width.toFloat(); val H = height.toFloat()
         bannerText?.let { drawBanner(c, it, W, H) }
+        if (connectionWarning) drawConnectionWarning(c, W, H)
         if (calib) { drawCalib(c, W, H); return }
         if (!shown) return
         for (items in zones.values) for (it in items) {
             if (mode == "match") drawMatch(c, it, W, H) else drawBox(c, it, W, H)
         }
+    }
+
+    private fun drawConnectionWarning(c: Canvas, W: Float, H: Float) {
+        fill.textSize = H * 0.02f
+        val label = "TRÇeviri: bilgisayar bağlı değil"
+        val dot = H * 0.008f
+        val pad = H * 0.012f
+        val width = fill.measureText(label) + dot * 2 + pad * 3
+        val height = fill.textSize * 1.8f
+        val r = RectF(W - width - H * 0.025f, H * 0.035f, W - H * 0.025f, H * 0.035f + height)
+        bg.color = Color.argb(175, 20, 20, 20)
+        c.drawRoundRect(r, height / 2, height / 2, bg)
+        bg.color = Color.rgb(244, 65, 65)
+        c.drawCircle(r.left + pad + dot, r.centerY(), dot, bg)
+        fill.color = Color.argb(220, 255, 255, 255)
+        c.drawText(label, r.left + pad * 2 + dot * 2, r.centerY() + fill.textSize * 0.34f, fill)
     }
 
     private fun drawBanner(c: Canvas, t: String, W: Float, H: Float) {

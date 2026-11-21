@@ -63,6 +63,10 @@ class MainActivity : Activity() {
             setOnClickListener { startActivity(Intent(this@MainActivity, CalibrateActivity::class.java)) }
         }
         root.addView(calibrateButton, buttonParams())
+        root.addView(Button(this).apply {
+            text = "Ayarlar"; textSize = 20f
+            setOnClickListener { startActivity(Intent(this@MainActivity, SettingsActivity::class.java)) }
+        }, buttonParams())
         updateButton = Button(this).apply {
             textSize = 20f; visibility = android.view.View.GONE
             setOnClickListener { updateApp() }

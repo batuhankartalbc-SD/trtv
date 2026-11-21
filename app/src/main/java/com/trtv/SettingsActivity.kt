@@ -1,0 +1,183 @@
+package com.trtv
+
+import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.graphics.Color
+import android.graphics.Typeface
+import android.os.Build
+import android.os.Bundle
+import android.view.Gravity
+import android.view.KeyEvent
+import android.view.View
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
+
+/** Oyun görüntüsünün üstünde açılan, kumandayla kullanılan ayarlar paneli. */
+class SettingsActivity : Activity() {
+    private data class Row(val key: String, val title: String)
+    private val rows = listOf(
+        Row("visible", "Türkçe yazılar"),
+        Row("font_scale", "Yazı boyutu"),
+        Row("bg_mode", "Yazı arkası"),
+        Row("speaker_colors_on", "Konuşmacı renkleri"),
+        Row("tts_enabled", "Türkçe seslendirme"),
+        Row("cat_dialogue", "Konuşmalar"),
+        Row("cat_menu", "Menüler"),
+        Row("cat_controls", "Kontroller"),
+        Row("cat_other", "Diğer yazılar"),
+        Row("cat_nav", "GPS / yön"),
+        Row("disconnect_warning", "Bağlantı uyarısı"),
+        Row("replay", "Son konuşmayı tekrar göster")
+    )
+    private val values = mutableMapOf<String, Any>()
+    private val rowViews = mutableMapOf<String, Button>()
+    private lateinit var connectionLabel: TextView
+    private var receiverRegistered = false
+    private val stateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) { loadState(); renderRows(); renderConnection() }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        window.setBackgroundDrawableResource(android.R.color.transparent)
+        loadState()
+
+        val frame = FrameLayout(this)
+        val panel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(24, 20, 24, 20)
+            setBackgroundColor(Color.argb(235, 17, 23, 30))
+        }
+        val title = TextView(this).apply {
+            text = "Ayarlar"; textSize = 30f; typeface = Typeface.DEFAULT_BOLD
+            setTextColor(Color.rgb(61, 220, 151)); setPadding(10, 4, 10, 18)
+        }
+        panel.addView(title)
+        connectionLabel = TextView(this).apply {
+            textSize = 16f; setTextColor(Color.rgb(255, 190, 100)); setPadding(10, 0, 10, 14)
+        }
+        panel.addView(connectionLabel)
+        val scroll = ScrollView(this).apply { isFillViewport = false; overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS }
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        rows.forEachIndexed { index, row ->
+            val button = Button(this).apply {
+                tag = index
+                textSize = 19f
+                gravity = Gravity.CENTER_VERTICAL or Gravity.START
+                isAllCaps = false
+                setOnClickListener { activate(row.key) }
+            }
+            rowViews[row.key] = button
+            list.addView(button, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 62))
+        }
+        scroll.addView(list)
+        panel.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
+        frame.addView(panel, FrameLayout.LayoutParams((resources.displayMetrics.widthPixels * 0.58f).toInt(), FrameLayout.LayoutParams.MATCH_PARENT, Gravity.RIGHT))
+        setContentView(frame)
+        renderRows(); renderConnection()
+        rowViews["visible"]?.requestFocus()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (!receiverRegistered) {
+            val filter = IntentFilter(OverlayService.SETTINGS_ACTION)
+            if (Build.VERSION.SDK_INT >= 33) registerReceiver(stateReceiver, filter, Context.RECEIVER_NOT_EXPORTED) else registerReceiver(stateReceiver, filter)
+            receiverRegistered = true
+        }
+        loadState(); renderRows(); renderConnection()
+    }
+
+    override fun onStop() {
+        if (receiverRegistered) { unregisterReceiver(stateReceiver); receiverRegistered = false }
+        super.onStop()
+    }
+
+    private fun loadState() {
+        val state = OverlayService.currentSettings()
+        values["visible"] = state.visible
+        values["font_scale"] = (state.scale * 100).toInt().coerceIn(60, 250)
+        values["bg_mode"] = state.bgm
+        values["speaker_colors_on"] = state.speakerColors
+        values["tts_enabled"] = state.tts
+        values["cat_dialogue"] = state.dialogue
+        values["cat_menu"] = state.menu
+        values["cat_controls"] = state.controls
+        values["cat_other"] = state.other
+        values["cat_nav"] = state.nav
+        values["disconnect_warning"] = getSharedPreferences("settings", MODE_PRIVATE).getBoolean("disconnect_warning", true)
+    }
+
+    private fun displayValue(key: String): String = when (key) {
+        "font_scale" -> "%${values[key] ?: 110}"
+        "bg_mode" -> when (values[key]) { "black" -> "Simsiyah"; "semi" -> "Yarı saydam"; "none" -> "Kutu yok"; "game" -> "Oyun rengi"; else -> "Simsiyah" }
+        "replay" -> "Göster"
+        else -> if (values[key] == true) "Açık" else "Kapalı"
+    }
+
+    private fun renderRows() {
+        rows.forEach { row -> rowViews[row.key]?.text = "${row.title}     ‹  ${displayValue(row.key)}  ›" }
+    }
+
+    private fun renderConnection() {
+        connectionLabel.text = if (OverlayService.isComputerConnected()) "Bilgisayar bağlı" else "Bilgisayar bağlı değil — ayarlar uygulanamaz"
+        connectionLabel.setTextColor(if (OverlayService.isComputerConnected()) Color.rgb(110, 235, 175) else Color.rgb(255, 170, 110))
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN && (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
+            val key = (currentFocus?.tag as? Int)?.let { rows.getOrNull(it)?.key }
+            if (key != null && key != "disconnect_warning" && key != "replay") {
+                change(key, event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)
+                return true
+            }
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
+    private fun activate(key: String) {
+        if (key == "replay") {
+            OverlayService.changeSetting("replay", true)
+            finish()
+            return
+        }
+        when (key) {
+            "disconnect_warning" -> {
+                val enabled = values[key] != true
+                values[key] = enabled
+                getSharedPreferences("settings", MODE_PRIVATE).edit().putBoolean("disconnect_warning", enabled).apply()
+                OverlayService.setDisconnectWarning(enabled)
+                renderRows()
+            }
+            "font_scale", "bg_mode" -> change(key, true)
+            else -> change(key, null)
+        }
+    }
+
+    /** Sağ + / sol −; OK boolean ayarları açıp kapatır. */
+    private fun change(key: String, increase: Boolean?) {
+        val value: Any = when (key) {
+            "font_scale" -> ((values[key] as? Int ?: 110) + if (increase == false) -5 else 5).coerceIn(60, 250).also { values[key] = it }.let { it / 100.0 }
+            "bg_mode" -> {
+                val modes = listOf("black", "semi", "none", "game")
+                val current = modes.indexOf(values[key] as? String ?: "black").coerceAtLeast(0)
+                modes[(current + if (increase == false) modes.size - 1 else 1) % modes.size].also { values[key] = it }
+            }
+            else -> (values[key] != true).also { values[key] = it }
+        }
+        if (key != "font_scale") values[key] = value
+        OverlayService.changeSetting(key, value)
+        renderRows(); renderConnection()
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) { finish(); return true }
+        return super.onKeyDown(keyCode, event)
+    }
+}

@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
 import android.view.WindowManager
@@ -26,6 +27,20 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
+data class TvSettings(
+    val visible: Boolean = true,
+    val scale: Double = 1.1,
+    val bgm: String = "black",
+    val speakerColors: Boolean = true,
+    val tts: Boolean = false,
+    val dialogue: Boolean = true,
+    val menu: Boolean = true,
+    val controls: Boolean = true,
+    val other: Boolean = true,
+    val nav: Boolean = false,
+    val output: String = "tv"
+)
+
 /**
  * Bilgisayardaki TRÇeviri buraya bağlanır (TCP 47800, satır başına bir JSON) ve
  * çevirileri gönderir; bu servis onları HDMI görüntüsünün üstündeki katmana çizer.
@@ -39,9 +54,14 @@ class OverlayService : Service() {
         @Volatile var running = false
         @Volatile private var activeService: OverlayService? = null
         const val UPDATE_ACTION = "com.trtv.UPDATE_AVAILABLE"
+        const val SETTINGS_ACTION = "com.trtv.SETTINGS_CHANGED"
 
         /** Hizalama kumandası ve diğer uygulama mesajları için güvenli TCP gönderimi. */
         fun sendToPc(o: JSONObject): Boolean = activeService?.sendToClient(o) ?: false
+        fun currentSettings(): TvSettings = activeService?.settingsSnapshot() ?: TvSettings()
+        fun isComputerConnected(): Boolean = activeService?.isPcConnected() ?: false
+        fun changeSetting(key: String, value: Any): Boolean = activeService?.sendSettingToPc(key, value) ?: false
+        fun setDisconnectWarning(enabled: Boolean) { activeService?.setConnectionWarningEnabled(enabled) }
 
         fun start(ctx: Context) {
             val i = Intent(ctx, OverlayService::class.java)
@@ -56,6 +76,91 @@ class OverlayService : Service() {
     private val writerLock = Any()
     @Volatile private var clientWriter: BufferedWriter? = null
     private val updates = Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "trtv-updates").apply { isDaemon = true } }
+    @Volatile private var settings = TvSettings()
+    @Volatile private var connected = false
+    private var lastWarningAt = 0L
+    private val warningShow = Runnable { showDisconnectWarning() }
+    private val warningHide = Runnable { view?.setConnectionWarning(false) }
+    private val warningRepeat = Runnable { showDisconnectWarning() }
+
+    fun settingsSnapshot(): TvSettings = settings
+    fun isPcConnected(): Boolean = connected
+
+    fun sendSettingToPc(key: String, value: Any): Boolean {
+        settings = applySetting(settings, key, value)
+        val message = if (key == "visible") JSONObject().put("t", "visible").put("v", value as Boolean)
+            else JSONObject().put("t", "set").put("k", key).put("v", value)
+        val ok = clientWriter != null
+        thread(name = "trtv-setting-send", isDaemon = true) { sendToPc(message) }
+        sendBroadcast(Intent(SETTINGS_ACTION).setPackage(packageName))
+        return ok
+    }
+
+    fun setConnectionWarningEnabled(enabled: Boolean) {
+        getSharedPreferences("settings", MODE_PRIVATE).edit().putBoolean("disconnect_warning", enabled).apply()
+        main.post {
+            if (!enabled) {
+                main.removeCallbacks(warningShow); main.removeCallbacks(warningRepeat); main.removeCallbacks(warningHide)
+                view?.setConnectionWarning(false)
+            } else if (!connected) {
+                main.removeCallbacks(warningShow); main.postDelayed(warningShow, 10_000L)
+            }
+        }
+    }
+
+    private fun applySetting(s: TvSettings, key: String, value: Any): TvSettings = when (key) {
+        "visible" -> s.copy(visible = value as Boolean)
+        "font_scale" -> s.copy(scale = (value as Number).toDouble())
+        "bg_mode" -> s.copy(bgm = value as String)
+        "speaker_colors_on" -> s.copy(speakerColors = value as Boolean)
+        "tts_enabled" -> s.copy(tts = value as Boolean)
+        "cat_dialogue" -> s.copy(dialogue = value as Boolean)
+        "cat_menu" -> s.copy(menu = value as Boolean)
+        "cat_controls" -> s.copy(controls = value as Boolean)
+        "cat_other" -> s.copy(other = value as Boolean)
+        "cat_nav" -> s.copy(nav = value as Boolean)
+        else -> s
+    }
+
+    private fun updateFromStyle(o: JSONObject) {
+        val cats = o.optJSONObject("cats")
+        settings = settings.copy(
+            scale = o.optDouble("scale", settings.scale), bgm = o.optString("bgm", settings.bgm),
+            tts = o.optBoolean("tts", settings.tts), speakerColors = o.optBoolean("spkcol", settings.speakerColors),
+            dialogue = cats?.optBoolean("dialogue", settings.dialogue) ?: settings.dialogue,
+            menu = cats?.optBoolean("menu", settings.menu) ?: settings.menu,
+            controls = cats?.optBoolean("controls", settings.controls) ?: settings.controls,
+            other = cats?.optBoolean("other", settings.other) ?: settings.other,
+            nav = cats?.optBoolean("nav", settings.nav) ?: settings.nav,
+            output = o.optString("output", settings.output)
+        )
+        main.post { sendBroadcast(Intent(SETTINGS_ACTION).setPackage(packageName)) }
+    }
+
+    private fun connectionChanged(isConnected: Boolean) {
+        connected = isConnected
+        main.removeCallbacks(warningShow); main.removeCallbacks(warningRepeat); main.removeCallbacks(warningHide)
+        if (isConnected) {
+            view?.setConnectionWarning(false)
+        } else {
+            view?.setConnectionWarning(false)
+            main.postDelayed(warningShow, 10_000L)
+        }
+        sendBroadcast(Intent(SETTINGS_ACTION).setPackage(packageName))
+    }
+
+    private fun showDisconnectWarning() {
+        if (connected || !getSharedPreferences("settings", MODE_PRIVATE).getBoolean("disconnect_warning", true)) return
+        val now = SystemClock.elapsedRealtime()
+        if (lastWarningAt != 0L && now - lastWarningAt < 120_000L) {
+            main.postDelayed(warningRepeat, 120_000L - (now - lastWarningAt))
+            return
+        }
+        lastWarningAt = now
+        view?.setConnectionWarning(true)
+        main.postDelayed(warningHide, 5_000L)
+        main.postDelayed(warningRepeat, 120_000L)
+    }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -208,16 +313,20 @@ class OverlayService : Service() {
                         if (old != null && old !== s) try { old.close() } catch (_: Exception) {}
                         val name = o.optString("name", "Bilgisayar")
                         status = "Bağlı: $name"
-                        main.post { if (view == null) addOverlay(); view?.banner("TRÇeviri bağlandı ($name)") }
+                        main.post { connectionChanged(true); if (view == null) addOverlay(); view?.banner("TRÇeviri bağlandı ($name)") }
                     }
-                    "style" -> main.post { view?.setStyle(o) }
                     "items" -> {
                         val z = o.optString("z", "auto")
                         val items = OverlayView.parseItems(o.optJSONArray("items"))
                         main.post { view?.setItems(z, items) }
                     }
                     "clear" -> main.post { view?.clearAll() }
-                    "visible" -> { val vis = o.optBoolean("v", true); main.post { view?.setShown(vis) } }
+                    "style" -> { updateFromStyle(o); main.post { view?.setStyle(o) } }
+                    "visible" -> {
+                        val vis = o.optBoolean("v", true)
+                        settings = settings.copy(visible = vis)
+                        main.post { view?.setShown(vis); sendBroadcast(Intent(SETTINGS_ACTION).setPackage(packageName)) }
+                    }
                     "ping" -> send(w, JSONObject().put("t", "pong"))
                 }
             }
@@ -228,7 +337,7 @@ class OverlayService : Service() {
             if (isMain && client === s) {
                 synchronized(writerLock) { if (client === s) { client = null; clientWriter = null } }
                 status = "Bilgisayar bekleniyor"
-                main.post { view?.clearAll() }
+                main.post { connectionChanged(false); view?.clearAll() }
             }
         }
     }
