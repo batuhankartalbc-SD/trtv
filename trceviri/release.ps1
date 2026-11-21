@@ -1,4 +1,4 @@
-<#
+﻿<#
   GELİŞTİRME → CANLI yayın betiği.
   Kullanım:  powershell -ExecutionPolicy Bypass -File release.ps1 [-Publish] [-Install]
     (parametresiz)  testler + .exe + kurulum dosyası (build\out\TRCeviri-Kurulum.exe)
