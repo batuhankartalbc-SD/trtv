@@ -135,4 +135,5 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Yardım:** Ana ekrana Yardım düğmesi ve D-pad ile kaydırılan `HelpActivity` eklendi. Kurulum/bağlantı/hizalama/tanılama adımları ile TV IP'si ve uygulama sürümü gösterilir.
 - **Değişen dosyalar:** `app/src/main/java/com/trtv/{OverlayService,SettingsActivity,MainActivity,HelpActivity}.kt`, `app/src/main/AndroidManifest.xml`, `GELISTIRME_NOTLARI.md`.
 - **Protokol:** Yeni mesaj türü yok; yalnızca mevcut `set` mesajının `profile` ve `engine` anahtarları kullanılır.
-- **Build:** Actions doğrulaması bekleniyor.
+- **Build:** Build 33 (`ca228ff`, run `44962542877`) başarılı: JVM testleri, APK derlemesi ve release adımları geçti. PC test workflow run 2 (`44961069007`) başarılı; bu görev `trceviri/` değiştirmediği için yeniden tetiklenmedi.
+- **TV doğrulaması:** Build 33 (ersionCode=33) Beko TV'ye kuruldu. Ayarlar ekranında PC'nin gönderdiği GTA 6 profili ve Yerel (anlık) motor değeri göründü; bilgisayar bağlı durumdaydı. Yardım ekranının beş yönergesi, TV IP/sürüm satırı ve Kapat düğmesi UI ağacında doğrulandı; D-pad ile yönergelerde odak ilerledi ve Geri ile Ana ekrana dönüldü.
