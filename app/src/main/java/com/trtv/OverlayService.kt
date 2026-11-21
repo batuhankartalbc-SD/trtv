@@ -82,6 +82,7 @@ class OverlayService : Service() {
     private val writerLock = Any()
     private val historyLock = Any()
     private val history = ArrayList<HistoryEntry>()
+    private val historyKeys = ArrayList<String>()
     @Volatile private var clientWriter: BufferedWriter? = null
     private val updates = Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "trtv-updates").apply { isDaemon = true } }
     @Volatile private var settings = TvSettings()
@@ -96,13 +97,29 @@ class OverlayService : Service() {
 
     private fun historySnapshotInternal(): List<HistoryEntry> = synchronized(historyLock) { history.toList() }
 
-    private fun recordHistory(items: List<OverlayItem>) = synchronized(historyLock) {
-        items.asSequence().filter { it.kind == "subtitle" && it.tr.isNotBlank() }
-            .forEach { history.clearAndCopy(addHistoryEntry(history, HistoryEntry(it.speaker, it.tr, it.sc), HISTORY_LIMIT)) }
-    }
-
-    private fun ArrayList<HistoryEntry>.clearAndCopy(next: List<HistoryEntry>) {
-        clear(); addAll(next)
+    private fun recordHistory(zone: String, items: List<OverlayItem>) = synchronized(historyLock) {
+        items.filter { it.kind == "subtitle" && it.tr.isNotBlank() }.forEach { item ->
+            val incoming = HistoryEntry(item.speaker, item.tr, item.sc)
+            val key = "$zone|${item.kind}|${item.speaker.trim().lowercase()}|${item.b.joinToString(",") { (it * 100).toInt().toString() }}"
+            val keyedIndex = historyKeys.indexOfLast { it == key }
+            if (keyedIndex >= 0 && isSameHistoryLine(history[keyedIndex], incoming)) {
+                history[keyedIndex] = incoming
+                return@forEach
+            }
+            val recentSimilar = if (keyedIndex >= 0) null else history.indices.reversed().take(6)
+                .firstOrNull { isSameHistoryLine(history[it], incoming) }
+            if (recentSimilar != null) {
+                history[recentSimilar] = incoming
+                historyKeys[recentSimilar] = key
+                return@forEach
+            }
+            history.add(incoming)
+            historyKeys.add(key)
+            if (history.size > HISTORY_LIMIT) {
+                history.removeAt(0)
+                historyKeys.removeAt(0)
+            }
+        }
     }
 
     fun sendSettingToPc(key: String, value: Any): Boolean {
@@ -341,7 +358,7 @@ class OverlayService : Service() {
                     "items" -> {
                         val z = o.optString("z", "auto")
                         val items = OverlayView.parseItems(o.optJSONArray("items"))
-                        recordHistory(items)
+                        recordHistory(z, items)
                         main.post { view?.setItems(z, items) }
                     }
                     "clear" -> main.post { view?.clearAll() }

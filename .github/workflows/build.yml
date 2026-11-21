@@ -15,7 +15,18 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: "8.14.3" }
       - run: keytool -list -keystore debug.p12 -storepass android
-      - run: gradle testDebugUnitTest --no-daemon
+      - name: JVM birim testleri
+        shell: bash
+        run: |
+          set +e
+          gradle testDebugUnitTest --no-daemon --console=plain --stacktrace > test-output.txt 2>&1
+          result=$?
+          cat test-output.txt
+          echo '### JVM test çıktısı' >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 100 test-output.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit "$result"
       - run: gradle assembleDebug --no-daemon
       - run: cp app/build/outputs/apk/debug/app-debug.apk a.apk
       - env: { GH_TOKEN: "${{ github.token }}" }
