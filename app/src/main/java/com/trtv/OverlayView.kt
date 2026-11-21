@@ -47,16 +47,17 @@ class OverlayView(ctx: Context) : View(ctx) {
     }
 
     private val zones = LinkedHashMap<String, List<Item>>()
-    private var boxColor = Color.rgb(16, 16, 16)
+    private var boxColor = Color.BLACK
     private var boxAlpha = 250
     private var textColor = Color.WHITE
     private var speakerColor = Color.rgb(255, 213, 74)
-    private var fontScale = 1.1f
+    private var fontScale = 1.0f
     private var mode = "match"
     private var matchColors = true
     private var dx = 0f; private var dy = 0f; private var sx = 1f; private var sy = 1f
     private var shown = true
     private var calib = false
+    private var bgMode = "black"
     private var bannerText: String? = null
     private val typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = this@OverlayView.typeface }
@@ -89,6 +90,7 @@ class OverlayView(ctx: Context) : View(ctx) {
         dx = o.optDouble("dx", 0.0).toFloat(); dy = o.optDouble("dy", 0.0).toFloat()
         sx = o.optDouble("sx", 1.0).toFloat(); sy = o.optDouble("sy", 1.0).toFloat()
         calib = o.optBoolean("calib", false)
+        bgMode = o.optString("bgm", "black")
         invalidate()
     }
 
@@ -151,48 +153,59 @@ class OverlayView(ctx: Context) : View(ctx) {
         fill.color = Color.rgb(0, 229, 255); c.drawText(t, r.left + 24, r.centerY() + fill.textSize * 0.35f, fill)
     }
 
+    /** Birebir stil: İngilizceyle aynı boyut (her yazı kendi boyutunda), aynı yer; zemin varsayılan simsiyah. */
     private fun drawMatch(c: Canvas, it: Item, W: Float, H: Float) {
         if (it.tr.isEmpty()) return
         val x0 = mx(it.b[0], W); val y0 = my(it.b[1], H); val x1 = mx(it.b[2], W); val y1 = my(it.b[3], H)
+        val ow = max(8f, x1 - x0)
         val lh = max(8f, it.lh * H * sy)
-        var size = max(12f, lh * 0.70f * fontScale)
+        val base = max(10f, lh * 0.78f * fontScale)
         val text = if (it.speaker.isNotEmpty()) "${it.speaker}: ${it.tr}" else it.tr
+        val nl = max(1, it.lines)
         val isSub = it.kind == "subtitle" || it.kind == "objective"
-        val maxW = when {
-            isSub -> W * 0.86f
-            it.align == "l" -> max(x1 - x0, min(W - x0 - 8, (x1 - x0) * 1.9f))
-            else -> max(x1 - x0, (x1 - x0) * 1.7f)
-        }
+        var size = base
         var lines: List<String>
-        var n = 0
         while (true) {
             fill.textSize = size
-            lines = wrap(text, fill, maxW)
-            if (lines.size <= max(1, it.lines) + (if (it.kind == "subtitle") 1 else 0) || size <= lh * 0.7f || n++ > 12) break
-            size *= 0.94f
+            lines = wrap(text, fill, ow * 1.06f)
+            if (lines.size <= nl || size <= base * 0.82f) break
+            size *= 0.96f
+        }
+        if (lines.size > nl) {
+            lines = when {
+                isSub -> wrap(text, fill, max(ow, W * 0.82f))
+                it.align == "l" -> wrap(text, fill, max(ow, min(W - x0 - 8, ow * 1.6f)))
+                else -> wrap(text, fill, max(ow, ow * 1.5f))
+            }
         }
         val lineH = fill.fontSpacing
         val lw = lines.maxOf { fill.measureText(it) }
         val th = lines.size * lineH
         var tx0 = if (it.align == "l") x0 else (x0 + x1) / 2 - lw / 2
         tx0 = max(4f, min(tx0, W - lw - 4))
-        val ty0 = when {
-            it.kind == "subtitle" -> min(y1 - th, (y0 + y1) / 2 - th / 2)
-            lines.size <= it.lines -> (y0 + y1) / 2 - th / 2
-            else -> y0
-        }
-        val pad = max(3f, lh * 0.22f)
+        val ty0 = if (isSub && lines.size > nl) y1 - th else (y0 + y1) / 2 - th / 2
+        val pad = max(2f, lh * 0.16f)
         val cover = RectF(min(x0, tx0) - pad, min(y0, ty0) - pad, max(x1, tx0 + lw) + pad, max(y1, ty0 + th) + pad)
-        val base = if (matchColors && it.bg != null) it.bg else boxColor
-        for ((grow, alpha) in listOf(pad * 1.6f to 50, pad * 0.9f to 120, 0f to 255)) {
-            bg.color = Color.argb(alpha, Color.red(base), Color.green(base), Color.blue(base))
-            val r = RectF(cover.left - grow, cover.top - grow, cover.right + grow, cover.bottom + grow)
-            c.drawRoundRect(r, pad + grow, pad + grow, bg)
+        if (bgMode == "game" && it.bg != null) {
+            val b = it.bg
+            for ((grow, alpha) in listOf(pad * 1.6f to 50, pad * 0.9f to 120, 0f to 255)) {
+                bg.color = Color.argb(alpha, Color.red(b), Color.green(b), Color.blue(b))
+                c.drawRoundRect(RectF(cover.left - grow, cover.top - grow, cover.right + grow, cover.bottom + grow), pad + grow, pad + grow, bg)
+            }
+        } else {
+            val a = if (bgMode == "semi") 170 else 255
+            val b = if (bgMode == "semi") Color.BLACK else boxColor
+            bg.color = Color.argb(a, Color.red(b), Color.green(b), Color.blue(b))
+            c.drawRoundRect(cover, pad * 0.8f, pad * 0.8f, bg)
         }
-        val fg = if (matchColors && it.fg != null) it.fg else textColor
-        val spk = if (matchColors && it.sc != null) it.sc else speakerColor
+        var fg = if (matchColors && it.fg != null) it.fg else textColor
+        var spk = if (matchColors && it.sc != null) it.sc else speakerColor
+        if (bgMode != "game") {     // koyu zeminde koyu yazı okunmaz → beyaz
+            if (lum(fg) < 110) fg = textColor
+            if (lum(spk) < 110) spk = speakerColor
+        }
         stroke.textSize = size
-        stroke.strokeWidth = max(2f, size / 11f)
+        stroke.strokeWidth = max(1.5f, size / 14f)
         val fm = fill.fontMetrics
         var y = ty0 - fm.ascent
         val prefix = if (it.speaker.isNotEmpty()) "${it.speaker}:" else ""
@@ -209,6 +222,7 @@ class OverlayView(ctx: Context) : View(ctx) {
         }
     }
 
+    private fun lum(c: Int) = (0.299 * Color.red(c) + 0.587 * Color.green(c) + 0.114 * Color.blue(c)).toInt()
     private fun drawBox(c: Canvas, it: Item, W: Float, H: Float) {
         if (it.tr.isEmpty()) return
         val x0 = mx(it.b[0], W); val y0 = my(it.b[1], H); val x1 = mx(it.b[2], W); val y1 = my(it.b[3], H)
