@@ -13,7 +13,7 @@ android {
         minSdk = 28
         targetSdk = 36
         versionCode = run
-        versionName = "0.$run"
+        versionName = "1.$run"
     }
     signingConfigs {
         getByName("debug") {
@@ -32,9 +32,3 @@ android {
 }
 
 kotlin { jvmToolchain(17) }
-
-dependencies {
-    implementation("dev.mobile:dadb:2.0.0")
-    implementation("dev.rikka.shizuku:api:13.1.5")
-    implementation("dev.rikka.shizuku:provider:13.1.5")
-}
