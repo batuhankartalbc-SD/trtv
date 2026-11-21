@@ -97,3 +97,23 @@ def test_categories():
     assert is_controls("SELECT BACK O")
     assert not is_controls("Lucia: Get in the car.")
     assert clean_symbols("↑ KLOSE K17 PISTOL @ • ⁇") == "KLOSE K17 PISTOL"
+
+
+def test_color_splits_objective_from_dialogue():
+    """Altyazının hemen altındaki farklı renkli görev yazısı aynı bloğa karışmamalı."""
+    import cv2
+    import numpy as np
+    from trceviri.ocr import OcrEngine
+    from trceviri.pipeline import build_blocks
+    img = np.full((720, 1280, 3), (40, 60, 50), np.uint8)
+    for text, y, col in (("Lucia: Get in the car, we have to go now.", 600, (255, 255, 255)),
+                         ("Go to the safehouse.", 640, (0, 210, 255))):           # BGR sarı
+        (tw, _), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_DUPLEX, 0.9, 2)
+        x = (1280 - tw) // 2
+        cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_DUPLEX, 0.9, (0, 0, 0), 6, cv2.LINE_AA)
+        cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_DUPLEX, 0.9, col, 2, cv2.LINE_AA)
+    lines = OcrEngine().read(img, 0.5)
+    items = build_blocks(lines, 1280, 720, [], True, None, img)
+    texts = [i.src for i in items]
+    assert any("Get in the car" in t for t in texts)
+    assert any(t.startswith("Go to the safehouse") for t in texts), texts

@@ -111,7 +111,18 @@ class TvLink(QObject):
                    "tts": s.tts_enabled, "spkcol": s.speaker_colors_on,
                    "cats": {"dialogue": s.cat_dialogue, "menu": s.cat_menu, "controls": s.cat_controls,
                             "other": s.cat_other, "nav": s.cat_nav},
-                   "output": s.output_target})
+                   "output": s.output_target,
+                   # TV Ayarlar: oyun profili ve çeviri motoru seçimi
+                   "profiles": self._profiles(), "profile": s.profile, "engine": s.engine,
+                   "engines": ["local", "gemini", "free"]})
+
+    @staticmethod
+    def _profiles() -> list:
+        try:
+            from .config import list_profiles
+            return list_profiles()
+        except Exception:
+            return []
 
     def set_visible(self, v: bool) -> None:
         self.visible = v

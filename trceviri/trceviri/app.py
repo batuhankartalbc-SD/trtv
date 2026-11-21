@@ -118,6 +118,16 @@ class AppContext:
                 setattr(s, key, bool(value))
                 if key.startswith("cat_"):
                     self.overlay.zone_items.clear(); self.tv.clear(); self.pipeline.reload_zones()
+            elif key == "profile" and isinstance(value, str):
+                from .config import list_profiles
+                if value in list_profiles():
+                    self.window.change_profile(value)
+                    self.window.prof_combo.blockSignals(True); self.window.prof_combo.setCurrentText(value)
+                    self.window.prof_combo.blockSignals(False)
+            elif key == "engine" and value in ("local", "gemini", "free"):
+                s.engine = value
+                s.save()
+                self.window.restart_if_running()
             elif key == "replay":
                 self.show_history()
                 return

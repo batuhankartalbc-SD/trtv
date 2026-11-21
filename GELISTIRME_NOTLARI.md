@@ -56,7 +56,7 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 | Mesaj | Değerler |
 |---|---|
 | `{"t":"cal","a":…}` | `CAL_MODE_ON`, `CAL_MODE_OFF`, `CAL_LEFT`, `CAL_RIGHT`, `CAL_UP`, `CAL_DOWN`, `CAL_BIGGER`, `CAL_SMALLER`, `CAL_RESET` |
-| `{"t":"set","k":…,"v":…}` | `k`: `font_scale`, `bg_mode`, `bg_opacity` (0–100), `speaker_colors_on`, `tts_enabled`, `cat_dialogue`, `cat_menu`, `cat_controls`, `cat_other`, `cat_nav`, `replay`. Bilinmeyen anahtar yok sayılır. |
+| `{"t":"set","k":…,"v":…}` | `k`: `profile` (ad), `engine` (`local`/`gemini`/`free`), `font_scale`, `bg_mode`, `bg_opacity` (0–100), `speaker_colors_on`, `tts_enabled`, `cat_dialogue`, `cat_menu`, `cat_controls`, `cat_other`, `cat_nav`, `replay`. Bilinmeyen anahtar yok sayılır. |
 | `{"t":"visible","v":bool}` | Türkçeyi göster/gizle. |
 
 ## Kullanıcı tercihleri (değiştirmeden önce sor)

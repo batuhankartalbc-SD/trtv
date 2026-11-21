@@ -203,8 +203,26 @@ def _iou(a, b) -> float:
     return inter / ua if ua > 0 else 0.0
 
 
+def _line_color(frame, box) -> tuple | None:
+    """Satırdaki yazının rengi (BGR) — blokları ayırmak için (görev yazısı ≠ konuşma rengi)."""
+    if frame is None:
+        return None
+    try:
+        from .colors import sample
+        fg, _ = sample(frame, box)
+        return tuple(int(fg[i:i + 2], 16) for i in (1, 3, 5))
+    except Exception:
+        return None
+
+
+def _same_color(a, b, tol: float = 70.0) -> bool:
+    if a is None or b is None:
+        return True
+    return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5 <= tol
+
+
 def build_blocks(lines: list[Line], W: int, H: int, ignore: list[str], show_speaker: bool,
-                 cats: set[str] | None = None) -> list[Item]:
+                 cats: set[str] | None = None, frame=None) -> list[Item]:
     """Tüm ekrandaki satırları paragraflara (bloklara) ayırır, türünü belirler ve
     sadece istenen türleri döndürür: subtitle (konuşma), menu, controls, other, nav (GPS)."""
     clean = []
@@ -229,6 +247,9 @@ def build_blocks(lines: list[Line], W: int, H: int, ignore: list[str], show_spea
             wmax = max(ln.box[2] - ln.box[0], last.box[2] - last.box[0])
             # menü/telefon listelerindeki kısa öğeler ayrı kalsın; cümleler paragraf olsun
             prose = len(last.text.split()) >= 3 and len(ln.text.split()) >= 2
+            # farklı renkteki satır (ör. sarı görev yazısı ↔ beyaz konuşma) aynı paragraf sayılmaz
+            if frame is not None and not _same_color(_line_color(frame, last.box), _line_color(frame, ln.box)):
+                continue
             if (prose and -0.3 * lh <= gap <= 0.9 * lh and 0.7 <= h / max(1, lh) <= 1.4
                     and (overlap > 0 or abs(cx - lcx) < 0.3 * wmax)):
                 blk.append(ln)
@@ -287,7 +308,7 @@ class AutoTracker:
 
     def update(self, lines: list[Line], W: int, H: int, frame=None) -> None:
         p = self.pipe
-        new = build_blocks(lines, W, H, p.profile.ignore, p.settings.show_speaker, p.settings.categories())
+        new = build_blocks(lines, W, H, p.profile.ignore, p.settings.show_speaker, p.settings.categories(), frame)
         pending: list[Item] = []
         with self.lock:
             changed = False
