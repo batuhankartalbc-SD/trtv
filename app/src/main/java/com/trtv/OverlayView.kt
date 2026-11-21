@@ -56,6 +56,7 @@ class OverlayView(ctx: Context) : View(ctx) {
     private var matchColors = true
     private var dx = 0f; private var dy = 0f; private var sx = 1f; private var sy = 1f
     private var shown = true
+    private var calib = false
     private var bannerText: String? = null
     private val typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = this@OverlayView.typeface }
@@ -87,6 +88,7 @@ class OverlayView(ctx: Context) : View(ctx) {
         matchColors = o.optBoolean("match", true)
         dx = o.optDouble("dx", 0.0).toFloat(); dy = o.optDouble("dy", 0.0).toFloat()
         sx = o.optDouble("sx", 1.0).toFloat(); sy = o.optDouble("sy", 1.0).toFloat()
+        calib = o.optBoolean("calib", false)
         invalidate()
     }
 
@@ -114,6 +116,7 @@ class OverlayView(ctx: Context) : View(ctx) {
     override fun onDraw(c: Canvas) {
         val W = width.toFloat(); val H = height.toFloat()
         bannerText?.let { drawBanner(c, it, W, H) }
+        if (calib) { drawCalib(c, W, H); return }
         if (!shown) return
         for (items in zones.values) for (it in items) {
             if (mode == "match") drawMatch(c, it, W, H) else drawBox(c, it, W, H)
@@ -128,6 +131,24 @@ class OverlayView(ctx: Context) : View(ctx) {
         c.drawRoundRect(r, 18f, 18f, bg)
         fill.color = Color.rgb(61, 220, 151)
         c.drawText(t, r.left + 30, r.centerY() + fill.textSize * 0.35f, fill)
+    }
+
+    /** Hizalama modu: algılanan İngilizce yazıların çevresine çerçeve; Türkçe çizilmez, İngilizce görünür. */
+    private fun drawCalib(c: Canvas, W: Float, H: Float) {
+        val line = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 4f; color = Color.rgb(0, 229, 255) }
+        val thin = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 2f; color = Color.argb(160, 61, 220, 151) }
+        c.drawLine(W / 2, 0f, W / 2, H, thin); c.drawLine(0f, H / 2, W, H / 2, thin)
+        c.drawRect(mx(0f, W), my(0f, H), mx(1f, W), my(1f, H), thin)   // oyun görüntüsünün sınırı (kalibre)
+        for (items in zones.values) for (it in items) {
+            c.drawRect(mx(it.b[0], W) - 3, my(it.b[1], H) - 3, mx(it.b[2], W) + 3, my(it.b[3], H) + 3, line)
+        }
+        val t = String.format("HİZALAMA  kaydırma X %.1f%%  Y %.1f%%   ölçek %.1f%% × %.1f%%   (Ctrl+Alt+oklar / PgUp-PgDn / Home-End)",
+            dx * 100, dy * 100, sx * 100, sy * 100)
+        fill.textSize = H * 0.022f
+        val tw = fill.measureText(t)
+        val r = RectF(W / 2 - tw / 2 - 24, H * 0.12f, W / 2 + tw / 2 + 24, H * 0.12f + fill.textSize * 1.9f)
+        bg.color = Color.argb(225, 10, 20, 30); c.drawRoundRect(r, 14f, 14f, bg)
+        fill.color = Color.rgb(0, 229, 255); c.drawText(t, r.left + 24, r.centerY() + fill.textSize * 0.35f, fill)
     }
 
     private fun drawMatch(c: Canvas, it: Item, W: Float, H: Float) {
