@@ -124,3 +124,8 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **2.3.1 canlıda ve pc-latest'te.** Görev yazısı artık konuşmaya karışmıyor: yazı rengi farklı satırlar ayrı blok (`build_blocks(..., frame)`), testi var (8 test).
 - Kurulum/exe ikonu Codex'in çok boyutlu `brand/brolis_game_translate.ico`'su.
 - **Protokol (yeni alan, yeni mesaj yok):** `style` içine `profiles` (liste), `profile`, `engine`, `engines`. TV→PC `set` anahtarları `profile` (ad) ve `engine` (`local`/`gemini`/`free`). Codex'e `trceviri/CODEX_GOREV_6.md` verildi.
+
+### Codex — Görev 5 doğrulama — 2026-11-22
+- **Actions:** Windows PC testleri run 1 (`44960891413`) ve run 2 (`44961069007`) başarılı. run 2, Claude'un aynı anda eklediği PC değişikliklerini de kapsadı. Android Build 29, iki `ScrollView.LayoutParams` Kotlin hatası nedeniyle başarısız oldu; `ViewGroup.LayoutParams` düzeltmesiyle Build 30 (`44961061293`) geçti. Claude'un eşzamanlı son commit'i ve bu düzeltmeyi içeren Build 31 (`44961068931`) de JVM testleri, APK derlemesi ve yayın adımlarıyla başarılı; `latest` `Build 31` APK'sı doğrulandı.
+- **TV:** Beko TV'ye Build 31 kuruldu (`com.trtv`, `versionCode=31`, `versionName=1.31`). MainActivity'de Tanılama düğmesi göründü; ADB dokunma girdisiyle `DiagnosticsActivity` başlatıldı ve üstteki etkin Activity olarak doğrulandı. Bu TV HDMI girişinde UIAutomator metin ağacı passthrough penceresini döndürdüğü için tanılama alanlarının görsel metni ayrı ayrı okunamadı.
+- **Protokol/PC kodu:** yeni mesaj yok; `trceviri/` değişikliği yapmadım. PC test workflow'u `trceviri/**` push/PR değişikliklerinde ve manuel tetiklemede çalışır.
