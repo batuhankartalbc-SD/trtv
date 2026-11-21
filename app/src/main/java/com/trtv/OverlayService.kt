@@ -39,7 +39,11 @@ data class TvSettings(
     val controls: Boolean = true,
     val other: Boolean = true,
     val nav: Boolean = false,
-    val output: String = "tv"
+    val output: String = "tv",
+    val profiles: List<String> = emptyList(),
+    val profile: String = "",
+    val engine: String = "local",
+    val engines: List<String> = emptyList()
 )
 
 data class DiagnosticsSnapshot(
@@ -137,6 +141,11 @@ class OverlayService : Service() {
 
     private fun historySnapshotInternal(): List<HistoryEntry> = synchronized(historyLock) { history.toList() }
 
+    private fun stringList(o: JSONObject, key: String, fallback: List<String>): List<String> {
+        val array = o.optJSONArray(key) ?: return fallback
+        return (0 until array.length()).mapNotNull { index -> array.optString(index).trim().takeIf { it.isNotEmpty() } }.distinct()
+    }
+
     private fun recordHistory(zone: String, items: List<OverlayItem>) = synchronized(historyLock) {
         items.filter { it.kind == "subtitle" && it.tr.isNotBlank() }.forEach { item ->
             val incoming = HistoryEntry(item.speaker, item.tr, item.sc)
@@ -197,6 +206,8 @@ class OverlayService : Service() {
         "cat_controls" -> s.copy(controls = value as Boolean)
         "cat_other" -> s.copy(other = value as Boolean)
         "cat_nav" -> s.copy(nav = value as Boolean)
+        "profile" -> s.copy(profile = value as String)
+        "engine" -> s.copy(engine = value as String)
         else -> s
     }
 
@@ -212,7 +223,11 @@ class OverlayService : Service() {
             controls = cats?.optBoolean("controls", settings.controls) ?: settings.controls,
             other = cats?.optBoolean("other", settings.other) ?: settings.other,
             nav = cats?.optBoolean("nav", settings.nav) ?: settings.nav,
-            output = o.optString("output", settings.output)
+            output = o.optString("output", settings.output),
+            profiles = stringList(o, "profiles", settings.profiles),
+            profile = o.optString("profile", settings.profile),
+            engine = o.optString("engine", settings.engine),
+            engines = stringList(o, "engines", settings.engines)
         )
         alignDx = o.optDouble("dx", alignDx.toDouble()).toFloat()
         alignDy = o.optDouble("dy", alignDy.toDouble()).toFloat()

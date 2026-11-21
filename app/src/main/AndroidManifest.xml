@@ -42,6 +42,10 @@
             android:name=".DiagnosticsActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <activity
+            android:name=".HelpActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.NoTitleBar" />
         <service
             android:name=".OverlayService"
             android:exported="false"

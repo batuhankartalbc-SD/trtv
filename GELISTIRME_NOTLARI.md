@@ -117,7 +117,7 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Tanıtım:** kök `README.md` Türkçe indirme bağlantıları, Downloader adımları, akış şeması, gereksinimler, özellikler, SSS ve Helsinki-NLP modelinin CC-BY-4.0 kaynağıyla yazıldı. `KURULUM.md` değiştirilmedi.
 - **TV tanılama:** MainActivity'ye Tanılama girişi ve `DiagnosticsActivity` eklendi. OverlayService thread-safe tanılama anlık görüntüsü (bilgisayar adı/bağlantı, son mesaj yaşı, kayan 10 saniye items sayacı, hizalama); OverlayView aktif kutu sayımı. Ekran saniyede bir yenilenir; protokole mesaj eklenmedi.
 - **Değişen dosyalar:** `.github/workflows/pc-tests.yml`, `README.md`, `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{MainActivity,OverlayService,OverlayView,DiagnosticsActivity}.kt`, `GELISTIRME_NOTLARI.md`.
-- **PC CI:** Python testleri run 1 başarılı (`44960891413`, tüm `tests` komutu geçti). **APK:** Build 29, `ScrollView.LayoutParams` Kotlin derleme hatasıyla başarısız oldu; MainActivity ve DiagnosticsActivity `ViewGroup.LayoutParams` kullanacak biçimde düzeltildi. Build 30 doğrulaması bekleniyor.
+- **PC CI:** Python testleri run 1 başarılı (`44960891413`, tüm `tests` komutu geçti). **APK:** Build 29, `ScrollView.LayoutParams` Kotlin derleme hatasıyla başarısız oldu; MainActivity ve DiagnosticsActivity `ViewGroup.LayoutParams` kullanacak biçimde düzeltildi. Build 30 ve 31 başarı durumu aşağıdaki Görev 5 doğrulama kaydında tamamlandı.
 - **Claude isteği:** Yok; görev PC kaynak kodu değişikliği gerektirmedi.
 
 ### Claude — 2026-11-22 (2.3.1)
@@ -129,3 +129,10 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Actions:** Windows PC testleri run 1 (`44960891413`) ve run 2 (`44961069007`) başarılı. run 2, Claude'un aynı anda eklediği PC değişikliklerini de kapsadı. Android Build 29, iki `ScrollView.LayoutParams` Kotlin hatası nedeniyle başarısız oldu; `ViewGroup.LayoutParams` düzeltmesiyle Build 30 (`44961061293`) geçti. Claude'un eşzamanlı son commit'i ve bu düzeltmeyi içeren Build 31 (`44961068931`) de JVM testleri, APK derlemesi ve yayın adımlarıyla başarılı; `latest` `Build 31` APK'sı doğrulandı.
 - **TV:** Beko TV'ye Build 31 kuruldu (`com.trtv`, `versionCode=31`, `versionName=1.31`). MainActivity'de Tanılama düğmesi göründü; ADB dokunma girdisiyle `DiagnosticsActivity` başlatıldı ve üstteki etkin Activity olarak doğrulandı. Bu TV HDMI girişinde UIAutomator metin ağacı passthrough penceresini döndürdüğü için tanılama alanlarının görsel metni ayrı ayrı okunamadı.
 - **Protokol/PC kodu:** yeni mesaj yok; `trceviri/` değişikliği yapmadım. PC test workflow'u `trceviri/**` push/PR değişikliklerinde ve manuel tetiklemede çalışır.
+### Codex — Görev 6 — 2026-11-22
+- **Önceki görevler:** Görev 3/4 sonuçları günlükte; Görev 5 PC Python CI, kök README ve TV Tanılama tamamlandı. Run 2 PC testleri ile Build 31 başarılı; dokümantasyon commit'i Build 32 APK'sını da başarıyla üretti.
+- **Ayarlar:** `TvSettings` style içindeki profiller/motor listesi ve seçili değerleri tutuyor. Ayarlar'a Oyun profili ve Çeviri motoru satırları eklendi; sol/sağ ve OK seçim yapar, PC/listeler yoksa pasif kalırlar. Motor satırı altında yeniden başlatma notu yer alır.
+- **Yardım:** Ana ekrana Yardım düğmesi ve D-pad ile kaydırılan `HelpActivity` eklendi. Kurulum/bağlantı/hizalama/tanılama adımları ile TV IP'si ve uygulama sürümü gösterilir.
+- **Değişen dosyalar:** `app/src/main/java/com/trtv/{OverlayService,SettingsActivity,MainActivity,HelpActivity}.kt`, `app/src/main/AndroidManifest.xml`, `GELISTIRME_NOTLARI.md`.
+- **Protokol:** Yeni mesaj türü yok; yalnızca mevcut `set` mesajının `profile` ve `engine` anahtarları kullanılır.
+- **Build:** Actions doğrulaması bekleniyor.

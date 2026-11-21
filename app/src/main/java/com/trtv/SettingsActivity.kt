@@ -22,6 +22,8 @@ import android.widget.TextView
 class SettingsActivity : Activity() {
     private data class Row(val key: String, val title: String)
     private val rows = listOf(
+        Row("profile", "Oyun profili"),
+        Row("engine", "Çeviri motoru"),
         Row("visible", "Türkçe yazılar"),
         Row("font_scale", "Yazı boyutu"),
         Row("bg_mode", "Yazı arkası"),
@@ -84,6 +86,15 @@ class SettingsActivity : Activity() {
             }
             rowViews[row.key] = button
             list.addView(button, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 74))
+            if (row.key == "engine") {
+                list.addView(TextView(this).apply {
+                    text = "Değişince çeviri 1–2 sn durur"
+                    textSize = 13f
+                    setTextColor(Color.rgb(174, 183, 194))
+                    setPadding(18, 0, 18, 8)
+                    isFocusable = false
+                })
+            }
         }
         scroll.addView(list)
         panel.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
@@ -132,18 +143,38 @@ class SettingsActivity : Activity() {
         values["cat_other"] = state.other
         values["cat_nav"] = state.nav
         values["disconnect_warning"] = getSharedPreferences("settings", MODE_PRIVATE).getBoolean("disconnect_warning", true)
+        values["profiles"] = state.profiles
+        values["profile"] = state.profile
+        values["engines"] = state.engines
+        values["engine"] = state.engine
     }
 
     private fun displayValue(key: String): String = when (key) {
         "font_scale" -> "%${values[key] ?: 110}"
         "bg_opacity" -> "%${values[key] ?: 100}"
         "bg_mode" -> when (values[key]) { "black" -> "Simsiyah"; "semi" -> "Yarı saydam"; "none" -> "Kutu yok"; "game" -> "Oyun rengi"; else -> "Simsiyah" }
+        "profile" -> (values["profile"] as? String)?.takeIf { it.isNotBlank() } ?: "Seçilemez"
+        "engine" -> when (values["engine"]) {
+            "local" -> "Yerel (anlık)"
+            "gemini" -> "Gemini (en doğal)"
+            "free" -> "Ücretsiz (internet)"
+            else -> "Seçilemez"
+        }
         "replay" -> "Göster"
         else -> if (values[key] == true) "Açık" else "Kapalı"
     }
 
     private fun renderRows() {
-        rows.forEach { row -> rowViews[row.key]?.text = "${row.title}     ‹  ${displayValue(row.key)}  ›" }
+        rows.forEach { row ->
+            val button = rowViews[row.key] ?: return@forEach
+            button.text = "${row.title}     ‹  ${displayValue(row.key)}  ›"
+            if (row.key == "profile" || row.key == "engine") {
+                val available = OverlayService.isComputerConnected() &&
+                    ((if (row.key == "profile") values["profiles"] else values["engines"]) as? List<*>)?.isNotEmpty() == true
+                button.isEnabled = available
+                button.alpha = if (available) 1f else 0.48f
+            }
+        }
         if (::preview.isInitialized) {
             val mode = values["bg_mode"] as? String ?: "black"
             val percent = values["bg_opacity"] as? Int ?: 100
@@ -189,6 +220,7 @@ class SettingsActivity : Activity() {
                 renderRows()
             }
             "font_scale", "bg_mode", "bg_opacity" -> change(key, true)
+            "profile", "engine" -> change(key, true)
             else -> change(key, null)
         }
     }
@@ -202,6 +234,15 @@ class SettingsActivity : Activity() {
                 val modes = listOf("black", "semi", "none", "game")
                 val current = modes.indexOf(values[key] as? String ?: "black").coerceAtLeast(0)
                 modes[(current + if (increase == false) modes.size - 1 else 1) % modes.size].also { values[key] = it }
+            }
+            "profile", "engine" -> {
+                val options = (values[if (key == "profile") "profiles" else "engines"] as? List<*>)
+                    ?.filterIsInstance<String>().orEmpty()
+                if (!OverlayService.isComputerConnected() || options.isEmpty()) return
+                val selected = values[key] as? String
+                val current = options.indexOfFirst { it == selected }.coerceAtLeast(0)
+                options[(current + if (increase == false) options.size - 1 else 1) % options.size]
+                    .also { values[key] = it }
             }
             else -> (values[key] != true).also { values[key] = it }
         }
