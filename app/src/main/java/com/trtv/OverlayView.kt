@@ -59,6 +59,7 @@ class OverlayView(ctx: Context) : View(ctx) {
     private var calib = false
     private var bgMode = "black"
     private var bannerText: String? = null
+    private var bannerGeneration = 0
     private val typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = this@OverlayView.typeface }
     private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -94,10 +95,11 @@ class OverlayView(ctx: Context) : View(ctx) {
         invalidate()
     }
 
-    fun banner(text: String) {
+    fun banner(text: String, durationMs: Long = 3500L) {
+        val generation = ++bannerGeneration
         bannerText = text
         invalidate()
-        postDelayed({ bannerText = null; invalidate() }, 3500)
+        postDelayed({ if (generation == bannerGeneration) { bannerText = null; invalidate() } }, durationMs)
     }
 
     private fun wrap(text: String, p: Paint, width: Float): List<String> {

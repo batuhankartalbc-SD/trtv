@@ -17,9 +17,13 @@ import android.util.Log
 import android.view.WindowManager
 import org.json.JSONObject
 import java.io.BufferedWriter
+import java.net.HttpURLConnection
 import java.net.InetSocketAddress
+import java.net.URL
 import java.net.ServerSocket
 import java.net.Socket
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 /**
@@ -33,6 +37,11 @@ class OverlayService : Service() {
         const val TAG = "TRCeviriTV"
         @Volatile var status: String = "Başlatılmadı"
         @Volatile var running = false
+        @Volatile private var activeService: OverlayService? = null
+        const val UPDATE_ACTION = "com.trtv.UPDATE_AVAILABLE"
+
+        /** Hizalama kumandası ve diğer uygulama mesajları için güvenli TCP gönderimi. */
+        fun sendToPc(o: JSONObject): Boolean = activeService?.sendToClient(o) ?: false
 
         fun start(ctx: Context) {
             val i = Intent(ctx, OverlayService::class.java)
@@ -44,15 +53,20 @@ class OverlayService : Service() {
     private var view: OverlayView? = null
     private var server: ServerSocket? = null
     @Volatile private var client: Socket? = null
+    private val writerLock = Any()
+    @Volatile private var clientWriter: BufferedWriter? = null
+    private val updates = Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "trtv-updates").apply { isDaemon = true } }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
+        activeService = this
         goForeground()
         running = true
         addOverlay()
         thread(name = "trceviri-server", isDaemon = true) { serve() }
+        updates.scheduleAtFixedRate({ checkForUpdate() }, 0, 6, TimeUnit.HOURS)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -62,6 +76,8 @@ class OverlayService : Service() {
 
     override fun onDestroy() {
         running = false
+        updates.shutdownNow()
+        if (activeService === this) activeService = null
         try { server?.close() } catch (_: Exception) {}
         try { client?.close() } catch (_: Exception) {}
         view?.let { try { (getSystemService(WINDOW_SERVICE) as WindowManager).removeView(it) } catch (_: Exception) {} }
@@ -139,6 +155,36 @@ class OverlayService : Service() {
         synchronized(w) { w.write(o.toString()); w.write("\n"); w.flush() }
     }
 
+    private fun sendToClient(o: JSONObject): Boolean = synchronized(writerLock) {
+        val w = clientWriter ?: return@synchronized false
+        try { send(w, o); true } catch (_: Exception) { false }
+    }
+
+    private fun checkForUpdate() {
+        var c: HttpURLConnection? = null
+        try {
+            c = (URL("https://api.github.com/repos/batuhankartalbc-SD/trtv/releases/tags/latest").openConnection() as HttpURLConnection).apply {
+                connectTimeout = 8000; readTimeout = 8000; requestMethod = "GET"
+                setRequestProperty("Accept", "application/vnd.github+json")
+                setRequestProperty("User-Agent", "TRCeviri-TV")
+            }
+            if (c.responseCode !in 200..299) return
+            val json = JSONObject(c.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() })
+            val build = Regex("Build\\s+(\\d+)", RegexOption.IGNORE_CASE).find(json.optString("name"))?.groupValues?.get(1)?.toIntOrNull() ?: return
+            val installed = if (Build.VERSION.SDK_INT >= 28) packageManager.getPackageInfo(packageName, 0).longVersionCode.toInt() else packageManager.getPackageInfo(packageName, 0).versionCode
+            if (build <= installed) return
+            val assets = json.optJSONArray("assets")
+            val apkUrl = (0 until (assets?.length() ?: 0)).mapNotNull { assets?.optJSONObject(it) }
+                .firstOrNull { it.optString("name") == "a.apk" }?.optString("browser_download_url")
+                ?.takeIf { it.startsWith("https://") }
+                ?: "https://github.com/batuhankartalbc-SD/trtv/releases/download/latest/a.apk"
+            getSharedPreferences("updates", MODE_PRIVATE).edit().putInt("build", build).putString("url", apkUrl).apply()
+            main.post { view?.banner("Güncelleme var — TRÇeviri TV'yi açıp Güncelle'ye basın", 6000L) }
+            sendBroadcast(Intent(UPDATE_ACTION).setPackage(packageName).putExtra("build", build))
+        } catch (e: Exception) { Log.i(TAG, "güncelleme denetimi atlandı: ${e.message}") }
+        finally { c?.disconnect() }
+    }
+
     private fun handle(s: Socket) {
         var isMain = false
         try {
@@ -157,7 +203,7 @@ class OverlayService : Service() {
                             .put("w", dm.widthPixels).put("h", dm.heightPixels).put("overlay", view != null))
                         if (o.optBoolean("probe")) break   // sadece tarama
                         val old = client
-                        client = s
+                        synchronized(writerLock) { client = s; clientWriter = w }
                         isMain = true
                         if (old != null && old !== s) try { old.close() } catch (_: Exception) {}
                         val name = o.optString("name", "Bilgisayar")
@@ -180,7 +226,7 @@ class OverlayService : Service() {
         } finally {
             try { s.close() } catch (_: Exception) {}
             if (isMain && client === s) {
-                client = null
+                synchronized(writerLock) { if (client === s) { client = null; clientWriter = null } }
                 status = "Bilgisayar bekleniyor"
                 main.post { view?.clearAll() }
             }
