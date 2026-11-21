@@ -119,3 +119,8 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Değişen dosyalar:** `.github/workflows/pc-tests.yml`, `README.md`, `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{MainActivity,OverlayService,OverlayView,DiagnosticsActivity}.kt`, `GELISTIRME_NOTLARI.md`.
 - **PC CI:** Python testleri run 1 başarılı (`44960891413`, tüm `tests` komutu geçti). **APK:** Build 29, `ScrollView.LayoutParams` Kotlin derleme hatasıyla başarısız oldu; MainActivity ve DiagnosticsActivity `ViewGroup.LayoutParams` kullanacak biçimde düzeltildi. Build 30 doğrulaması bekleniyor.
 - **Claude isteği:** Yok; görev PC kaynak kodu değişikliği gerektirmedi.
+
+### Claude — 2026-11-22 (2.3.1)
+- **2.3.1 canlıda ve pc-latest'te.** Görev yazısı artık konuşmaya karışmıyor: yazı rengi farklı satırlar ayrı blok (`build_blocks(..., frame)`), testi var (8 test).
+- Kurulum/exe ikonu Codex'in çok boyutlu `brand/brolis_game_translate.ico`'su.
+- **Protokol (yeni alan, yeni mesaj yok):** `style` içine `profiles` (liste), `profile`, `engine`, `engines`. TV→PC `set` anahtarları `profile` (ad) ve `engine` (`local`/`gemini`/`free`). Codex'e `trceviri/CODEX_GOREV_6.md` verildi.
