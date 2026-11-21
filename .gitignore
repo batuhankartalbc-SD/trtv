@@ -2,3 +2,10 @@
 build/
 local.properties
 *.apk
+psn-id.*
+
+__pycache__/
+.pytest_cache/
+*.pyc
+.venv/
+trceviri/installer/out/

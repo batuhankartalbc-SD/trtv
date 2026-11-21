@@ -1,0 +1,181 @@
+================================================================
+  TRÇeviri — PS5 oyunlarında ekrandaki İngilizceyi anında Türkçe yapar
+================================================================
+
+NE İŞE YARAR?
+-------------
+PS5 oyununu bilgisayarda "PS Remote Play" ile oynarken ekrandaki İngilizce
+yazıların (konuşma altyazıları, ipuçları, görevler, telefon, menüler) üstünü
+kapatır ve Türkçesini tam aynı yere yazar. Oyuna dokunmaz, sadece ekranı okur.
+Ban riski yoktur, PS5'e hiçbir şey yüklenmez.
+
+
+NASIL ÇALIŞIR? (kısaca)
+-----------------------
+  1. Remote Play penceresindeki oyun görüntüsünü saniyede birkaç kez okur.
+  2. Görüntüdeki yazıları bulur (yazı tanıma / OCR).
+  3. İngilizce olanları Türkçeye çevirir (yapay zekâ ya da ücretsiz servis).
+  4. İngilizcenin üstüne koyu bir kutu çizip Türkçesini yazar.
+     Yazı ekrandan kalkınca Türkçesi de kalkar.
+  Bir kez çevrilen cümle hafızaya alınır, tekrar çıkınca anında gelir.
+
+
+GEREKENLER
+----------
+  - Windows 10 veya 11 bilgisayar (internet bağlantılı)
+  - PS5 ve bilgisayarda "PS Remote Play" uygulaması
+    (playstation.com/remote-play adresinden ücretsiz indirilir)
+  - İsteğe bağlı: ücretsiz Gemini API anahtarı (çok daha iyi çeviri)
+
+
+EN KOLAY KURULUM: TRCeviri-Kurulum.exe
+--------------------------------------
+  1. "TRCeviri-Kurulum.exe"yi indirin:
+     github.com/batuhankartalbc-SD/trtv/releases/tag/pc-latest
+  2. Çift tıklayın → İleri → Kur. (Yönetici izni istemez, Python gerekmez.)
+     İsterseniz "Masaüstüne kısayol" ve "Windows açılınca başlat"ı seçin.
+  3. TRÇeviri açılır ve Kurulum sihirbazı sizi adım adım götürür.
+     Sihirbazdaki "Yerel modeli indir" (≈450 MB, bir kere) anlık ve internetsiz
+     çeviriyi açar.
+  Yeni sürüm çıkınca uygulamanın üstünde "Güncelle" şeridi belirir; tek tıkla
+  güncellenir, ayarlarınız korunur.
+
+YENİ ÖZELLİKLER
+---------------
+  F6          Son konuşmayı birkaç saniye tekrar göster (art arda basınca daha eskiler)
+  Seslendirme Görünüm → "Türkçe seslendirme": konuşmaları Windows'un Türkçe sesiyle okur
+  Renkler     Görünüm → "Konuşmacı renkleri": Lucia pembe, Jason mavi… (değiştirilebilir)
+  Üslup       Çeviri → "Oyun ve karakter üslubu": Gemini bu talimata göre çevirir
+  Profiller   GTA 6, GTA 5, RDR2, Spider-Man 2, Cyberpunk 2077, Elden Ring, AC Shadows hazır.
+              Bölgeler → Profil → "Arkadaşla paylaş" profili masaüstüne kaydeder;
+              arkadaşınız "Profili içe aktar" ile yükler.
+  GTA 6 paketi Menü, kontrol ve görev yazılarının hazır Türkçeleri: ilk seferde anında.
+
+KAYNAKTAN KURULUM (run.bat ile, isteğe bağlı)
+---------------------------------------------
+  1. TRCeviri.zip dosyasını bir klasöre çıkarın (sağ tık > Tümünü ayıkla).
+     Masaüstü ya da Belgeler olabilir; klasörü sonra silmeyin.
+  2. Klasördeki "run.bat" dosyasına çift tıklayın.
+     - İlk açılışta gerekli her şeyi kendisi kurar (5-10 dakika sürebilir).
+     - Bilgisayarınızda Python yoksa onu da kendisi kurar.
+     - "Windows bilgisayarınızı korudu" uyarısı çıkarsa:
+       "Ek bilgi" > "Yine de çalıştır".
+  3. Bir sonraki sefer yine "run.bat" ile açın; artık birkaç saniyede açılır.
+
+
+İLK AÇILIŞ: KURULUM SİHİRBAZI
+-----------------------------
+Program ilk açıldığında "Kurulum sihirbazı" kendiliğinden gelir ve sizi
+sırayla götürür: PS Remote Play → oyunda altyazı → çeviri motoru →
+Türkçe nerede görünsün (Sadece TV / Sadece PC / İkisinde de) → TV kurulumu →
+hizalama → "Canlı çeviriyi başlat". Sihirbazı sol menüden istediğiniz zaman
+yeniden açabilirsiniz.
+
+
+HER OYUNDA YAPILACAKLAR
+-----------------------
+  1. PS Remote Play'i açın, PS5'e bağlanın, oyunu açın.
+  2. OYUNUN AYARLARINDAN ALTYAZILARI AÇIN!
+     (Altyazı kapalıysa ekranda yazı olmaz, program da çevirecek bir şey bulamaz.)
+  3. TRÇeviri'de "▶ Başlat"a basın.
+  4. Oynayın. İngilizce yazılar çıktıkça Türkçeleri üstüne gelir.
+
+  Not: Program "Otomatik mod"dadır; ekranın tamamını kendisi tarar,
+  hiçbir ayar yapmanıza gerek yoktur.
+
+
+TÜRKÇEYİ TV'DE GÖRMEK (Android TV / Google TV)
+---------------------------------------------
+PS5 TV'ye HDMI ile bağlıyken Türkçe yazıları doğrudan TV'de, oyunun üstünde
+görmek için TV'ye küçük "TRÇeviri TV" uygulamasını kurun. Bilgisayar oyunu
+Remote Play'den okuyup çevirir, TV uygulaması çevirileri HDMI görüntüsünün
+üstüne çizer. Kumandanız normal çalışır.
+
+  Kurulum (bir kere):
+  1. TV'de Google Play'den "Downloader" uygulamasını kurun.
+  2. TV Ayarlar > Sistem > Hakkında > "Android TV OS derlemesi"ne 7 kez basın
+     (geliştirici modu). Sonra Ayarlar > Uygulamalar > Güvenlik >
+     "Bilinmeyen uygulamalar" > Downloader'a izin verin.
+  3. Downloader'a şu adresi yazın:
+        github.com/batuhankartalbc-SD/trtv/releases/download/latest/a.apk
+     İndirince "Yükle" deyin. (Aynı dosya bu klasörde: TRCeviri-TV.apk)
+  4. TV'de "TRÇeviri TV"yi açın. "Ekran üstünde gösterme" izni isterse
+     TRÇeviri TV'ye izin verin.
+  5. "Oyuna dön"e basın, PS5 girişine geçin. Uygulama arka planda çalışır ve
+     TV her açıldığında kendiliğinden başlar.
+
+  Kullanırken:
+  - Bilgisayar ve TV aynı modeme (aynı ev ağına) bağlı olmalı.
+  - Bilgisayarda TRÇeviri açıkken TV'yi kendisi bulur; "TV" sayfasında
+    "TV bağlı" yazar. TV'de bağlanınca yeşil "TRÇeviri bağlandı" yazısı çıkar.
+  - Bilgisayarda Remote Play penceresi açık kalmalı (küçültmeyin); oyunu
+    TV'de oynamaya devam edersiniz.
+  - Türkçe yazıları bilgisayarda görmek istemezseniz:
+    TV sayfası > "Bilgisayar ekranında da göster" işaretini kaldırın.
+
+
+DAHA İYİ ÇEVİRİ: ÜCRETSİZ GEMİNİ ANAHTARI (önerilir)
+----------------------------------------------------
+Ücretsiz motor çalışır ama günlük sınırı vardır ve çevirisi daha yapaydır.
+Gemini; argoyu, küfrü, bağlamı anlar, çok daha doğal Türkçe verir.
+
+  1. aistudio.google.com adresine Google hesabınızla girin.
+  2. "Get API key" > "Create API key" deyin, anahtarı kopyalayın (AIza... ile başlar).
+  3. TRÇeviri > "Çeviri" sekmesi > Motor: "Google Gemini (önerilen)".
+  4. Anahtarı "API anahtarı" kutusuna yapıştırın > "Test et" > "Kaydet".
+
+  ÖNEMLİ: Anahtarınızı kimseyle paylaşmayın, bir yere yazmayın.
+  Herkes kendi anahtarını almalı. Anahtar sadece sizin bilgisayarınızda,
+  şifreli olarak saklanır.
+
+
+KISAYOL TUŞLARI (oyun açıkken de çalışır)
+-----------------------------------------
+  F8   Türkçe yazıları göster / gizle
+  F9   Çeviriyi duraklat / devam ettir
+  F10  Bölge düzenleyici (sadece otomatik mod kapalıyken gerekir)
+  F11  Son satırı yeniden çevir (çeviri kötü geldiyse)
+  F7   Bölge çerçevelerini göster
+
+
+NELERİ ÇEVİRİR, NELERİ ÇEVİRMEZ?
+--------------------------------
+  ÇEVİRİR:
+   ✔ Konuşma altyazıları (konuşanın adı ayrıca sarı renkte gösterilir)
+   ✔ İpucu kutuları ("X'e basarak araca bin" gibi)
+   ✔ Görev yazıları, bildirimler
+   ✔ Oyun içi telefon, mesajlar, menüler
+   ✔ GPS / yön yazıları
+
+  ÇEVİRMEZ / ZORLANIR:
+   ✘ Sesli konuşmalar: altyazı yoksa çeviremez (sesi değil, YAZIYI okur)
+   ✘ Para, mesafe, saat gibi sayılar (bilerek dokunmaz)
+   ✘ Zaten Türkçe olan yazılar
+   ✘ Oyun dünyasındaki tabelalar, logolar, süslü/eğik yazılar (çoğunu okuyamaz)
+   ~ Çok küçük yazılar: kaçırırsa Gelişmiş > "Otomatik tarama genişliği"ni büyütün
+   ~ Çok hızlı geçen yazılar: yazı ~1 saniyeden kısa kalırsa Türkçesi yetişmeyebilir
+
+
+SORUN GİDERME
+-------------
+  Hiç Türkçe çıkmıyor
+    > Oyunda altyazı açık mı?
+    > Ana sekmede "Pencere" yanında yeşil ışık var mı?
+      Yoksa "Pencereleri yenile"ye basıp listeden "PS Remote Play"i seçin.
+    > Remote Play penceresi simge durumuna küçültülmüş olmasın.
+
+  Türkçe yazı yanlış yerde / kayık
+    > Remote Play penceresini tam ekran yapın ya da pencereyi bir kez taşıyın.
+
+  Çeviri durdu, "sınır" uyarısı var
+    > Ücretsiz motorun günlük sınırı dolmuştur. Gemini anahtarı girin.
+
+  Yazılar çok küçük / büyük
+    > Görünüm sekmesi > "Yazı boyutu çarpanı".
+
+  Program açılmıyor
+    > run.bat'ı tekrar çalıştırın. Olmazsa şu dosyayı paylaşın:
+      %APPDATA%\TRCeviri\logs\trceviri.log
+
+  CouchSubs gibi başka bir çeviri programı açıksa kapatın:
+  PS5 aynı anda tek bir Remote Play bağlantısına izin verir.

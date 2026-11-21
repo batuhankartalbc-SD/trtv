@@ -1,0 +1,80 @@
+{
+  "name": "Cyberpunk 2077",
+  "game": "Cyberpunk 2077",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    },
+    {
+      "id": "help",
+      "name": "Sol üst ipucu",
+      "type": "help",
+      "x": 0.01,
+      "y": 0.02,
+      "w": 0.32,
+      "h": 0.22,
+      "enabled": true,
+      "min_confidence": 0.65,
+      "font_scale": 0.9
+    },
+    {
+      "id": "obj",
+      "name": "Görev yazısı",
+      "type": "objective",
+      "x": 0.15,
+      "y": 0.68,
+      "w": 0.7,
+      "h": 0.08,
+      "enabled": false,
+      "min_confidence": 0.65,
+      "font_scale": 1.0
+    },
+    {
+      "id": "phone",
+      "name": "Oyun içi telefon",
+      "type": "phone",
+      "x": 0.64,
+      "y": 0.28,
+      "w": 0.24,
+      "h": 0.6,
+      "enabled": false,
+      "min_confidence": 0.65,
+      "font_scale": 0.85
+    }
+  ],
+  "glossary": {
+    "V": "",
+    "Johnny": "",
+    "Johnny Silverhand": "",
+    "Jackie": "",
+    "Judy": "",
+    "Panam": "",
+    "Night City": "",
+    "Arasaka": "",
+    "Militech": "",
+    "Netrunner": "",
+    "Ripperdoc": "",
+    "choom": "kanka",
+    "eddies": "eddie",
+    "preem": "süper",
+    "gonk": "salak"
+  },
+  "ignore": [],
+  "style": "Distopik gelecek, sokak argosu yoğun. Night City argosunu ('choom' = kanka, 'gonk' = salak) Türkçe sokak diline uyarla, teknoloji terimlerini anlaşılır bırak.",
+  "pack": "",
+  "speaker_colors": {
+    "Johnny": "#FF5A5A",
+    "Jackie": "#FFD54A",
+    "Judy": "#C9A2FF",
+    "Panam": "#7CFFB2"
+  }
+}

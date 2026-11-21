@@ -1,0 +1,79 @@
+{
+  "name": "GTA 5",
+  "game": "Grand Theft Auto V",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    },
+    {
+      "id": "help",
+      "name": "Sol üst ipucu",
+      "type": "help",
+      "x": 0.01,
+      "y": 0.02,
+      "w": 0.32,
+      "h": 0.22,
+      "enabled": true,
+      "min_confidence": 0.65,
+      "font_scale": 0.9
+    },
+    {
+      "id": "obj",
+      "name": "Görev yazısı",
+      "type": "objective",
+      "x": 0.15,
+      "y": 0.68,
+      "w": 0.7,
+      "h": 0.08,
+      "enabled": false,
+      "min_confidence": 0.65,
+      "font_scale": 1.0
+    },
+    {
+      "id": "phone",
+      "name": "Oyun içi telefon",
+      "type": "phone",
+      "x": 0.64,
+      "y": 0.28,
+      "w": 0.24,
+      "h": 0.6,
+      "enabled": false,
+      "min_confidence": 0.65,
+      "font_scale": 0.85
+    }
+  ],
+  "glossary": {
+    "Los Santos": "",
+    "Blaine County": "",
+    "Franklin": "",
+    "Michael": "",
+    "Trevor": "",
+    "Lamar": "",
+    "Lester": "",
+    "Vinewood": "",
+    "Paleto Bay": "",
+    "Sandy Shores": "",
+    "Mission Passed": "Görev Tamamlandı",
+    "Wasted": "Öldün",
+    "Busted": "Yakalandın",
+    "heat": "aranma seviyesi"
+  },
+  "ignore": [],
+  "style": "Los Santos'ta geçen hiciv dolu suç hikâyesi. Franklin genç ve sokak ağızlı, Michael yorgun ve alaycı, Trevor çılgın ve küfürbaz. Argoyu ve küfürleri karşılığıyla, doğal sokak Türkçesiyle çevir.",
+  "pack": "",
+  "speaker_colors": {
+    "Franklin": "#7CFFB2",
+    "Michael": "#5EC8FF",
+    "Trevor": "#FF9F5A",
+    "Lamar": "#FFD54A"
+  }
+}

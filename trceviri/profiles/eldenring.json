@@ -1,0 +1,79 @@
+{
+  "name": "Elden Ring",
+  "game": "Elden Ring",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    },
+    {
+      "id": "help",
+      "name": "Sol üst ipucu",
+      "type": "help",
+      "x": 0.01,
+      "y": 0.02,
+      "w": 0.32,
+      "h": 0.22,
+      "enabled": true,
+      "min_confidence": 0.65,
+      "font_scale": 0.9
+    },
+    {
+      "id": "obj",
+      "name": "Görev yazısı",
+      "type": "objective",
+      "x": 0.15,
+      "y": 0.68,
+      "w": 0.7,
+      "h": 0.08,
+      "enabled": false,
+      "min_confidence": 0.65,
+      "font_scale": 1.0
+    },
+    {
+      "id": "phone",
+      "name": "Oyun içi telefon",
+      "type": "phone",
+      "x": 0.64,
+      "y": 0.28,
+      "w": 0.24,
+      "h": 0.6,
+      "enabled": false,
+      "min_confidence": 0.65,
+      "font_scale": 0.85
+    }
+  ],
+  "glossary": {
+    "Tarnished": "",
+    "Melina": "",
+    "Ranni": "",
+    "Elden Ring": "",
+    "Erdtree": "",
+    "Limgrave": "",
+    "Liurnia": "",
+    "Leyndell": "",
+    "Godrick": "",
+    "Radahn": "",
+    "Malenia": "",
+    "Site of Grace": "Lütuf Noktası",
+    "Runes": "Rünler",
+    "Flask of Crimson Tears": "Kızıl Gözyaşı Matarası",
+    "YOU DIED": "ÖLDÜN",
+    "Great Enemy Felled": "Büyük Düşman Devrildi"
+  },
+  "ignore": [],
+  "style": "Karanlık fantastik, eski ve şiirsel bir dil. Konuşmaları ağırbaşlı, arkaik ve gizemli bir Türkçeyle çevir.",
+  "pack": "",
+  "speaker_colors": {
+    "Melina": "#FFD54A",
+    "Ranni": "#7FE3FF"
+  }
+}

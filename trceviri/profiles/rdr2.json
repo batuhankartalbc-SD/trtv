@@ -1,0 +1,87 @@
+{
+  "name": "Red Dead Redemption 2",
+  "game": "Red Dead Redemption 2",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    },
+    {
+      "id": "help",
+      "name": "Sol üst ipucu",
+      "type": "help",
+      "x": 0.01,
+      "y": 0.02,
+      "w": 0.32,
+      "h": 0.22,
+      "enabled": true,
+      "min_confidence": 0.65,
+      "font_scale": 0.9
+    },
+    {
+      "id": "obj",
+      "name": "Görev yazısı",
+      "type": "objective",
+      "x": 0.15,
+      "y": 0.68,
+      "w": 0.7,
+      "h": 0.08,
+      "enabled": false,
+      "min_confidence": 0.65,
+      "font_scale": 1.0
+    },
+    {
+      "id": "phone",
+      "name": "Oyun içi telefon",
+      "type": "phone",
+      "x": 0.64,
+      "y": 0.28,
+      "w": 0.24,
+      "h": 0.6,
+      "enabled": false,
+      "min_confidence": 0.65,
+      "font_scale": 0.85
+    }
+  ],
+  "glossary": {
+    "Arthur": "",
+    "Arthur Morgan": "",
+    "Dutch": "",
+    "Hosea": "",
+    "John": "",
+    "John Marston": "",
+    "Sadie": "",
+    "Micah": "",
+    "Valentine": "",
+    "Saint Denis": "",
+    "Rhodes": "",
+    "Strawberry": "",
+    "Blackwater": "",
+    "Van der Linde": "",
+    "O'Driscoll": "",
+    "Honor": "Onur",
+    "Dead Eye": "Ölü Göz",
+    "camp": "kamp",
+    "posse": "çete",
+    "bounty": "ödül",
+    "Wanted": "Aranıyor"
+  },
+  "ignore": [],
+  "style": "1899 Amerikan Vahşi Batısı. Kovboy ağzı, eski usul ve ağırbaşlı konuşmalar; Dutch vaaz verir gibi konuşur, Arthur kısa ve kuru esprili. 'Bayım', 'hanımefendi', 'evlat' gibi dönem havası veren sözcükler kullan.",
+  "pack": "",
+  "speaker_colors": {
+    "Arthur": "#E8C27A",
+    "Dutch": "#FF9F5A",
+    "Hosea": "#C9A2FF",
+    "John": "#5EC8FF",
+    "Sadie": "#FF7AB6"
+  }
+}

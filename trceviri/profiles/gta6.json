@@ -1,0 +1,92 @@
+{
+  "name": "GTA 6",
+  "game": "Grand Theft Auto VI",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    },
+    {
+      "id": "help",
+      "name": "Sol üst ipucu",
+      "type": "help",
+      "x": 0.01,
+      "y": 0.02,
+      "w": 0.32,
+      "h": 0.22,
+      "enabled": true,
+      "min_confidence": 0.65,
+      "font_scale": 0.9
+    },
+    {
+      "id": "obj",
+      "name": "Görev yazısı",
+      "type": "objective",
+      "x": 0.15,
+      "y": 0.68,
+      "w": 0.7,
+      "h": 0.08,
+      "enabled": false,
+      "min_confidence": 0.65,
+      "font_scale": 1.0
+    },
+    {
+      "id": "phone",
+      "name": "Oyun içi telefon",
+      "type": "phone",
+      "x": 0.64,
+      "y": 0.28,
+      "w": 0.24,
+      "h": 0.6,
+      "enabled": false,
+      "min_confidence": 0.65,
+      "font_scale": 0.85
+    }
+  ],
+  "glossary": {
+    "Vice City": "",
+    "Leonida": "",
+    "Jason": "",
+    "Lucia": "",
+    "cops": "polisler",
+    "heat": "aranma seviyesi",
+    "Wanted": "Aranıyor",
+    "Mission Failed": "Görev Başarısız",
+    "Mission Passed": "Görev Tamamlandı",
+    "Contacts": "Kişiler",
+    "Messages": "Mesajlar",
+    "GAME": "OYUN",
+    "Save Game": "Oyunu Kaydet",
+    "Load Game": "Oyun Yükle",
+    "New Game": "Yeni Oyun",
+    "Resume": "Devam Et",
+    "Quit Game": "Oyundan Çık",
+    "Settings": "Ayarlar",
+    "Map": "Harita",
+    "Brief": "Özet",
+    "Stats": "İstatistikler",
+    "Gallery": "Galeri",
+    "Online": "Çevrimiçi",
+    "Story": "Hikâye",
+    "Help": "Yardım",
+    "Audio": "Ses",
+    "Display": "Ekran",
+    "Controls": "Kontroller",
+    "Subtitles": "Altyazılar"
+  },
+  "ignore": [],
+  "style": "Vice City / Leonida (Florida parodisi). Jason ve Lucia suç ortağı bir çift; konuşmalar sokak ağzı, samimi, argolu ve esprili. Türkçede 'abi', 'lan', 'kanka' gibi doğal sokak dili kullan ama abartma; küfürleri karşılığıyla çevir. Polis = polisler/aynasızlar, heat = aranma seviyesi. Kısa ve vurucu cümleler kur.",
+  "pack": "gta6",
+  "speaker_colors": {
+    "Lucia": "#FF7AB6",
+    "Jason": "#5EC8FF"
+  }
+}

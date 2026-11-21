@@ -1,0 +1,87 @@
+{
+  "name": "Marvel's Spider-Man 2",
+  "game": "Marvel's Spider-Man 2",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    },
+    {
+      "id": "help",
+      "name": "Sol üst ipucu",
+      "type": "help",
+      "x": 0.01,
+      "y": 0.02,
+      "w": 0.32,
+      "h": 0.22,
+      "enabled": true,
+      "min_confidence": 0.65,
+      "font_scale": 0.9
+    },
+    {
+      "id": "obj",
+      "name": "Görev yazısı",
+      "type": "objective",
+      "x": 0.15,
+      "y": 0.68,
+      "w": 0.7,
+      "h": 0.08,
+      "enabled": false,
+      "min_confidence": 0.65,
+      "font_scale": 1.0
+    },
+    {
+      "id": "phone",
+      "name": "Oyun içi telefon",
+      "type": "phone",
+      "x": 0.64,
+      "y": 0.28,
+      "w": 0.24,
+      "h": 0.6,
+      "enabled": false,
+      "min_confidence": 0.65,
+      "font_scale": 0.85
+    }
+  ],
+  "glossary": {
+    "Peter": "",
+    "Peter Parker": "",
+    "Miles": "",
+    "Miles Morales": "",
+    "Spider-Man": "",
+    "Venom": "",
+    "Kraven": "",
+    "MJ": "",
+    "Harry": "",
+    "Harry Osborn": "",
+    "Queens": "",
+    "Brooklyn": "",
+    "Harlem": "",
+    "Manhattan": "",
+    "Lizard": "",
+    "Black Cat": "",
+    "Suit": "Kostüm",
+    "Gadgets": "Aletler",
+    "Skill": "Yetenek",
+    "web": "ağ",
+    "symbiote": "ortakyaşar"
+  },
+  "ignore": [],
+  "style": "New York'ta süper kahraman macerası. Peter ve Miles espritüel, genç ve enerjik konuşur; kötüler tehditkâr. Esprileri ve kelime oyunlarını Türkçede de komik olacak şekilde uyarla.",
+  "pack": "",
+  "speaker_colors": {
+    "Peter": "#FF5A5A",
+    "Miles": "#FF9F5A",
+    "MJ": "#7CFFB2",
+    "Venom": "#C9A2FF",
+    "Kraven": "#FFD54A"
+  }
+}
