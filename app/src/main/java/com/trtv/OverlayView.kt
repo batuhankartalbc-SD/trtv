@@ -134,7 +134,7 @@ class OverlayView(ctx: Context) : View(ctx) {
         if (it.tr.isEmpty()) return
         val x0 = mx(it.b[0], W); val y0 = my(it.b[1], H); val x1 = mx(it.b[2], W); val y1 = my(it.b[3], H)
         val lh = max(8f, it.lh * H * sy)
-        var size = max(12f, lh * 0.86f * fontScale)
+        var size = max(12f, lh * 0.70f * fontScale)
         val text = if (it.speaker.isNotEmpty()) "${it.speaker}: ${it.tr}" else it.tr
         val isSub = it.kind == "subtitle" || it.kind == "objective"
         val maxW = when {
