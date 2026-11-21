@@ -61,7 +61,11 @@ class OverlayView(ctx: Context) : View(ctx) {
     fun setStyle(o: JSONObject) {
         fun col(k: String, d: Int) = try { Color.parseColor(o.optString(k)) } catch (_: Exception) { d }
         val base = col("box", Color.rgb(16, 16, 16))
-        val a = o.optInt("opacity", 250).coerceIn(0, 255)
+        val a = when (o.optString("mode", "opaque")) {
+            "semi" -> 160
+            "text" -> 0
+            else -> o.optInt("opacity", 250).coerceIn(0, 255)
+        }
         boxColor = Color.argb(a, Color.red(base), Color.green(base), Color.blue(base))
         textColor = col("text", Color.WHITE)
         speakerColor = col("speaker", Color.rgb(255, 213, 74))
