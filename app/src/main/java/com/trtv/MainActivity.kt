@@ -87,6 +87,7 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        OverlayService.suppressOverlayUi(true)
         if (::rootView.isInitialized) rootView.visibility = android.view.View.VISIBLE
         if (Settings.canDrawOverlays(this)) OverlayService.start(this) else try {
             startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
@@ -106,6 +107,7 @@ class MainActivity : Activity() {
 
     override fun onPause() {
         h.removeCallbacks(tick)
+        OverlayService.suppressOverlayUi(false)
         super.onPause()
     }
 
