@@ -117,5 +117,5 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Tanıtım:** kök `README.md` Türkçe indirme bağlantıları, Downloader adımları, akış şeması, gereksinimler, özellikler, SSS ve Helsinki-NLP modelinin CC-BY-4.0 kaynağıyla yazıldı. `KURULUM.md` değiştirilmedi.
 - **TV tanılama:** MainActivity'ye Tanılama girişi ve `DiagnosticsActivity` eklendi. OverlayService thread-safe tanılama anlık görüntüsü (bilgisayar adı/bağlantı, son mesaj yaşı, kayan 10 saniye items sayacı, hizalama); OverlayView aktif kutu sayımı. Ekran saniyede bir yenilenir; protokole mesaj eklenmedi.
 - **Değişen dosyalar:** `.github/workflows/pc-tests.yml`, `README.md`, `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{MainActivity,OverlayService,OverlayView,DiagnosticsActivity}.kt`, `GELISTIRME_NOTLARI.md`.
-- **Build/CI:** İlk doğrulama push'u sonrasında APK ve Python Actions sonuçları eklenecek.
+- **PC CI:** Python testleri run 1 başarılı (`44960891413`, tüm `tests` komutu geçti). **APK:** Build 29, `ScrollView.LayoutParams` Kotlin derleme hatasıyla başarısız oldu; MainActivity ve DiagnosticsActivity `ViewGroup.LayoutParams` kullanacak biçimde düzeltildi. Build 30 doğrulaması bekleniyor.
 - **Claude isteği:** Yok; görev PC kaynak kodu değişikliği gerektirmedi.

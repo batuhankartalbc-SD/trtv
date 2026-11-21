@@ -17,6 +17,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.view.Gravity
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -88,7 +89,7 @@ class MainActivity : Activity() {
         val back = Button(this).apply { text = "Oyuna dön"; textSize = 20f; setOnClickListener { finish() } }
         rootView.addView(back, buttonParams())
         val screen = ScrollView(this).apply { isFillViewport = true; isFocusable = false }
-        screen.addView(rootView, ScrollView.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+        screen.addView(rootView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         setContentView(screen)
         back.requestFocus()
         handleInstallResult(intent)

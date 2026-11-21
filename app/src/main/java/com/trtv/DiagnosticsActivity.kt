@@ -53,7 +53,7 @@ class DiagnosticsActivity : Activity() {
             setBackgroundColor(Color.rgb(22, 29, 38))
             isFocusable = false
         }
-        scroll.addView(details, ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        scroll.addView(details, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         root.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
         root.addView(Button(this).apply {
             text = "Geri dön"
