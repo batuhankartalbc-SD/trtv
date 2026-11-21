@@ -42,6 +42,21 @@ data class TvSettings(
     val output: String = "tv"
 )
 
+data class DiagnosticsSnapshot(
+    val connected: Boolean,
+    val computerName: String,
+    val lastMessageSeconds: Double?,
+    val itemsLast10Seconds: Int,
+    val visibleBoxes: Int,
+    val width: Int,
+    val height: Int,
+    val density: Float,
+    val dx: Float,
+    val dy: Float,
+    val sx: Float,
+    val sy: Float
+)
+
 /**
  * Bilgisayardaki TRÇeviri buraya bağlanır (TCP 47800, satır başına bir JSON) ve
  * çevirileri gönderir; bu servis onları HDMI görüntüsünün üstündeki katmana çizer.
@@ -63,6 +78,8 @@ class OverlayService : Service() {
         fun currentSettings(): TvSettings = activeService?.settingsSnapshot() ?: TvSettings()
         fun historySnapshot(): List<HistoryEntry> = activeService?.historySnapshotInternal() ?: emptyList()
         fun isComputerConnected(): Boolean = activeService?.isPcConnected() ?: false
+        fun diagnosticsSnapshot(): DiagnosticsSnapshot = activeService?.diagnosticsSnapshotInternal()
+            ?: DiagnosticsSnapshot(false, "—", null, 0, 0, 0, 0, 1f, 0f, 0f, 1f, 1f)
         fun changeSetting(key: String, value: Any): Boolean = activeService?.sendSettingToPc(key, value) ?: false
         fun setDisconnectWarning(enabled: Boolean) { activeService?.setConnectionWarningEnabled(enabled) }
         fun suppressOverlayUi(suppressed: Boolean) {
@@ -81,12 +98,20 @@ class OverlayService : Service() {
     @Volatile private var client: Socket? = null
     private val writerLock = Any()
     private val historyLock = Any()
+    private val diagnosticsLock = Any()
+    private val itemMessageTimes = ArrayDeque<Long>()
     private val history = ArrayList<HistoryEntry>()
     private val historyKeys = ArrayList<String>()
     @Volatile private var clientWriter: BufferedWriter? = null
     private val updates = Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "trtv-updates").apply { isDaemon = true } }
     @Volatile private var settings = TvSettings()
     @Volatile private var connected = false
+    @Volatile private var computerName = "—"
+    @Volatile private var lastMessageAt = 0L
+    @Volatile private var alignDx = 0f
+    @Volatile private var alignDy = 0f
+    @Volatile private var alignSx = 1f
+    @Volatile private var alignSy = 1f
     private var lastWarningAt = 0L
     private val warningShow = Runnable { showDisconnectWarning() }
     private val warningHide = Runnable { view?.setConnectionWarning(false) }
@@ -94,6 +119,21 @@ class OverlayService : Service() {
 
     fun settingsSnapshot(): TvSettings = settings
     fun isPcConnected(): Boolean = connected
+
+    private fun diagnosticsSnapshotInternal(): DiagnosticsSnapshot {
+        val now = SystemClock.elapsedRealtime()
+        val recentItems = synchronized(diagnosticsLock) {
+            while (itemMessageTimes.isNotEmpty() && now - itemMessageTimes.first() > 10_000L) itemMessageTimes.removeFirst()
+            itemMessageTimes.size
+        }
+        val display = resources.displayMetrics
+        return DiagnosticsSnapshot(
+            connected, computerName,
+            if (lastMessageAt == 0L) null else ((now - lastMessageAt).coerceAtLeast(0L) / 1000.0),
+            recentItems, view?.visibleItemCount() ?: 0, display.widthPixels, display.heightPixels,
+            display.density, alignDx, alignDy, alignSx, alignSy
+        )
+    }
 
     private fun historySnapshotInternal(): List<HistoryEntry> = synchronized(historyLock) { history.toList() }
 
@@ -174,6 +214,10 @@ class OverlayService : Service() {
             nav = cats?.optBoolean("nav", settings.nav) ?: settings.nav,
             output = o.optString("output", settings.output)
         )
+        alignDx = o.optDouble("dx", alignDx.toDouble()).toFloat()
+        alignDy = o.optDouble("dy", alignDy.toDouble()).toFloat()
+        alignSx = o.optDouble("sx", alignSx.toDouble()).toFloat()
+        alignSy = o.optDouble("sy", alignSy.toDouble()).toFloat()
         main.post { sendBroadcast(Intent(SETTINGS_ACTION).setPackage(packageName)) }
     }
 
@@ -340,6 +384,7 @@ class OverlayService : Service() {
             while (running) {
                 val line = r.readLine() ?: break
                 if (line.isBlank()) continue
+                lastMessageAt = SystemClock.elapsedRealtime()
                 val o = JSONObject(line)
                 when (o.optString("t")) {
                     "hello" -> {
@@ -347,6 +392,7 @@ class OverlayService : Service() {
                         send(w, JSONObject().put("t", "hello").put("app", "trceviri-tv").put("v", 1)
                             .put("w", dm.widthPixels).put("h", dm.heightPixels).put("overlay", view != null))
                         if (o.optBoolean("probe")) break   // sadece tarama
+                        computerName = o.optString("name", "Bilgisayar").ifBlank { "Bilgisayar" }
                         val old = client
                         synchronized(writerLock) { client = s; clientWriter = w }
                         isMain = true
@@ -356,6 +402,11 @@ class OverlayService : Service() {
                         main.post { connectionChanged(true); if (view == null) addOverlay(); view?.banner("Brolis Game Translate bağlandı ($name)") }
                     }
                     "items" -> {
+                        synchronized(diagnosticsLock) {
+                            val now = SystemClock.elapsedRealtime()
+                            while (itemMessageTimes.isNotEmpty() && now - itemMessageTimes.first() > 10_000L) itemMessageTimes.removeFirst()
+                            itemMessageTimes.addLast(now)
+                        }
                         val z = o.optString("z", "auto")
                         val items = OverlayView.parseItems(o.optJSONArray("items"))
                         recordHistory(z, items)

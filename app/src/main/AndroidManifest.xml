@@ -38,6 +38,10 @@
             android:name=".HistoryActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <activity
+            android:name=".DiagnosticsActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <service
             android:name=".OverlayService"
             android:exported="false"

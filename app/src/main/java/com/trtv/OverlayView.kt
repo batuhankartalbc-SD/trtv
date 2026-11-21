@@ -108,6 +108,9 @@ class OverlayView(ctx: Context) : View(ctx) {
         animateUntilSettled()
     }
 
+    fun visibleItemCount(): Int = if (!shown || uiSuppressed || calib) 0 else
+        zones.values.sumOf { entries -> entries.count { it.removedAt == null } }
+
     fun clearAll() {
         val now = SystemClock.uptimeMillis()
         zones.values.flatten().filter { it.removedAt == null }.forEach { it.removedAt = now }

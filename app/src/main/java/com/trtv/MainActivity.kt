@@ -19,6 +19,7 @@ import android.provider.Settings
 import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import java.io.File
 import java.net.HttpURLConnection
@@ -75,6 +76,10 @@ class MainActivity : Activity() {
             text = "Konuşma geçmişi"; textSize = 20f
             setOnClickListener { rootView.visibility = android.view.View.INVISIBLE; startActivity(Intent(this@MainActivity, HistoryActivity::class.java)) }
         }, buttonParams())
+        rootView.addView(Button(this).apply {
+            text = "Tanılama"; textSize = 20f
+            setOnClickListener { rootView.visibility = android.view.View.INVISIBLE; startActivity(Intent(this@MainActivity, DiagnosticsActivity::class.java)) }
+        }, buttonParams())
         updateButton = Button(this).apply {
             textSize = 20f; visibility = android.view.View.GONE
             setOnClickListener { updateApp() }
@@ -82,7 +87,9 @@ class MainActivity : Activity() {
         rootView.addView(updateButton, buttonParams())
         val back = Button(this).apply { text = "Oyuna dön"; textSize = 20f; setOnClickListener { finish() } }
         rootView.addView(back, buttonParams())
-        setContentView(rootView)
+        val screen = ScrollView(this).apply { isFillViewport = true; isFocusable = false }
+        screen.addView(rootView, ScrollView.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+        setContentView(screen)
         back.requestFocus()
         handleInstallResult(intent)
     }
