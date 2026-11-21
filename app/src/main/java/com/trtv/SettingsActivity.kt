@@ -25,6 +25,7 @@ class SettingsActivity : Activity() {
         Row("visible", "Türkçe yazılar"),
         Row("font_scale", "Yazı boyutu"),
         Row("bg_mode", "Yazı arkası"),
+        Row("bg_opacity", "Yazı arkası opaklığı"),
         Row("speaker_colors_on", "Konuşmacı renkleri"),
         Row("tts_enabled", "Türkçe seslendirme"),
         Row("cat_dialogue", "Konuşmalar"),
@@ -38,6 +39,7 @@ class SettingsActivity : Activity() {
     private val values = mutableMapOf<String, Any>()
     private val rowViews = mutableMapOf<String, Button>()
     private lateinit var connectionLabel: TextView
+    private lateinit var preview: TextView
     private var receiverRegistered = false
     private val stateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) { loadState(); renderRows(); renderConnection() }
@@ -63,6 +65,13 @@ class SettingsActivity : Activity() {
             textSize = 16f; setTextColor(Color.rgb(255, 190, 100)); setPadding(10, 0, 10, 14)
         }
         panel.addView(connectionLabel)
+        preview = TextView(this).apply {
+            text = "Örnek Türkçe yazı"
+            textSize = 19f; setTextColor(Color.WHITE); setPadding(18, 14, 18, 14)
+        }
+        val previewSurface = FrameLayout(this).apply { setBackgroundColor(Color.rgb(91, 108, 124)) }
+        previewSurface.addView(preview, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT))
+        panel.addView(previewSurface, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = 12 })
         val scroll = ScrollView(this).apply { isFillViewport = false; overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS }
         val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         rows.forEachIndexed { index, row ->
@@ -104,6 +113,7 @@ class SettingsActivity : Activity() {
         values["visible"] = state.visible
         values["font_scale"] = (state.scale * 100).toInt().coerceIn(60, 250)
         values["bg_mode"] = state.bgm
+        values["bg_opacity"] = state.opacity
         values["speaker_colors_on"] = state.speakerColors
         values["tts_enabled"] = state.tts
         values["cat_dialogue"] = state.dialogue
@@ -116,6 +126,7 @@ class SettingsActivity : Activity() {
 
     private fun displayValue(key: String): String = when (key) {
         "font_scale" -> "%${values[key] ?: 110}"
+        "bg_opacity" -> "%${values[key] ?: 100}"
         "bg_mode" -> when (values[key]) { "black" -> "Simsiyah"; "semi" -> "Yarı saydam"; "none" -> "Kutu yok"; "game" -> "Oyun rengi"; else -> "Simsiyah" }
         "replay" -> "Göster"
         else -> if (values[key] == true) "Açık" else "Kapalı"
@@ -123,6 +134,18 @@ class SettingsActivity : Activity() {
 
     private fun renderRows() {
         rows.forEach { row -> rowViews[row.key]?.text = "${row.title}     ‹  ${displayValue(row.key)}  ›" }
+        if (::preview.isInitialized) {
+            val mode = values["bg_mode"] as? String ?: "black"
+            val percent = values["bg_opacity"] as? Int ?: 100
+            val opacity = if (mode == "none") 0 else percent * 255 / 100
+            preview.setBackgroundColor(Color.argb(opacity, 0, 0, 0))
+            preview.text = when (mode) {
+                "none" -> "Örnek Türkçe yazı · Kutu yok"
+                "semi" -> "Örnek Türkçe yazı · Yarı saydam %$percent"
+                "game" -> "Örnek Türkçe yazı · Oyun rengi"
+                else -> "Örnek Türkçe yazı · Simsiyah %$percent"
+            }
+        }
     }
 
     private fun renderConnection() {
@@ -155,7 +178,7 @@ class SettingsActivity : Activity() {
                 OverlayService.setDisconnectWarning(enabled)
                 renderRows()
             }
-            "font_scale", "bg_mode" -> change(key, true)
+            "font_scale", "bg_mode", "bg_opacity" -> change(key, true)
             else -> change(key, null)
         }
     }
@@ -164,6 +187,7 @@ class SettingsActivity : Activity() {
     private fun change(key: String, increase: Boolean?) {
         val value: Any = when (key) {
             "font_scale" -> ((values[key] as? Int ?: 110) + if (increase == false) -5 else 5).coerceIn(60, 250).also { values[key] = it }.let { it / 100.0 }
+            "bg_opacity" -> ((values[key] as? Int ?: 100) + if (increase == false) -5 else 5).coerceIn(0, 100).also { values[key] = it }
             "bg_mode" -> {
                 val modes = listOf("black", "semi", "none", "game")
                 val current = modes.indexOf(values[key] as? String ?: "black").coerceAtLeast(0)

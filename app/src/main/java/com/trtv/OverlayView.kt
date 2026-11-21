@@ -48,7 +48,8 @@ class OverlayView(ctx: Context) : View(ctx) {
 
     private val zones = LinkedHashMap<String, List<Item>>()
     private var boxColor = Color.BLACK
-    private var boxAlpha = 250
+    private var boxAlpha = 255
+    private var backgroundAlpha = 255
     private var textColor = Color.WHITE
     private var speakerColor = Color.rgb(255, 213, 74)
     private var fontScale = 1.0f
@@ -80,12 +81,18 @@ class OverlayView(ctx: Context) : View(ctx) {
 
     fun setShown(v: Boolean) { shown = v; invalidate() }
     fun setConnectionWarning(v: Boolean) { connectionWarning = v; invalidate() }
+    fun setOverlayOpacity(alpha: Int) {
+        backgroundAlpha = alpha.coerceIn(0, 255)
+        if (mode != "text") boxAlpha = backgroundAlpha
+        invalidate()
+    }
 
     fun setStyle(o: JSONObject) {
         fun col(k: String, d: Int) = try { Color.parseColor(o.optString(k)) } catch (_: Exception) { d }
-        boxColor = col("box", Color.rgb(16, 16, 16))
+        boxColor = col("box", Color.BLACK)
         mode = o.optString("mode", "match")
-        boxAlpha = when (mode) { "semi" -> 160; "text" -> 0; else -> o.optInt("opacity", 250).coerceIn(0, 255) }
+        backgroundAlpha = if (o.has("opacity")) o.optInt("opacity", 255).coerceIn(0, 255) else if (mode == "semi") 160 else backgroundAlpha
+        boxAlpha = if (mode == "text") 0 else backgroundAlpha
         textColor = col("text", Color.WHITE)
         speakerColor = col("speaker", Color.rgb(255, 213, 74))
         fontScale = o.optDouble("scale", 1.1).toFloat()
@@ -210,13 +217,11 @@ class OverlayView(ctx: Context) : View(ctx) {
         if (bgMode == "game" && it.bg != null) {
             val b = it.bg
             for ((grow, alpha) in listOf(pad * 1.6f to 50, pad * 0.9f to 120, 0f to 255)) {
-                bg.color = Color.argb(alpha, Color.red(b), Color.green(b), Color.blue(b))
+                bg.color = Color.argb(alpha * backgroundAlpha / 255, Color.red(b), Color.green(b), Color.blue(b))
                 c.drawRoundRect(RectF(cover.left - grow, cover.top - grow, cover.right + grow, cover.bottom + grow), pad + grow, pad + grow, bg)
             }
         } else if (bgMode != "none") {
-            val a = if (bgMode == "semi") 170 else 255
-            val b = if (bgMode == "semi") Color.BLACK else boxColor
-            bg.color = Color.argb(a, Color.red(b), Color.green(b), Color.blue(b))
+            bg.color = Color.argb(backgroundAlpha, 0, 0, 0)
             c.drawRoundRect(cover, pad * 0.8f, pad * 0.8f, bg)
         }
         var fg = if (matchColors && it.fg != null) it.fg else textColor
@@ -274,7 +279,8 @@ class OverlayView(ctx: Context) : View(ctx) {
         if (need > cover.height()) {
             if (it.kind == "subtitle") cover.top = cover.bottom - need else cover.bottom = cover.top + need
         }
-        bg.color = Color.argb(boxAlpha, Color.red(boxColor), Color.green(boxColor), Color.blue(boxColor))
+        val backgroundColor = if (bgMode == "black" || bgMode == "semi") Color.BLACK else boxColor
+        bg.color = Color.argb(if (bgMode == "none") 0 else boxAlpha, Color.red(backgroundColor), Color.green(backgroundColor), Color.blue(backgroundColor))
         c.drawRoundRect(cover, 8f, 8f, bg)
         stroke.textSize = size
         stroke.strokeWidth = max(2f, size / 12f)

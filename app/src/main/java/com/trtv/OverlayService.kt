@@ -31,6 +31,7 @@ data class TvSettings(
     val visible: Boolean = true,
     val scale: Double = 1.1,
     val bgm: String = "black",
+    val opacity: Int = 100,
     val speakerColors: Boolean = true,
     val tts: Boolean = false,
     val dialogue: Boolean = true,
@@ -91,6 +92,7 @@ class OverlayService : Service() {
         val message = if (key == "visible") JSONObject().put("t", "visible").put("v", value as Boolean)
             else JSONObject().put("t", "set").put("k", key).put("v", value)
         val ok = clientWriter != null
+        if (key == "bg_opacity") main.post { view?.setOverlayOpacity(((value as Number).toInt() * 255 / 100).coerceIn(0, 255)) }
         thread(name = "trtv-setting-send", isDaemon = true) { sendToPc(message) }
         sendBroadcast(Intent(SETTINGS_ACTION).setPackage(packageName))
         return ok
@@ -112,6 +114,7 @@ class OverlayService : Service() {
         "visible" -> s.copy(visible = value as Boolean)
         "font_scale" -> s.copy(scale = (value as Number).toDouble())
         "bg_mode" -> s.copy(bgm = value as String)
+        "bg_opacity" -> s.copy(opacity = (value as Number).toInt().coerceIn(0, 100))
         "speaker_colors_on" -> s.copy(speakerColors = value as Boolean)
         "tts_enabled" -> s.copy(tts = value as Boolean)
         "cat_dialogue" -> s.copy(dialogue = value as Boolean)
@@ -124,8 +127,10 @@ class OverlayService : Service() {
 
     private fun updateFromStyle(o: JSONObject) {
         val cats = o.optJSONObject("cats")
+        val styleOpacity = if (o.has("opacity")) (o.optInt("opacity", 255).coerceIn(0, 255) * 100 / 255) else settings.opacity
         settings = settings.copy(
             scale = o.optDouble("scale", settings.scale), bgm = o.optString("bgm", settings.bgm),
+            opacity = styleOpacity,
             tts = o.optBoolean("tts", settings.tts), speakerColors = o.optBoolean("spkcol", settings.speakerColors),
             dialogue = cats?.optBoolean("dialogue", settings.dialogue) ?: settings.dialogue,
             menu = cats?.optBoolean("menu", settings.menu) ?: settings.menu,
