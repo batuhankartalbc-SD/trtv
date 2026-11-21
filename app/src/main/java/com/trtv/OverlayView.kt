@@ -192,7 +192,7 @@ class OverlayView(ctx: Context) : View(ctx) {
                 bg.color = Color.argb(alpha, Color.red(b), Color.green(b), Color.blue(b))
                 c.drawRoundRect(RectF(cover.left - grow, cover.top - grow, cover.right + grow, cover.bottom + grow), pad + grow, pad + grow, bg)
             }
-        } else {
+        } else if (bgMode != "none") {
             val a = if (bgMode == "semi") 170 else 255
             val b = if (bgMode == "semi") Color.BLACK else boxColor
             bg.color = Color.argb(a, Color.red(b), Color.green(b), Color.blue(b))
@@ -200,7 +200,7 @@ class OverlayView(ctx: Context) : View(ctx) {
         }
         var fg = if (matchColors && it.fg != null) it.fg else textColor
         var spk = if (matchColors && it.sc != null) it.sc else speakerColor
-        if (bgMode != "game") {     // koyu zeminde koyu yazı okunmaz → beyaz
+        if (bgMode != "game" && bgMode != "none") {     // koyu zeminde koyu yazı okunmaz → beyaz
             if (lum(fg) < 110) fg = textColor
             if (lum(spk) < 110) spk = speakerColor
         }
