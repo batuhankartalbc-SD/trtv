@@ -185,8 +185,30 @@ class AppContext:
             self.overlay.close()
 
 
+_MUTEX = None
+
+
+def single_instance() -> bool:
+    """Aynı ortamda ikinci kopya açılmasın (kısayol tuşları ve TV bağlantısı çakışır). Açıksa onu öne getir."""
+    global _MUTEX
+    import ctypes
+    from .config import DEV
+    name = "Local\\BrolisGameTranslate" + ("-Dev" if DEV else "")
+    _MUTEX = ctypes.windll.kernel32.CreateMutexW(None, False, name)
+    if ctypes.windll.kernel32.GetLastError() != 183:      # ERROR_ALREADY_EXISTS değil
+        return True
+    for h, t in winutil.list_windows():
+        if t.startswith(("Brolis Game Translate —", "[GELİŞTİRME] Brolis Game Translate")):
+            winutil.user32.ShowWindow(h, 9)                  # SW_RESTORE
+            winutil.user32.SetForegroundWindow(h)
+            break
+    return False
+
+
 def main() -> int:
     winutil.set_dpi_aware()
+    if not single_instance():
+        return 0
     qapp = QApplication(sys.argv)
     qapp.setApplicationName("Brolis Game Translate")
     qapp.setStyle("Fusion")

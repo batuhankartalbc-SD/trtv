@@ -408,17 +408,30 @@ class Capturer:
         self.window_failed = 0
 
     def grab(self, hwnd, client, content) -> np.ndarray | None:
+        """Önce pencerenin kendisinden (PrintWindow) okur. Ekran yakalamaya SADECE pencere en öndeyse geçer;
+        önünde başka pencere varken ekranı okursak o pencerenin yazılarını çevirirdik (ör. sohbet pencereleri)."""
         cx, cy, cw, ch = client
         x, y, w, h = content
-        if self.mode != "screen" and self.window_failed < 30:
+        ox, oy = x - cx, y - cy
+        now = time.monotonic()
+        img = None
+        # pencere yakalama başarısız olsa bile 2 sn'de bir yeniden dene (kalıcı olarak vazgeçme)
+        if self.mode != "screen" and (self.window_failed < 30 or now - getattr(self, "_last_try", 0) > 2.0):
+            self._last_try = now
             img = winutil.capture_window(hwnd, cw, ch)
-            if img is not None and (self.mode == "window" or float(img[::8, ::8].mean()) > 2.0):
+            # karanlık sahne ≠ hata: sadece TAMAMEN siyah (çizilmemiş) kare başarısız sayılır
+            if img is not None and (self.mode == "window" or int(img[::6, ::6].max()) > 6):
+                if self.window_failed >= 30:
+                    log.info("Pencere yakalama yeniden çalışıyor")
                 self.window_failed = 0
-                ox, oy = x - cx, y - cy
                 return np.ascontiguousarray(img[oy:oy + h, ox:ox + w])
             self.window_failed += 1
             if self.window_failed == 30:
-                log.info("Pencere yakalama çalışmıyor, ekran yakalamaya geçildi")
+                log.info("Pencere yakalama çalışmıyor; pencere öndeyken ekran yakalama kullanılacak")
+        if self.window_failed < 30 and img is not None:
+            return np.ascontiguousarray(img[oy:oy + h, ox:ox + w])     # kısa süreli siyah kare: olduğu gibi kullan
+        if not winutil.is_on_top(hwnd, x + w // 2, y + h // 2):
+            return None                                                   # önünde başka pencere var: okuma
         shot = self.sct.grab({"left": x, "top": y, "width": w, "height": h})
         return np.ascontiguousarray(np.array(shot)[:, :, :3])
 
@@ -694,6 +707,7 @@ class Pipeline(QObject):
                     "ceviri": sum(self.tr_ms) / len(self.tr_ms) if self.tr_ms else 0,
                     "toplam": sum(self.total_ms) / len(self.total_ms) if self.total_ms else 0,
                     "onbellek": self.cache.count(),
+                    "refine": (self.manager.refine_status if self.manager and self.manager.refine else None),
                 })
             spent = time.perf_counter() - tick
             time.sleep(max(0.0, 1.0 / max(1, self.settings.fps) - spent))

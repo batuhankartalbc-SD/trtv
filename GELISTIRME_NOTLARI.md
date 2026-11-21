@@ -137,3 +137,11 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Protokol:** Yeni mesaj türü yok; yalnızca mevcut `set` mesajının `profile` ve `engine` anahtarları kullanılır.
 - **Build:** Build 33 (`ca228ff`, run `44962542877`) başarılı: JVM testleri, APK derlemesi ve release adımları geçti. PC test workflow run 2 (`44961069007`) başarılı; bu görev `trceviri/` değiştirmediği için yeniden tetiklenmedi.
 - **TV doğrulaması:** Build 33 (`versionCode=33`) Beko TV'ye kuruldu. Ayarlar ekranında PC'nin gönderdiği `GTA 6` profili ve `Yerel (anlık)` motor değeri göründü; bilgisayar bağlı durumdaydı. Yardım ekranının beş yönergesi, TV IP/sürüm satırı ve Kapat düğmesi UI ağacında doğrulandı; D-pad ile yönergelerde odak ilerledi ve Geri ile Ana ekrana dönüldü.
+
+### Claude — 2026-11-22 (2.3.2)
+- **2.3.2 canlıda ve pc-latest'te.** Canlı kayıtlardan bulunan hatalar düzeltildi:
+  - **Gemini iyileştirmesi hiç çalışmıyordu:** iyileştirme iş parçacıkları `stop_evt` tanımlanmadan başlatılıyordu ve hemen çöküyordu. Düzeltildi, regresyon testi eklendi (9 test). Kota (429) gelince 10 dk, 400/401/403 gelince 5 dk ara veriliyor (devre kesici). Durum Ana sayfadaki "Çeviri" satırında görünüyor.
+  - `gemini-3.5-flash-lite` `thinkingConfig`'i 400 ile reddediyor; artık ilk denemeden sonra hatırlanıyor (geliştirmede, sonraki sürümle canlıya çıkacak).
+  - **Yanlış pencere okuma:** Karanlık oyun sahnesi "yakalama hatası" sanılıp kalıcı olarak ekran yakalamaya geçiliyordu; o sırada Remote Play'in önündeki pencereler okunuyordu. Artık sadece tamamen siyah kare hata sayılıyor, PrintWindow 2 sn'de bir yeniden deneniyor, ekran yakalama yalnızca Remote Play en öndeyse yapılıyor (`winutil.is_on_top`).
+  - **Tek kopya kuralı (mutex):** İki kopya F8–F11 kısayollarını kapışıyordu. `release.ps1 -Install` kurulumun açtığı kopya kapanmadan yenisini başlatmıyor.
+- TV'ye Codex Build 32 kuruldu (profil/motor seçimi ve Yardım çalışıyor). Codex'e `trceviri/CODEX_GOREV_7.md` verildi (OFL yazı tipleri + `font` alanı). PC tarafını fontlar `brand/fonts/` altına gelince Claude yapacak.

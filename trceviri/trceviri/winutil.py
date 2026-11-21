@@ -168,6 +168,23 @@ def capture_window(hwnd: int, w: int, h: int):
         win32gui.ReleaseDC(hwnd, hdc)
 
 
+def is_on_top(hwnd: int, x: int, y: int) -> bool:
+    """(x, y) ekran noktasında görünen pencere hwnd'nin kendisi mi (önünde başka pencere yok mu)?
+    Bizim katmanımız tıklama geçirgen olduğu için WindowFromPoint onu atlar."""
+    GA_ROOT = 2
+    try:
+        h = user32.WindowFromPoint(wintypes.POINT(int(x), int(y)))
+        return bool(h) and user32.GetAncestor(h, GA_ROOT) == hwnd
+    except Exception:
+        return False
+
+
+user32.WindowFromPoint.restype = wintypes.HWND
+user32.WindowFromPoint.argtypes = [wintypes.POINT]
+user32.GetAncestor.restype = wintypes.HWND
+user32.GetAncestor.argtypes = [wintypes.HWND, ctypes.c_uint]
+
+
 def make_overlay(hwnd: int) -> bool:
     """Tıklama geçirgen, odak almayan ve ekran yakalamada görünmeyen pencere."""
     ex = user32.GetWindowLongPtrW(hwnd, GWL_EXSTYLE)

@@ -117,3 +117,38 @@ def test_color_splits_objective_from_dialogue():
     texts = [i.src for i in items]
     assert any("Get in the car" in t for t in texts)
     assert any(t.startswith("Go to the safehouse") for t in texts), texts
+
+
+def test_refine_runs_and_pauses_on_quota():
+    """İyileştirme motoru gerçekten çalışmalı; kota (429) hatasında ara vermeli."""
+    class Local(FakeEngine):
+        name = "local"
+
+    class Better(FakeEngine):
+        name = "gemini"
+        def translate(self, lines, context, sys):
+            self.calls.append(list(lines))
+            if self.fail:
+                raise RuntimeError("Gemini 429: quota exceeded")
+            return [f"İYİ:{l}" for l in lines]
+
+    better = Better()
+    m = TranslationManager(Local(), None, "GTA", {}, "samimi", 4, refine=better)
+    got = []
+    done = threading.Event()
+
+    def cb(src, tr, eng, ms):
+        got.append((tr, eng))
+        if eng == "gemini":
+            done.set()
+
+    m.submit("hello there", 0, True, cb)
+    assert done.wait(5), got
+    assert ("İYİ:hello there", "gemini") in got
+    better.fail = True
+    m.submit("second line", 0, True, cb)
+    t0 = time.time()
+    while time.time() - t0 < 3 and m.refine_pause_until == 0:
+        time.sleep(0.05)
+    assert m.refine_pause_until > 0 and "kota" in m.refine_status
+    m.stop()

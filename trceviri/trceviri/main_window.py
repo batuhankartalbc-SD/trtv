@@ -408,6 +408,9 @@ class MainWindow(QMainWindow):
     def on_stats(self, d):
         self.m_ocr.set(d["ocr"]); self.m_tr.set(d["ceviri"]); self.m_tot.set(d.get("toplam", 0))
         self.lbl_cache.setText(f"Son 50 satır · önbellekte {d['onbellek']} çeviri")
+        if d.get("refine"):
+            ok = not any(w in d["refine"] for w in ("kota", "geçersiz"))
+            self.st["ceviri"].set(ok, f"Yerel (anlık) + Gemini: {d['refine']}")
 
     # ================================================================ Bölgeler
     def _page_zones(self) -> QWidget:

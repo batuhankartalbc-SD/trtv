@@ -45,14 +45,15 @@ if ($Publish) {
 if ($Install) {
   Write-Host "Canlı ortam güncelleniyor"
   Get-Process TRCeviri -ErrorAction SilentlyContinue | Stop-Process -Force
-  Start-Process $setup -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/TASKS="desktopicon"' | Out-Null
+  $proc = Start-Process $setup -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/TASKS="desktopicon"' -PassThru
   $exe = "$env:LOCALAPPDATA\Programs\TRCeviri\TRCeviri.exe"
-  $t0 = Get-Date
-  while (((Get-Date) - $t0).TotalSeconds -lt 180) {
-    Start-Sleep 3
-    if ((Test-Path $exe) -and -not (Get-Process "TRCeviri-Kurulum*" -ErrorAction SilentlyContinue)) { break }
-  }
+  $proc.WaitForExit(300000) | Out-Null                                   # kurulum bitsin
+  $t0 = Get-Date                                                         # .tmp alt süreci de bitsin
+  while (((Get-Date) - $t0).TotalSeconds -lt 60 -and (Get-Process "TRCeviri-Kurulum*" -ErrorAction SilentlyContinue)) { Start-Sleep 1 }
+  Start-Sleep 4                                                          # kurulumun başlattığı kopya açılsın
   Get-Process TRCeviri -ErrorAction SilentlyContinue | Stop-Process -Force     # kurulumun açtığını kapat, canlı çeviriyle aç
+  $t0 = Get-Date                                                         # tamamen kapansın (kısayollar serbest kalsın)
+  while (((Get-Date) - $t0).TotalSeconds -lt 15 -and (Get-Process TRCeviri -ErrorAction SilentlyContinue)) { Start-Sleep 1 }
   Start-Process $exe -ArgumentList "--baslat" -WorkingDirectory (Split-Path $exe)
   Write-Host "Canlı: $ver çalışıyor" -ForegroundColor Green
 }

@@ -105,6 +105,7 @@ class FreeEngine(Engine):
 class Gemini(Engine):
     name = "gemini"
     is_llm = True
+    _no_thinking: set = {"gemini-3.5-flash-lite"}     # ölçüldü: bu model thinkingConfig'i 400 ile reddediyor
 
     def translate(self, lines, context, sys):
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
@@ -113,10 +114,12 @@ class Gemini(Engine):
             "contents": [{"role": "user", "parts": [{"text": json.dumps({"context": context, "lines": lines}, ensure_ascii=False)}]}],
             "generationConfig": {"temperature": 0.2, "responseMimeType": "application/json"},
         }
-        if getattr(self, "_thinking_ok", True):
+        no_think = Gemini._no_thinking            # modelden modele: düşünme ayarını reddedenleri hatırla
+        if self.model not in no_think:
             body["generationConfig"]["thinkingConfig"] = {"thinkingBudget": 0}   # düşünme kapalı = daha hızlı
         r = self.client.post(url, json=body, headers={"x-goog-api-key": self.key})
-        if r.status_code == 400 and "thinking" in r.text.lower():
+        if r.status_code == 400 and self.model not in no_think:     # model düşünme ayarını desteklemiyor olabilir
+            no_think.add(self.model)
             self._thinking_ok = False
             body["generationConfig"].pop("thinkingConfig", None)
             r = self.client.post(url, json=body, headers={"x-goog-api-key": self.key})
@@ -324,9 +327,8 @@ class TranslationManager:
         self.fallback = fallback
         self.refine = refine          # anlık çeviriden sonra daha kaliteli çeviriyle değiştir (ör. Gemini)
         self.rq: queue.Queue = queue.Queue()
-        if refine is not None:
-            for i in range(3):
-                threading.Thread(target=self._refine_run, daemon=True, name=f"iyilestir-{i}").start()
+        self.refine_pause_until = 0.0     # kota/hata sonrası iyileştirmeye ara
+        self.refine_status = "hazır"
         self.sys = system_prompt(game, glossary, tone, style)
         self.context: deque[str] = deque(maxlen=max(0, context_lines))
         self.q: queue.PriorityQueue[Job] = queue.PriorityQueue()
@@ -337,6 +339,9 @@ class TranslationManager:
         self.workers = [threading.Thread(target=self._run, daemon=True, name=f"ceviri-{i}") for i in range(4)]
         for w in self.workers:
             w.start()
+        if refine is not None:      # (stop_evt tanımlandıktan sonra — önceden iş parçacıkları hemen çöküyordu)
+            for i in range(3):
+                threading.Thread(target=self._refine_run, daemon=True, name=f"iyilestir-{i}").start()
 
     def submit(self, text: str, priority: int, is_dialogue: bool, callback) -> None:
         with self.lock:
@@ -406,9 +411,22 @@ class TranslationManager:
                 j, ctx = self.rq.get(timeout=1)
             except queue.Empty:
                 continue
+            if time.monotonic() < self.refine_pause_until:
+                continue                 # kota dolu: yerel çeviri ekranda kalır, istek atılmaz
             try:
                 better = self.refine.translate([j.text], ctx[:-1] if ctx and ctx[-1] == j.text else ctx, self.sys)[0]
                 if better:
+                    self.refine_status = "çalışıyor"
                     j.callback(j.text, better, self.refine.name, (time.perf_counter() - j.t0) * 1000)
             except Exception as e:
-                log.info("iyileştirme atlandı (%s): %s", self.refine.name, e)
+                msg = str(e)
+                if " 429" in msg or "quota" in msg.lower() or "RESOURCE_EXHAUSTED" in msg:
+                    self.refine_pause_until = time.monotonic() + 600
+                    self.refine_status = "kota doldu (10 dk ara)"
+                    log.warning("%s kotası doldu: 10 dakika sadece yerel çeviri kullanılacak", self.refine.name)
+                elif " 400" in msg or " 401" in msg or " 403" in msg:
+                    self.refine_pause_until = time.monotonic() + 300
+                    self.refine_status = "geçersiz istek/anahtar (5 dk ara)"
+                    log.warning("%s isteği reddedildi (%s) — 5 dk ara", self.refine.name, msg[:80])
+                else:
+                    log.info("iyileştirme atlandı (%s): %s", self.refine.name, msg[:120])
