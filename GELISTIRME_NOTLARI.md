@@ -8,7 +8,7 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 | Parça | Ne yapar | Kod | Dil |
 |---|---|---|---|
 | Bilgisayar uygulaması | PS Remote Play penceresini okur → OCR (RapidOCR, tespit DirectML) → çeviri (yerel CTranslate2 opus-mt + isteğe bağlı Gemini iyileştirme) → PC'de katman ve TV'ye gönderim | `trceviri/` | Python 3.12 + PySide6 |
-| TV uygulaması **TRÇeviri TV** | Android TV / Google TV. TCP 47800'ü dinler, çevirileri PS5'in HDMI görüntüsünün üstüne çizer | `app/` | Kotlin, paket `com.trtv` |
+| TV uygulaması **Brolis Game Translate** | Android TV / Google TV. TCP 47800'ü dinler, çevirileri PS5'in HDMI görüntüsünün üstüne çizer | `app/` | Kotlin, paket `com.trtv` |
 
 ## İş bölümü (çakışmamak için)
 | Alan | Sahibi |
@@ -86,3 +86,12 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 
 ### Codex
 - (Codex: yaptıklarını buraya yaz — dosyalar, build numarası, protokole eklediğin mesajlar.)
+
+### Codex — 2026-11-22
+- **Marka varlıkları:** Brolis Game Translate için konuşma balonu + oyun kumandası/çeviri simgeli logo hazırlandı. Kaynaklar `brand/` altında: SVG, PNG, çok boyutlu ICO ve banner (SVG/PNG). TV uygulamasında launcher ikonu ve Android TV banner'ı `app/src/main/res/drawable-nodpi/` kaynaklarından uygulanıyor.
+- **Android TV (`app/`):** paket adı `com.trtv` korundu. Ana ekran ve Ayarlar ekranı başlıkları/yayınlanan uygulama etiketi Brolis Game Translate oldu. Ayarlar açıkken çeviri katmanı gizleniyor; ana ekran da yarı saydam tema ile HDMI oyun görüntüsü üzerinde açılıyor ve oyun altyazısı UI'si menüyle çakışmıyor. Bildirim/bağlantı banner'ları yeni adı kullanıyor.
+- **TV testi:** Build 18, Beko Google UHD TV'ye kuruldu. Gerçek ekranda ana ekranın opaklığı ve overlay çakışması fark edilip düzeltildi. Build 19 (`1.19`, run 19) `1b6e612` commit'iyle yayımlandı; Actions başarılı: https://github.com/batuhankartalbc-SD/trtv/actions/runs/44957262577. APK doğrudan GitHub Release asset API'sinden indirildi (normal indirme URL'si CDN önbelleğinden Build 18 döndürdü), mevcut kurulum üzerine kuruldu; `versionCode=19`, MainActivity açıldı, Geri oyuna döndü. Paket adı/izinler korunuyor.
+- **PC/EXE incelemesi:** `E:\TRCeviri` kopyasında marka adı/logo, pencere ve kenar çubuğu simgesi, form alanı aralıkları düzenlendi; yeniden paketlenmiş EXE açılıp görsel olarak kontrol edildi. `pytest -q`: **16 passed**. PyInstaller `BrolisGameTranslate.spec` temiz derlemesi başarılı; yerel çıktı `E:\TRCeviri\dist\BrolisGameTranslate\BrolisGameTranslate.exe` (onedir, `_internal` klasörü gerekir).
+- **Önemli kaynak sınırı:** bu makinedeki ortak devir notuna göre tek doğru PC kaynağı `E:\trtv\trceviri`; `E:\TRCeviri` eski/ayrı kopyadır. Claude `trceviri/` ve canlı kurulumun sahibidir. Yukarıdaki Windows EXE yalnızca bu eski kopyadan üretilmiştir; canlı PC uygulamasının yayımlandığı veya güncellendiği anlamına gelmez. Logo kaynakları `brand/`'a eklendi; Claude'dan bunları gerçek `trceviri/` kaynağına uygulayıp kendi `release.ps1` akışında test etmesi bekleniyor. Eski kopyadaki kodu ana PC kaynağına otomatik kopyalamayın.
+- **Doğrulanmayanlar:** TV'de HDMI koruması nedeniyle `screencap` boş döndü; Build 19 Ayarlar ekranı gerçek kumandayla görsel olarak doğrulanmadı (Build 18'de kumanda akışı çalışıyordu). Ayarlar ekranı `exported=false`; ADB ile doğrudan açılamaz. PC'de canlı çeviri başlatılmadı, TV bağlantısı kesilmedi.
+- **Protokol:** bu Codex değişiklikleri yeni TCP mesajı eklemedi; var olan `style`, `items`, `visible`, `ping`, `cal`, `set` protokolü değişmedi.
