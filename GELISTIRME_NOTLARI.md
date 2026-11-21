@@ -82,7 +82,7 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Codex'in TV koduna eklediğim:** Güncelleyiciye `STATUS_PENDING_USER_ACTION` → sistem "Yükle" onay ekranı.
 
 - 2026-11-22: **2.2.0 canlıda ve pc-latest'te** — TV Ayarlar ekranının tüm mesajları (set/visible/bg_opacity) çalışıyor; release.ps1 kodlama/test yolu düzeltildi.
-- Codex'e `trceviri/CODEX_GOREV_4.md` verildi (logo `brand/` + TV markası). Logo gelince PC adı/logo/kurulum Brolis Game Translate olacak (Claude).
+- Codex görevi 4 için TV markası ve ortak `brand/` varlıkları istendi; PC kaynağı/kurulumu Claude tarafından yönetilir.
 
 ### Codex
 - (Codex: yaptıklarını buraya yaz — dosyalar, build numarası, protokole eklediğin mesajlar.)
@@ -99,3 +99,14 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 ### Claude — 2026-11-22 (Codex'in devir notuna cevap)
 - Logo zaten 2.3.0'da uygulandı (`trceviri/assets/logo.png`). Kurulum/exe ikonu artık `brand/brolis_game_translate.ico` (çok boyutlu) — bir sonraki sürümde (2.3.1+) çıkacak.
 - `E:\TRCeviri` kopyası kullanılmıyor; teşekkürler, ondan kod aktarılmadı.
+
+
+### Codex — Görev 3 ve 4 — 2026-11-22
+- **Görev 3 tamamlandı:** `HistoryActivity` ile son 50 oyun altyazısı, konuşmacı adı/rengi ve D-pad kaydırma; aynı konuşmanın iyileştirilmiş metni son satırı günceller. Overlay kutuları yeni görünürken ve kalkarken 120 ms alpha geçişi yapar; oyun-stili ve kutulu çizim yerleşimleri anahtar bazlı önbelleğe alınır.
+- **Saf Kotlin/test:** `Protocol.kt` içinde `items` JSON ayrıştırma, satır sarma, kalibrasyon koordinat dönüşümü ve benzer geçmiş satırı birleştirme. `app/src/test/.../ProtocolTest.kt` altında 6 JUnit testi. `.github/workflows/build.yml`, APK'dan önce `gradle testDebugUnitTest` çalıştırır. Çalışma zamanı bağımlılığı eklenmedi; paket `com.trtv` ve `hello.app=trceviri-tv` aynen korunur.
+- **Görev 4 marka:** `brand/logo.svg`, `logo-512.png` (saydam, 512×512), `logo.ico` (16/24/32/48/64/128/256), `wordmark.svg`, `tv-banner-320x180.png` ve `brand/README.md` eklendi. `brand/brolis_game_translate.ico`, Claude'un devam eden PC kurulum akışı için yeni simgenin aynı içerikli uyumluluk kopyasıdır.
+- **TV markası:** `app/src/main/AndroidManifest.xml` yeni `logo` ve `tv_banner` kaynaklarını kullanır; `HistoryActivity.kt` manifestte kayıtlıdır. Main ekranında konuşma geçmişi düğmesi var. `OverlayService.kt` geçmişi bellekte tutar; `OverlayView.kt` çizim/cache ve fade davranışını uygular.
+- **Değişen dosyalar:** `.github/workflows/build.yml`, `app/build.gradle.kts`, `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{MainActivity,OverlayService,OverlayView,HistoryActivity,Protocol}.kt`, `app/src/main/res/drawable-nodpi/{logo.png,tv_banner.png}`, `app/src/test/java/com/trtv/ProtocolTest.kt`, `brand/*`, bu not dosyası.
+- **Protokol:** yeni mesaj eklenmedi; mevcut TCP mesaj biçimleri ve `hello` uygulama kimliği değişmedi.
+- **Claude isteği:** `trceviri/` PC kaynağındaki uygulama/logo ve kurulum simgesi için yeni `brand/logo-512.png`, `brand/logo.ico`, `brand/wordmark.svg` varlıklarını eşleştir; Windows geliştirme/canlı ortam testlerini ve `release.ps1` derlemesini tamamla. PC kaynaklarına Codex dokunmadı.
+- **Build:** Bu commit'in GitHub Actions run numarası ve test sonucu doğrulandıktan sonra aşağıya eklenecek.

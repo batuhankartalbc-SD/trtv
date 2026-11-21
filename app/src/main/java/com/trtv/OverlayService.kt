@@ -56,10 +56,12 @@ class OverlayService : Service() {
         @Volatile private var activeService: OverlayService? = null
         const val UPDATE_ACTION = "com.trtv.UPDATE_AVAILABLE"
         const val SETTINGS_ACTION = "com.trtv.SETTINGS_CHANGED"
+        private const val HISTORY_LIMIT = 50
 
         /** Hizalama kumandası ve diğer uygulama mesajları için güvenli TCP gönderimi. */
         fun sendToPc(o: JSONObject): Boolean = activeService?.sendToClient(o) ?: false
         fun currentSettings(): TvSettings = activeService?.settingsSnapshot() ?: TvSettings()
+        fun historySnapshot(): List<HistoryEntry> = activeService?.historySnapshotInternal() ?: emptyList()
         fun isComputerConnected(): Boolean = activeService?.isPcConnected() ?: false
         fun changeSetting(key: String, value: Any): Boolean = activeService?.sendSettingToPc(key, value) ?: false
         fun setDisconnectWarning(enabled: Boolean) { activeService?.setConnectionWarningEnabled(enabled) }
@@ -78,6 +80,8 @@ class OverlayService : Service() {
     private var server: ServerSocket? = null
     @Volatile private var client: Socket? = null
     private val writerLock = Any()
+    private val historyLock = Any()
+    private val history = ArrayList<HistoryEntry>()
     @Volatile private var clientWriter: BufferedWriter? = null
     private val updates = Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "trtv-updates").apply { isDaemon = true } }
     @Volatile private var settings = TvSettings()
@@ -89,6 +93,17 @@ class OverlayService : Service() {
 
     fun settingsSnapshot(): TvSettings = settings
     fun isPcConnected(): Boolean = connected
+
+    private fun historySnapshotInternal(): List<HistoryEntry> = synchronized(historyLock) { history.toList() }
+
+    private fun recordHistory(items: List<OverlayItem>) = synchronized(historyLock) {
+        items.asSequence().filter { it.kind == "subtitle" && it.tr.isNotBlank() }
+            .forEach { history.clearAndCopy(addHistoryEntry(history, HistoryEntry(it.speaker, it.tr, it.sc), HISTORY_LIMIT)) }
+    }
+
+    private fun ArrayList<HistoryEntry>.clearAndCopy(next: List<HistoryEntry>) {
+        clear(); addAll(next)
+    }
 
     fun sendSettingToPc(key: String, value: Any): Boolean {
         settings = applySetting(settings, key, value)
@@ -326,6 +341,7 @@ class OverlayService : Service() {
                     "items" -> {
                         val z = o.optString("z", "auto")
                         val items = OverlayView.parseItems(o.optJSONArray("items"))
+                        recordHistory(items)
                         main.post { view?.setItems(z, items) }
                     }
                     "clear" -> main.post { view?.clearAll() }

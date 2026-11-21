@@ -13,8 +13,8 @@
 
     <application
         android:label="Brolis Game Translate"
-        android:banner="@drawable/banner_brolis_game_translate"
-        android:icon="@drawable/ic_brolis_game_translate"
+        android:banner="@drawable/tv_banner"
+        android:icon="@drawable/logo"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
@@ -32,6 +32,10 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity
             android:name=".SettingsActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+        <activity
+            android:name=".HistoryActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <service

@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.os.SystemClock
 import android.view.View
 import org.json.JSONArray
 import org.json.JSONObject
@@ -17,12 +18,9 @@ import kotlin.math.min
  * "match" (oyun stili): Türkçe, İngilizcenin tam yerine, oyunun yazı rengi ve konturuyla çizilir;
  * İngilizceyi örten zemin oyundan ölçülen renkte ve yumuşak kenarlıdır.
  */
-class OverlayView(ctx: Context) : View(ctx) {
+typealias ViewItem = OverlayItem
 
-    data class Item(
-        val b: FloatArray, val lh: Float, val speaker: String, val tr: String, val kind: String,
-        val lines: Int, val fg: Int?, val bg: Int?, val sc: Int?, val align: String
-    )
+class OverlayView(ctx: Context) : View(ctx) {
 
     companion object {
         private fun color(o: JSONObject, k: String): Int? {
@@ -31,22 +29,39 @@ class OverlayView(ctx: Context) : View(ctx) {
             return try { Color.parseColor(s) } catch (_: Exception) { null }
         }
 
-        fun parseItems(a: JSONArray?): List<Item> {
-            if (a == null) return emptyList()
-            val out = ArrayList<Item>(a.length())
-            for (i in 0 until a.length()) {
-                val o = a.getJSONObject(i)
-                val b = o.getJSONArray("b")
-                out.add(Item(
-                    floatArrayOf(b.getDouble(0).toFloat(), b.getDouble(1).toFloat(), b.getDouble(2).toFloat(), b.getDouble(3).toFloat()),
-                    o.optDouble("lh", 0.03).toFloat(), o.optString("s", ""), o.optString("tr", ""), o.optString("k", "text"),
-                    o.optInt("n", 1), color(o, "fg"), color(o, "bg"), color(o, "sc"), o.optString("a", "c")))
-            }
-            return out
-        }
+        fun parseItems(a: JSONArray?): List<ViewItem> = parseItemsJson(a?.toString())
     }
 
-    private val zones = LinkedHashMap<String, List<Item>>()
+    private data class AnimatedItem(
+        var item: ViewItem,
+        val id: String,
+        val startedAt: Long,
+        var removedAt: Long? = null
+    )
+    private data class MatchLayout(
+        val lines: List<String>, val widths: List<Float>, val size: Float, val lineHeight: Float,
+        val lineWidth: Float, val totalHeight: Float, val textX: Float, val textY: Float,
+        val pad: Float, val cover: RectF, val prefixWidth: Float
+    )
+    private data class BoxLayout(
+        val cover: RectF, val lines: List<String>, val widths: List<Float>, val size: Float,
+        val lineHeight: Float, val pad: Float, val prefixWidth: Float
+    )
+    private val zones = LinkedHashMap<String, MutableList<AnimatedItem>>()
+    private val layoutCache = HashMap<String, MatchLayout>()
+    private val boxLayoutCache = HashMap<String, BoxLayout>()
+    private var animationScheduled = false
+    private val animationTick = object : Runnable {
+        override fun run() {
+            animationScheduled = false
+            val now = SystemClock.uptimeMillis()
+            zones.values.forEach { entries -> entries.removeAll { it.removedAt?.let { t -> now - t >= 120L } == true } }
+            if (zones.values.flatten().any { it.removedAt != null || now - it.startedAt < 120L }) {
+                animationScheduled = true
+                postDelayed(this, 16L)
+            } else invalidate()
+        }
+    }
     private var boxColor = Color.BLACK
     private var boxAlpha = 255
     private var backgroundAlpha = 255
@@ -73,12 +88,41 @@ class OverlayView(ctx: Context) : View(ctx) {
 
     init { setWillNotDraw(false); setLayerType(LAYER_TYPE_HARDWARE, null) }
 
-    fun setItems(zone: String, items: List<Item>) {
-        if (items.isEmpty()) zones.remove(zone) else zones[zone] = items
-        invalidate()
+    fun setItems(zone: String, items: List<ViewItem>) {
+        val now = SystemClock.uptimeMillis()
+        val entries = zones.getOrPut(zone) { ArrayList() }
+        val current = entries.filter { it.removedAt == null }.associateBy { it.id }
+        val incomingIds = HashSet<String>()
+        var geometryChanged = false
+        for (item in items) {
+            val id = itemIdentity(item)
+            incomingIds.add(id)
+            val old = current[id]
+            if (old != null) {
+                if (old.item != item) geometryChanged = true
+                old.item = item // Aynı kutudaki iyileştirilmiş metin anında değişir.
+            } else { entries.add(AnimatedItem(item, id, now)); geometryChanged = true }
+        }
+        current.filterKeys { it !in incomingIds }.values.forEach { it.removedAt = now; geometryChanged = true }
+        if (geometryChanged && layoutCache.size > 300) { layoutCache.clear(); boxLayoutCache.clear() }
+        animateUntilSettled()
     }
 
-    fun clearAll() { zones.clear(); invalidate() }
+    fun clearAll() {
+        val now = SystemClock.uptimeMillis()
+        zones.values.flatten().filter { it.removedAt == null }.forEach { it.removedAt = now }
+        animateUntilSettled()
+    }
+
+    private fun itemIdentity(item: ViewItem) = "${item.kind}|${item.speaker}|${item.b.joinToString(",") { "%.4f".format(java.util.Locale.US, it) }}"
+
+    private fun animateUntilSettled() {
+        postInvalidateOnAnimation()
+        if (!animationScheduled) {
+            animationScheduled = true
+            postDelayed(animationTick, 16L)
+        }
+    }
 
     fun setShown(v: Boolean) { shown = v; invalidate() }
     fun setConnectionWarning(v: Boolean) { connectionWarning = v; invalidate() }
@@ -103,6 +147,8 @@ class OverlayView(ctx: Context) : View(ctx) {
         sx = o.optDouble("sx", 1.0).toFloat(); sy = o.optDouble("sy", 1.0).toFloat()
         calib = o.optBoolean("calib", false)
         bgMode = o.optString("bgm", "black")
+        layoutCache.clear()
+        boxLayoutCache.clear()
         invalidate()
     }
 
@@ -113,20 +159,9 @@ class OverlayView(ctx: Context) : View(ctx) {
         postDelayed({ if (generation == bannerGeneration) { bannerText = null; invalidate() } }, durationMs)
     }
 
-    private fun wrap(text: String, p: Paint, width: Float): List<String> {
-        val out = ArrayList<String>()
-        var cur = ""
-        for (w in text.split(' ').filter { it.isNotEmpty() }) {
-            val t = if (cur.isEmpty()) w else "$cur $w"
-            if (p.measureText(t) <= width || cur.isEmpty()) cur = t else { out.add(cur); cur = w }
-        }
-        if (cur.isNotEmpty()) out.add(cur)
-        return if (out.isEmpty()) listOf("") else out
-    }
-
     // kalibrasyon: oyun koordinatı (0–1) → ekran pikseli
-    private fun mx(v: Float, W: Float) = ((v - 0.5f) * sx + 0.5f + dx) * W
-    private fun my(v: Float, H: Float) = ((v - 0.5f) * sy + 0.5f + dy) * H
+    private fun mx(v: Float, W: Float) = mapX(v, sx, dx, W)
+    private fun my(v: Float, H: Float) = mapY(v, sy, dy, H)
 
     override fun onDraw(c: Canvas) {
         if (uiSuppressed) return
@@ -135,8 +170,14 @@ class OverlayView(ctx: Context) : View(ctx) {
         if (connectionWarning) drawConnectionWarning(c, W, H)
         if (calib) { drawCalib(c, W, H); return }
         if (!shown) return
-        for (items in zones.values) for (it in items) {
-            if (mode == "match") drawMatch(c, it, W, H) else drawBox(c, it, W, H)
+        val now = SystemClock.uptimeMillis()
+        for (items in zones.values) for (animated in items) {
+            val alpha = animated.removedAt?.let { (255f * (1f - (now - it) / 120f)).toInt() }
+                ?: (255f * ((now - animated.startedAt) / 120f).coerceIn(0f, 1f)).toInt()
+            if (alpha <= 0) continue
+            val layer = c.saveLayerAlpha(null, alpha.coerceIn(0, 255))
+            if (mode == "match") drawMatch(c, animated.item, W, H) else drawBox(c, animated.item, W, H)
+            c.restoreToCount(layer)
         }
     }
 
@@ -185,38 +226,15 @@ class OverlayView(ctx: Context) : View(ctx) {
     }
 
     /** Birebir stil: İngilizceyle aynı boyut (her yazı kendi boyutunda), aynı yer; zemin varsayılan simsiyah. */
-    private fun drawMatch(c: Canvas, it: Item, W: Float, H: Float) {
+    private fun drawMatch(c: Canvas, it: ViewItem, W: Float, H: Float) {
         if (it.tr.isEmpty()) return
-        val x0 = mx(it.b[0], W); val y0 = my(it.b[1], H); val x1 = mx(it.b[2], W); val y1 = my(it.b[3], H)
-        val ow = max(8f, x1 - x0)
-        val lh = max(8f, it.lh * H * sy)
-        val base = max(10f, lh * 0.78f * fontScale)
-        val text = if (it.speaker.isNotEmpty()) "${it.speaker}: ${it.tr}" else it.tr
-        val nl = max(1, it.lines)
-        val isSub = it.kind == "subtitle" || it.kind == "objective"
-        var size = base
-        var lines: List<String>
-        while (true) {
-            fill.textSize = size
-            lines = wrap(text, fill, ow * 1.06f)
-            if (lines.size <= nl || size <= base * 0.82f) break
-            size *= 0.96f
-        }
-        if (lines.size > nl) {
-            lines = when {
-                isSub -> wrap(text, fill, max(ow, W * 0.82f))
-                it.align == "l" -> wrap(text, fill, max(ow, min(W - x0 - 8, ow * 1.6f)))
-                else -> wrap(text, fill, max(ow, ow * 1.5f))
-            }
-        }
-        val lineH = fill.fontSpacing
-        val lw = lines.maxOf { fill.measureText(it) }
-        val th = lines.size * lineH
-        var tx0 = if (it.align == "l") x0 else (x0 + x1) / 2 - lw / 2
-        tx0 = max(4f, min(tx0, W - lw - 4))
-        val ty0 = if (isSub && lines.size > nl) y1 - th else (y0 + y1) / 2 - th / 2
-        val pad = max(2f, lh * 0.16f)
-        val cover = RectF(min(x0, tx0) - pad, min(y0, ty0) - pad, max(x1, tx0 + lw) + pad, max(y1, ty0 + th) + pad)
+        val layout = matchLayout(it, W, H)
+        val lines = layout.lines
+        val size = layout.size
+        fill.textSize = size
+        val lineH = layout.lineHeight
+        val cover = layout.cover
+        val pad = layout.pad
         if (bgMode == "game" && it.bg != null) {
             val b = it.bg
             for ((grow, alpha) in listOf(pad * 1.6f to 50, pad * 0.9f to 120, 0f to 255)) {
@@ -236,14 +254,14 @@ class OverlayView(ctx: Context) : View(ctx) {
         stroke.textSize = size
         stroke.strokeWidth = max(1.5f, size / 14f)
         val fm = fill.fontMetrics
-        var y = ty0 - fm.ascent
+        var y = layout.textY - fm.ascent
         val prefix = if (it.speaker.isNotEmpty()) "${it.speaker}:" else ""
         for ((i, line) in lines.withIndex()) {
-            val w = fill.measureText(line)
-            val x = if (it.align == "l") tx0 else tx0 + (lw - w) / 2
+            val w = layout.widths[i]
+            val x = if (it.align == "l") layout.textX else layout.textX + (layout.lineWidth - w) / 2
             if (i == 0 && prefix.isNotEmpty() && line.startsWith(prefix)) {
                 drawText(c, prefix, x, y, spk)
-                drawText(c, line.substring(prefix.length), x + fill.measureText(prefix), y, fg)
+                drawText(c, line.substring(prefix.length), x + layout.prefixWidth, y, fg)
             } else {
                 drawText(c, line, x, y, fg)
             }
@@ -251,37 +269,59 @@ class OverlayView(ctx: Context) : View(ctx) {
         }
     }
 
-    private fun lum(c: Int) = (0.299 * Color.red(c) + 0.587 * Color.green(c) + 0.114 * Color.blue(c)).toInt()
-    private fun drawBox(c: Canvas, it: Item, W: Float, H: Float) {
-        if (it.tr.isEmpty()) return
+    private fun matchLayout(it: ViewItem, W: Float, H: Float): MatchLayout {
+        val key = listOf(it.b.joinToString(","), it.lh, it.speaker, it.tr, it.kind, it.lines, it.align,
+            W, H, fontScale, dx, dy, sx, sy).joinToString("|")
+        layoutCache[key]?.let { return it }
         val x0 = mx(it.b[0], W); val y0 = my(it.b[1], H); val x1 = mx(it.b[2], W); val y1 = my(it.b[3], H)
-        val pad = max(6f, it.lh * H * 0.3f)
-        val cover = RectF(x0 - pad, y0 - pad, x1 + pad, y1 + pad)
-        val isSub = it.kind == "subtitle" || it.kind == "objective"
-        if (isSub) {
-            val lo = W * 0.06f; val hi = W * 0.94f
-            val aw = max(cover.width(), min(hi - lo, cover.width() * 1.35f))
-            val left = max(lo, min(cover.centerX() - aw / 2, hi - aw))
-            cover.left = left; cover.right = left + aw
-        } else {
-            cover.right = min(W, cover.left + cover.width() * 1.25f)
-        }
+        val ow = max(8f, x1 - x0)
+        val lh = max(8f, it.lh * H * sy)
+        val base = max(10f, lh * 0.78f * fontScale)
         val text = if (it.speaker.isNotEmpty()) "${it.speaker}: ${it.tr}" else it.tr
-        var size = max(16f, it.lh * H * 0.92f * fontScale)
-        val innerW = cover.width() - 2 * pad
+        val nl = max(1, it.lines)
+        val isSub = it.kind == "subtitle" || it.kind == "objective"
+        var size = base
         var lines: List<String>
-        var lineH: Float
         while (true) {
             fill.textSize = size
-            lines = wrap(text, fill, innerW)
-            lineH = fill.fontSpacing
-            if (lines.size * lineH <= (cover.height() - 2 * pad) * 1.15f || size <= 16f) break
-            size -= 1f
+            lines = wrapText(text, fill::measureText, ow * 1.06f)
+            if (lines.size <= nl || size <= base * 0.82f) break
+            size *= 0.96f
         }
-        val need = lines.size * lineH + 2 * pad
-        if (need > cover.height()) {
-            if (it.kind == "subtitle") cover.top = cover.bottom - need else cover.bottom = cover.top + need
+        if (lines.size > nl) {
+            fill.textSize = size
+            lines = when {
+                isSub -> wrapText(text, fill::measureText, max(ow, W * 0.82f))
+                it.align == "l" -> wrapText(text, fill::measureText, max(ow, min(W - x0 - 8, ow * 1.6f)))
+                else -> wrapText(text, fill::measureText, max(ow, ow * 1.5f))
+            }
         }
+        fill.textSize = size
+        val widths = lines.map(fill::measureText)
+        val lineH = fill.fontSpacing
+        val lw = widths.maxOrNull() ?: 0f
+        val th = lines.size * lineH
+        var tx0 = if (it.align == "l") x0 else (x0 + x1) / 2 - lw / 2
+        tx0 = max(4f, min(tx0, W - lw - 4))
+        val ty0 = if (isSub && lines.size > nl) y1 - th else (y0 + y1) / 2 - th / 2
+        val pad = max(2f, lh * 0.16f)
+        val cover = RectF(min(x0, tx0) - pad, min(y0, ty0) - pad, max(x1, tx0 + lw) + pad, max(y1, ty0 + th) + pad)
+        val prefix = if (it.speaker.isNotEmpty()) "${it.speaker}:" else ""
+        val cached = MatchLayout(lines, widths, size, lineH, lw, th, tx0, ty0, pad, cover, fill.measureText(prefix))
+        layoutCache[key] = cached
+        return cached
+    }
+
+    private fun lum(c: Int) = (0.299 * Color.red(c) + 0.587 * Color.green(c) + 0.114 * Color.blue(c)).toInt()
+    private fun drawBox(c: Canvas, it: ViewItem, W: Float, H: Float) {
+        if (it.tr.isEmpty()) return
+        val layout = boxLayout(it, W, H)
+        val cover = layout.cover
+        val pad = layout.pad
+        val lines = layout.lines
+        val lineH = layout.lineHeight
+        val size = layout.size
+        fill.textSize = size
         val backgroundColor = if (bgMode == "black" || bgMode == "semi") Color.BLACK else boxColor
         bg.color = Color.argb(if (bgMode == "none") 0 else boxAlpha, Color.red(backgroundColor), Color.green(backgroundColor), Color.blue(backgroundColor))
         c.drawRoundRect(cover, 8f, 8f, bg)
@@ -291,16 +331,52 @@ class OverlayView(ctx: Context) : View(ctx) {
         var y = cover.top + (cover.height() - lines.size * lineH) / 2 - fm.ascent
         val prefix = if (it.speaker.isNotEmpty()) "${it.speaker}:" else ""
         for ((i, line) in lines.withIndex()) {
-            val lw = fill.measureText(line)
+            val lw = layout.widths[i]
             val x = cover.left + (cover.width() - lw) / 2
             if (i == 0 && prefix.isNotEmpty() && line.startsWith(prefix)) {
                 drawText(c, prefix, x, y, speakerColor)
-                drawText(c, line.substring(prefix.length), x + fill.measureText(prefix), y, textColor)
+                drawText(c, line.substring(prefix.length), x + layout.prefixWidth, y, textColor)
             } else {
                 drawText(c, line, x, y, textColor)
             }
             y += lineH
         }
+    }
+
+    private fun boxLayout(it: ViewItem, W: Float, H: Float): BoxLayout {
+        val key = listOf(it.b.joinToString(","), it.lh, it.speaker, it.tr, it.kind, it.lines, it.align,
+            W, H, fontScale, dx, dy, sx, sy).joinToString("|")
+        boxLayoutCache[key]?.let { return it }
+        val x0 = mx(it.b[0], W); val y0 = my(it.b[1], H); val x1 = mx(it.b[2], W); val y1 = my(it.b[3], H)
+        val pad = max(6f, it.lh * H * 0.3f)
+        val cover = RectF(x0 - pad, y0 - pad, x1 + pad, y1 + pad)
+        if (it.kind == "subtitle" || it.kind == "objective") {
+            val lo = W * 0.06f; val hi = W * 0.94f
+            val aw = max(cover.width(), min(hi - lo, cover.width() * 1.35f))
+            val left = max(lo, min(cover.centerX() - aw / 2, hi - aw))
+            cover.left = left; cover.right = left + aw
+        } else cover.right = min(W, cover.left + cover.width() * 1.25f)
+        val text = if (it.speaker.isNotEmpty()) "${it.speaker}: ${it.tr}" else it.tr
+        var size = max(16f, it.lh * H * 0.92f * fontScale)
+        val innerW = cover.width() - 2 * pad
+        var lines: List<String>
+        var lineH: Float
+        while (true) {
+            fill.textSize = size
+            lines = wrapText(text, fill::measureText, innerW)
+            lineH = fill.fontSpacing
+            if (lines.size * lineH <= (cover.height() - 2 * pad) * 1.15f || size <= 16f) break
+            size -= 1f
+        }
+        val need = lines.size * lineH + 2 * pad
+        if (need > cover.height()) {
+            if (it.kind == "subtitle") cover.top = cover.bottom - need else cover.bottom = cover.top + need
+        }
+        fill.textSize = size
+        val prefix = if (it.speaker.isNotEmpty()) "${it.speaker}:" else ""
+        val result = BoxLayout(cover, lines, lines.map(fill::measureText), size, lineH, pad, fill.measureText(prefix))
+        boxLayoutCache[key] = result
+        return result
     }
 
     private fun drawText(c: Canvas, t: String, x: Float, y: Float, color: Int) {

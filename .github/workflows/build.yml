@@ -15,6 +15,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with: { gradle-version: "8.14.3" }
       - run: keytool -list -keystore debug.p12 -storepass android
+      - run: gradle testDebugUnitTest --no-daemon
       - run: gradle assembleDebug --no-daemon
       - run: cp app/build/outputs/apk/debug/app-debug.apk a.apk
       - env: { GH_TOKEN: "${{ github.token }}" }

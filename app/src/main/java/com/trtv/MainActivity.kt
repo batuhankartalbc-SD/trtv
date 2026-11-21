@@ -71,6 +71,10 @@ class MainActivity : Activity() {
             text = "Ayarlar"; textSize = 20f
             setOnClickListener { rootView.visibility = android.view.View.INVISIBLE; startActivity(Intent(this@MainActivity, SettingsActivity::class.java)) }
         }, buttonParams())
+        rootView.addView(Button(this).apply {
+            text = "Konuşma geçmişi"; textSize = 20f
+            setOnClickListener { rootView.visibility = android.view.View.INVISIBLE; startActivity(Intent(this@MainActivity, HistoryActivity::class.java)) }
+        }, buttonParams())
         updateButton = Button(this).apply {
             textSize = 20f; visibility = android.view.View.GONE
             setOnClickListener { updateApp() }
