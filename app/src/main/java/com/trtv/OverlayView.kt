@@ -214,7 +214,7 @@ class OverlayView(ctx: Context) : View(ctx) {
         c.drawLine(W / 2, 0f, W / 2, H, thin); c.drawLine(0f, H / 2, W, H / 2, thin)
         c.drawRect(mx(0f, W), my(0f, H), mx(1f, W), my(1f, H), thin)   // oyun görüntüsünün sınırı (kalibre)
         for (items in zones.values) for (it in items) {
-            c.drawRect(mx(it.b[0], W) - 3, my(it.b[1], H) - 3, mx(it.b[2], W) + 3, my(it.b[3], H) + 3, line)
+            c.drawRect(mx(it.item.b[0], W) - 3, my(it.item.b[1], H) - 3, mx(it.item.b[2], W) + 3, my(it.item.b[3], H) + 3, line)
         }
         val t = String.format("HİZALAMA  kaydırma X %.1f%%  Y %.1f%%   ölçek %.1f%% × %.1f%%   (Ctrl+Alt+oklar / PgUp-PgDn / Home-End)",
             dx * 100, dy * 100, sx * 100, sy * 100)
