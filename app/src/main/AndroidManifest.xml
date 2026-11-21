@@ -12,9 +12,9 @@
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
     <application
-        android:label="TRÇeviri TV"
-        android:banner="@drawable/banner"
-        android:icon="@drawable/banner"
+        android:label="Brolis Game Translate"
+        android:banner="@drawable/banner_brolis_game_translate"
+        android:icon="@drawable/ic_brolis_game_translate"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"

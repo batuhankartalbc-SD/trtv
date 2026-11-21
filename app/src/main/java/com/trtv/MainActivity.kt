@@ -27,6 +27,7 @@ import java.net.URL
 
 /** Durum ekranı. Servisi başlatır; "Oyuna dön" ile kapanır. */
 class MainActivity : Activity() {
+    private lateinit var rootView: LinearLayout
     private lateinit var info: TextView
     private lateinit var updateButton: Button
     private lateinit var calibrateButton: Button
@@ -43,38 +44,41 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val root = LinearLayout(this).apply {
+        rootView = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setBackgroundColor(Color.rgb(13, 17, 16))
+            setBackgroundColor(Color.TRANSPARENT)
             setPadding(80, 44, 80, 44)
         }
-        root.addView(TextView(this).apply {
-            text = "TRÇeviri TV"; textSize = 40f; setTextColor(Color.rgb(61, 220, 151)); typeface = Typeface.DEFAULT_BOLD
+        rootView.addView(TextView(this).apply {
+            text = "Brolis Game Translate"; textSize = 40f; setTextColor(Color.rgb(61, 220, 151)); typeface = Typeface.DEFAULT_BOLD
         })
-        root.addView(TextView(this).apply {
+        rootView.addView(TextView(this).apply {
             text = "Bilgisayardaki TRÇeviri'nin çevirilerini oyun görüntüsünün üstünde gösterir."
-            textSize = 18f; setTextColor(Color.rgb(190, 200, 196)); setPadding(0, 10, 0, 20)
+            textSize = 18f; setTextColor(Color.rgb(225, 232, 230)); setPadding(18, 12, 18, 20)
+            setBackgroundColor(Color.argb(170, 13, 17, 16))
         })
         info = TextView(this).apply { textSize = 21f; setTextColor(Color.WHITE); setLineSpacing(8f, 1f) }
-        root.addView(info)
+        info.setPadding(18, 14, 18, 14)
+        info.setBackgroundColor(Color.argb(185, 13, 17, 16))
+        rootView.addView(info)
         calibrateButton = Button(this).apply {
             text = "Kumandayla hizala"; textSize = 20f
-            setOnClickListener { startActivity(Intent(this@MainActivity, CalibrateActivity::class.java)) }
+            setOnClickListener { rootView.visibility = android.view.View.INVISIBLE; startActivity(Intent(this@MainActivity, CalibrateActivity::class.java)) }
         }
-        root.addView(calibrateButton, buttonParams())
-        root.addView(Button(this).apply {
+        rootView.addView(calibrateButton, buttonParams())
+        rootView.addView(Button(this).apply {
             text = "Ayarlar"; textSize = 20f
-            setOnClickListener { startActivity(Intent(this@MainActivity, SettingsActivity::class.java)) }
+            setOnClickListener { rootView.visibility = android.view.View.INVISIBLE; startActivity(Intent(this@MainActivity, SettingsActivity::class.java)) }
         }, buttonParams())
         updateButton = Button(this).apply {
             textSize = 20f; visibility = android.view.View.GONE
             setOnClickListener { updateApp() }
         }
-        root.addView(updateButton, buttonParams())
+        rootView.addView(updateButton, buttonParams())
         val back = Button(this).apply { text = "Oyuna dön"; textSize = 20f; setOnClickListener { finish() } }
-        root.addView(back, buttonParams())
-        setContentView(root)
+        rootView.addView(back, buttonParams())
+        setContentView(rootView)
         back.requestFocus()
         handleInstallResult(intent)
     }
@@ -83,6 +87,7 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        if (::rootView.isInitialized) rootView.visibility = android.view.View.VISIBLE
         if (Settings.canDrawOverlays(this)) OverlayService.start(this) else try {
             startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
         } catch (_: Exception) { }

@@ -63,6 +63,9 @@ class OverlayService : Service() {
         fun isComputerConnected(): Boolean = activeService?.isPcConnected() ?: false
         fun changeSetting(key: String, value: Any): Boolean = activeService?.sendSettingToPc(key, value) ?: false
         fun setDisconnectWarning(enabled: Boolean) { activeService?.setConnectionWarningEnabled(enabled) }
+        fun suppressOverlayUi(suppressed: Boolean) {
+            activeService?.let { service -> service.main.post { service.view?.setUiSuppressed(suppressed) } }
+        }
 
         fun start(ctx: Context) {
             val i = Intent(ctx, OverlayService::class.java)
@@ -202,7 +205,7 @@ class OverlayService : Service() {
             nm.createNotificationChannel(NotificationChannel("ceviri", "TRÇeviri", NotificationManager.IMPORTANCE_MIN))
         }
         val n: Notification = (if (Build.VERSION.SDK_INT >= 26) Notification.Builder(this, "ceviri") else Notification.Builder(this))
-            .setContentTitle("TRÇeviri TV")
+            .setContentTitle("Brolis Game Translate")
             .setContentText("Çeviri katmanı çalışıyor")
             .setSmallIcon(android.R.drawable.ic_menu_info_details)
             .setOngoing(true)
@@ -289,7 +292,7 @@ class OverlayService : Service() {
                 ?.takeIf { it.startsWith("https://") }
                 ?: "https://github.com/batuhankartalbc-SD/trtv/releases/download/latest/a.apk"
             getSharedPreferences("updates", MODE_PRIVATE).edit().putInt("build", build).putString("url", apkUrl).apply()
-            main.post { view?.banner("Güncelleme var — TRÇeviri TV'yi açıp Güncelle'ye basın", 6000L) }
+            main.post { view?.banner("Güncelleme var — Brolis Game Translate'i açıp Güncelle'ye basın", 6000L) }
             sendBroadcast(Intent(UPDATE_ACTION).setPackage(packageName).putExtra("build", build))
         } catch (e: Exception) { Log.i(TAG, "güncelleme denetimi atlandı: ${e.message}") }
         finally { c?.disconnect() }
@@ -318,7 +321,7 @@ class OverlayService : Service() {
                         if (old != null && old !== s) try { old.close() } catch (_: Exception) {}
                         val name = o.optString("name", "Bilgisayar")
                         status = "Bağlı: $name"
-                        main.post { connectionChanged(true); if (view == null) addOverlay(); view?.banner("TRÇeviri bağlandı ($name)") }
+                        main.post { connectionChanged(true); if (view == null) addOverlay(); view?.banner("Brolis Game Translate bağlandı ($name)") }
                     }
                     "items" -> {
                         val z = o.optString("z", "auto")

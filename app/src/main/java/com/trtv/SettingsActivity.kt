@@ -57,7 +57,7 @@ class SettingsActivity : Activity() {
             setBackgroundColor(Color.argb(235, 17, 23, 30))
         }
         val title = TextView(this).apply {
-            text = "Ayarlar"; textSize = 30f; typeface = Typeface.DEFAULT_BOLD
+            text = "Brolis Game Translate · Ayarlar"; textSize = 25f; typeface = Typeface.DEFAULT_BOLD
             setTextColor(Color.rgb(61, 220, 151)); setPadding(10, 4, 10, 18)
         }
         panel.addView(title)
@@ -77,13 +77,13 @@ class SettingsActivity : Activity() {
         rows.forEachIndexed { index, row ->
             val button = Button(this).apply {
                 tag = index
-                textSize = 19f
+                textSize = 16f
                 gravity = Gravity.CENTER_VERTICAL or Gravity.START
                 isAllCaps = false
                 setOnClickListener { activate(row.key) }
             }
             rowViews[row.key] = button
-            list.addView(button, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 62))
+            list.addView(button, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 74))
         }
         scroll.addView(list)
         panel.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
@@ -101,6 +101,16 @@ class SettingsActivity : Activity() {
             receiverRegistered = true
         }
         loadState(); renderRows(); renderConnection()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        OverlayService.suppressOverlayUi(true)
+    }
+
+    override fun onPause() {
+        OverlayService.suppressOverlayUi(false)
+        super.onPause()
     }
 
     override fun onStop() {

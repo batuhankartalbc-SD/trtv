@@ -62,6 +62,7 @@ class OverlayView(ctx: Context) : View(ctx) {
     private var bannerText: String? = null
     private var bannerGeneration = 0
     private var connectionWarning = false
+    private var uiSuppressed = false
     private val typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = this@OverlayView.typeface }
     private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -81,6 +82,7 @@ class OverlayView(ctx: Context) : View(ctx) {
 
     fun setShown(v: Boolean) { shown = v; invalidate() }
     fun setConnectionWarning(v: Boolean) { connectionWarning = v; invalidate() }
+    fun setUiSuppressed(v: Boolean) { uiSuppressed = v; invalidate() }
     fun setOverlayOpacity(alpha: Int) {
         backgroundAlpha = alpha.coerceIn(0, 255)
         if (mode != "text") boxAlpha = backgroundAlpha
@@ -127,6 +129,7 @@ class OverlayView(ctx: Context) : View(ctx) {
     private fun my(v: Float, H: Float) = ((v - 0.5f) * sy + 0.5f + dy) * H
 
     override fun onDraw(c: Canvas) {
+        if (uiSuppressed) return
         val W = width.toFloat(); val H = height.toFloat()
         bannerText?.let { drawBanner(c, it, W, H) }
         if (connectionWarning) drawConnectionWarning(c, W, H)
@@ -139,7 +142,7 @@ class OverlayView(ctx: Context) : View(ctx) {
 
     private fun drawConnectionWarning(c: Canvas, W: Float, H: Float) {
         fill.textSize = H * 0.02f
-        val label = "TRÇeviri: bilgisayar bağlı değil"
+        val label = "Brolis: bilgisayar bağlı değil"
         val dot = H * 0.008f
         val pad = H * 0.012f
         val width = fill.measureText(label) + dot * 2 + pad * 3
