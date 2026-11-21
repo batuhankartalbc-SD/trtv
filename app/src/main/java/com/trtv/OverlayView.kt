@@ -199,7 +199,7 @@ class OverlayView(ctx: Context) : View(ctx) {
             c.drawRoundRect(cover, pad * 0.8f, pad * 0.8f, bg)
         }
         var fg = if (matchColors && it.fg != null) it.fg else textColor
-        var spk = if (matchColors && it.sc != null) it.sc else speakerColor
+        var spk = it.sc ?: speakerColor   // PC konuşmacı rengini (ya da oyundan ölçüleni) gönderir
         if (bgMode != "game" && bgMode != "none") {     // koyu zeminde koyu yazı okunmaz → beyaz
             if (lum(fg) < 110) fg = textColor
             if (lum(spk) < 110) spk = speakerColor
