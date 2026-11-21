@@ -12,6 +12,28 @@ from .icons import icon, pixmap
 from .theme import ACCENT, BORDER, MUTED, TEXT
 
 
+LOGO_PNG = __import__("pathlib").Path(__file__).resolve().parent.parent / "assets" / "logo.png"
+
+
+def brand_icon():
+    from PySide6.QtGui import QIcon
+    return QIcon(str(LOGO_PNG)) if LOGO_PNG.exists() else icon("logo", ACCENT, 32)
+
+
+def brand_logo(size: int = 40) -> QLabel:
+    """Brolis Game Translate logosu (assets/logo.png)."""
+    from PySide6.QtGui import QPixmap
+    l = QLabel()
+    if LOGO_PNG.exists():
+        pm = QPixmap(str(LOGO_PNG)).scaled(size * 2, size * 2, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        pm.setDevicePixelRatio(2)
+        l.setPixmap(pm)
+    else:
+        l.setPixmap(pixmap("logo", ACCENT, size))
+    l.setFixedSize(size + 4, size + 4)
+    return l
+
+
 def ibtn(text: str, ic: str | None = None, obj: str | None = None, color: str = TEXT, size: int = 18) -> QPushButton:
     b = QPushButton(("  " + text) if (ic and text) else text)
     if ic:

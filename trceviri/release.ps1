@@ -23,7 +23,7 @@ Write-Host "2/4 .exe derleniyor (PyInstaller)"
   --collect-all rapidocr_onnxruntime --collect-binaries onnxruntime --collect-data onnxruntime --collect-all ctranslate2 `
   --collect-all winrt --collect-submodules winrt --hidden-import win32timezone --hidden-import win32com.client `
   --hidden-import sentencepiece --exclude-module onnxruntime.quantization --exclude-module onnxruntime.transformers `
-  --add-data "$B\profiles;profiles" --add-data "$B\NASIL KULLANILIR.txt;." --add-data "$B\TRCeviri-TV.apk;." `
+  --add-data "$B\profiles;profiles" --add-data "$B\assets;assets" --add-data "$B\NASIL KULLANILIR.txt;." --add-data "$B\TRCeviri-TV.apk;." `
   --distpath "$W\dist" --workpath "$W\work" --specpath "$W" "$B\trceviri\__main__.py" | Out-Null
 if (-not (Test-Path "$W\dist\TRCeviri\TRCeviri.exe")) { throw "PyInstaller başarısız" }
 
@@ -38,8 +38,8 @@ Write-Host "   $setup"
 if ($Publish) {
   Write-Host "4/4 GitHub'a yayınlanıyor (pc-latest)"
   gh release delete pc-latest -R batuhankartalbc-SD/trtv -y --cleanup-tag 2>$null
-  gh release create pc-latest $setup -R batuhankartalbc-SD/trtv -t "TRÇeviri $ver" `
-    -n "TRÇeviri $ver — bilgisayar uygulaması kurulumu. Çift tıklayıp kurun (yönetici izni gerekmez)."
+  gh release create pc-latest $setup -R batuhankartalbc-SD/trtv -t "Brolis Game Translate $ver" `
+    -n "Brolis Game Translate $ver — bilgisayar uygulaması kurulumu. Çift tıklayıp kurun (yönetici izni gerekmez)."
 }
 
 if ($Install) {

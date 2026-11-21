@@ -39,7 +39,7 @@ class AppContext:
         self.hotkeys.pressed.connect(self.on_hotkey)
         if self.hotkeys.failed:
             log.warning("Bu kısayollar başka bir program tarafından kullanılıyor: %s", ", ".join(self.hotkeys.failed))
-        log.info("TRÇeviri hazır. Profil: %s, motor: %s", self.profile.name, self.settings.engine)
+        log.info("Brolis Game Translate hazır. Profil: %s, motor: %s", self.profile.name, self.settings.engine)
 
     def set_profile(self, p: Profile) -> None:
         running = self.pipeline.running.is_set()
@@ -101,7 +101,7 @@ class AppContext:
         self.wizard.show()
 
     def setting_from_tv(self, key: str, value) -> None:
-        """TV kumandasından ayar değişikliği (TRÇeviri TV → Ayarlar). Sadece güvenli, bilinen ayarlar."""
+        """TV kumandasından ayar değişikliği (Brolis Game Translate (TV) → Ayarlar). Sadece güvenli, bilinen ayarlar."""
         s = self.settings
         try:
             if key == "font_scale":
@@ -178,7 +178,7 @@ class AppContext:
 def main() -> int:
     winutil.set_dpi_aware()
     qapp = QApplication(sys.argv)
-    qapp.setApplicationName("TRÇeviri")
+    qapp.setApplicationName("Brolis Game Translate")
     qapp.setStyle("Fusion")
     qapp.setStyleSheet(QSS)
     applog.setup()

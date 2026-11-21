@@ -8,12 +8,12 @@
 
 [Setup]
 AppId={{6C1F4E7A-2B8D-4E61-9A3F-7D2C5B8E9A10}
-AppName=TRÇeviri
+AppName=Brolis Game Translate
 AppVersion={#AppVer}
-AppVerName=TRÇeviri {#AppVer}
-AppPublisher=TRÇeviri
+AppVerName=Brolis Game Translate {#AppVer}
+AppPublisher=Brolis
 DefaultDirName={localappdata}\Programs\TRCeviri
-DefaultGroupName=TRÇeviri
+DefaultGroupName=Brolis Game Translate
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 OutputBaseFilename=TRCeviri-Kurulum
@@ -33,16 +33,22 @@ Name: "tr"; MessagesFile: "compiler:Languages\Turkish.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "Masaüstüne kısayol oluştur"; GroupDescription: "Kısayollar:"
-Name: "startup"; Description: "Windows açılınca TRÇeviri'yi başlat ve canlı çeviriyi aç"; GroupDescription: "Başlangıç:"; Flags: unchecked
+Name: "startup"; Description: "Windows açılınca Brolis Game Translate'i başlat ve canlı çeviriyi aç"; GroupDescription: "Başlangıç:"; Flags: unchecked
+
+[InstallDelete]
+; eski adla oluşturulmuş kısayolları kaldır
+Type: files; Name: "{userdesktop}\TRÇeviri.lnk"
+Type: files; Name: "{userprograms}\TRÇeviri.lnk"
+Type: files; Name: "{userstartup}\TRÇeviri.lnk"
 
 [Files]
 Source: "{#DistDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{userprograms}\TRÇeviri"; Filename: "{app}\TRCeviri.exe"
-Name: "{userdesktop}\TRÇeviri"; Filename: "{app}\TRCeviri.exe"; Tasks: desktopicon
-Name: "{userstartup}\TRÇeviri"; Filename: "{app}\TRCeviri.exe"; Parameters: "--baslat"; Tasks: startup
+Name: "{userprograms}\Brolis Game Translate"; Filename: "{app}\TRCeviri.exe"
+Name: "{userdesktop}\Brolis Game Translate"; Filename: "{app}\TRCeviri.exe"; Tasks: desktopicon
+Name: "{userstartup}\Brolis Game Translate"; Filename: "{app}\TRCeviri.exe"; Parameters: "--baslat"; Tasks: startup
 
 [Run]
 ; Not: 'skipifsilent' yok — otomatik güncelleme (/SILENT) bitince uygulama kendiliğinden yeniden açılır.
-Filename: "{app}\TRCeviri.exe"; Description: "TRÇeviri'yi şimdi başlat"; Flags: nowait postinstall
+Filename: "{app}\TRCeviri.exe"; Description: "Brolis Game Translate'i şimdi başlat"; Flags: nowait postinstall

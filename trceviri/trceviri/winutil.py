@@ -85,7 +85,7 @@ def restore_in_background(hwnd: int) -> None:
 def find_window(hint: str, restore: bool = False) -> int | None:
     """Eşleşen görünür pencerelerden EN BÜYÜĞÜNÜ seçer (Remote Play bağlanınca oyunu ayrı pencerede açar).
     restore=True: hepsi küçültülmüşse en sonuncusunu arka planda geri açar."""
-    allw = [(h, t) for h, t in list_windows() if "trçeviri" not in t.lower() and "toolbar" not in t.lower()]
+    allw = [(h, t) for h, t in list_windows() if "trçeviri" not in t.lower() and "brolis" not in t.lower() and "toolbar" not in t.lower()]
     if restore:
         h0 = (hint or "").lower().strip()
         match = [w for w in allw if (h0 and h0 in w[1].lower()) or any(x in w[1].lower() for x in REMOTE_HINTS)]

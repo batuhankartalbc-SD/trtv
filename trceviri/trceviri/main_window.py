@@ -1,4 +1,4 @@
-"""TRÇeviri kontrol paneli — tasarım görselleriyle birebir düzen."""
+"""Brolis Game Translate kontrol paneli — tasarım görselleriyle birebir düzen."""
 from __future__ import annotations
 
 import json
@@ -20,7 +20,7 @@ from .config import CACHE_FILE, list_profiles, load_profile, save_profile
 from .icons import icon, pixmap
 from .theme import ACCENT, MUTED, PURPLE, TEXT
 from .translate import ENGINE_LABELS, local_model_dir, make_engine, system_prompt
-from .widgets import Metric, Segmented, StatusRow, Toggle, card, field, ibtn, iconlabel, page_header, sep, tool
+from .widgets import brand_icon, brand_logo, Metric, Segmented, StatusRow, Toggle, card, field, ibtn, iconlabel, page_header, sep, tool
 from .zones_page import ZonesPage
 
 log = logging.getLogger("panel")
@@ -153,8 +153,8 @@ class MainWindow(QMainWindow):
         self.ctx = ctx
         self.s = ctx.settings
         from .config import DEV
-        self.setWindowTitle(("[GELİŞTİRME] " if DEV else "") + "TRÇeviri — Oyun içi anlık Türkçe çeviri")
-        self.setWindowIcon(icon("logo", ACCENT, 32))
+        self.setWindowTitle(("[GELİŞTİRME] " if DEV else "") + "Brolis Game Translate — Oyun içi anlık Türkçe çeviri")
+        self.setWindowIcon(brand_icon())
         self.resize(1420, 900)
         root = QWidget(); root.setObjectName("root")
         lay = QHBoxLayout(root); lay.setContentsMargins(0, 0, 0, 0); lay.setSpacing(0)
@@ -188,8 +188,9 @@ class MainWindow(QMainWindow):
         sb = QWidget(); sb.setObjectName("sidebar"); sb.setFixedWidth(250)
         v = QVBoxLayout(sb); v.setContentsMargins(14, 26, 14, 18); v.setSpacing(6)
         lr = QHBoxLayout(); lr.setContentsMargins(10, 0, 0, 0); lr.setSpacing(10)
-        lr.addWidget(iconlabel("logo", ACCENT, 34))
-        logo = QLabel(f"TR<span style='color:{ACCENT}'>Ç</span>eviri"); logo.setObjectName("logo"); logo.setTextFormat(Qt.RichText)
+        lr.addWidget(brand_logo(40))
+        logo = QLabel(f"Brolis<br><span style='color:{ACCENT};font-size:13px;font-weight:600'>Game Translate</span>")
+        logo.setObjectName("logo"); logo.setTextFormat(Qt.RichText)
         lr.addWidget(logo); lr.addStretch()
         v.addLayout(lr); v.addSpacing(26)
         self.nav = QButtonGroup(self)
@@ -310,7 +311,7 @@ class MainWindow(QMainWindow):
     def refresh_windows(self):
         cur = self.win_combo.currentText()
         self.win_combo.blockSignals(True); self.win_combo.clear()
-        titles = [t for _, t in winutil.list_windows() if "TRÇeviri" not in t and "toolbar" not in t.lower()]
+        titles = [t for _, t in winutil.list_windows() if "Brolis" not in t and "TRÇeviri" not in t and "toolbar" not in t.lower()]
         rp = [t for t in titles if any(h in t.lower() for h in winutil.REMOTE_HINTS)]
         self.win_combo.addItems(list(dict.fromkeys(rp + [t for t in titles if t not in rp])))
         self.win_combo.setCurrentText(cur or (rp[0] if rp else "PS Remote Play"))
@@ -914,8 +915,8 @@ class MainWindow(QMainWindow):
             "1. TV'de Google Play'den <b>Downloader</b> uygulamasını kurun ve bilinmeyen uygulamalara izin verin.<br>"
             "2. Downloader'a <b>github.com/batuhankartalbc-SD/trtv/releases/download/latest/a.apk</b> yazıp kurun "
             "(aynı dosya: <i>TRCeviri-TV.apk</i>).<br>"
-            "3. TV'de <b>TRÇeviri TV</b>'yi bir kez açın, <b>ekran üstünde gösterme</b> iznini verin, <b>Oyuna dön</b>'e basın.<br>"
-            "4. Uygulama TV her açıldığında kendiliğinden başlar; bilgisayardaki TRÇeviri TV'yi kendisi bulur.<br>"
+            "3. TV'de <b>Brolis Game Translate (TV)</b>'yi bir kez açın, <b>ekran üstünde gösterme</b> iznini verin, <b>Oyuna dön</b>'e basın.<br>"
+            "4. Uygulama TV her açıldığında kendiliğinden başlar; bilgisayardaki Brolis Game Translate (TV)'yi kendisi bulur.<br>"
             "Bilgisayar ve TV <b>aynı modeme</b> bağlı olmalı.")
         txt.setTextFormat(Qt.RichText); txt.setWordWrap(True); cv2.addWidget(txt)
         b_apk = ibtn("APK dosyasının klasörünü aç", "folder"); b_apk.clicked.connect(lambda: os.startfile(str(APK.parent)))
@@ -1021,7 +1022,7 @@ class MainWindow(QMainWindow):
         from . import updater, __version__
         auto = Toggle(updater.autostart_enabled())
         auto.toggled.connect(lambda b: (updater.set_autostart(b), log.info("Windows ile başlat: %s", "açık" if b else "kapalı")))
-        g.addWidget(auto, 4, 0); g.addWidget(QLabel("Windows açılınca TRÇeviri'yi başlat ve canlı çeviriyi aç"), 4, 1)
+        g.addWidget(auto, 4, 0); g.addWidget(QLabel("Windows açılınca Brolis Game Translate'yi başlat ve canlı çeviriyi aç"), 4, 1)
         vr = QHBoxLayout(); vl = QLabel(f"Sürüm {__version__}"); vl.setObjectName("muted"); vr.addWidget(vl)
         bu = ibtn("Güncellemeleri denetle", "refresh"); bu.clicked.connect(self._manual_update); vr.addWidget(bu); vr.addStretch()
         g.addLayout(vr, 5, 0, 1, 2)
@@ -1045,7 +1046,7 @@ class MainWindow(QMainWindow):
             if u:
                 self.update_found.emit(u)
             else:
-                self.test_done.emit(True, "TRÇeviri güncel ✓")
+                self.test_done.emit(True, "Brolis Game Translate güncel ✓")
         threading.Thread(target=run, daemon=True).start()
 
     def _export_cache(self):

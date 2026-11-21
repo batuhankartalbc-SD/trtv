@@ -1,4 +1,4 @@
-# TRÇeviri: oyun içi anlık Türkçe çeviri
+# Brolis Game Translate: oyun içi anlık Türkçe çeviri
 
 PS5 oyunlarını bilgisayarda **PS Remote Play** (ya da chiaki‑ng) penceresinde oynarken ekrandaki İngilizce yazıların üstünü kapatır ve Türkçesini anında gösterir. Çevirdiği yazılar:
 
@@ -14,7 +14,7 @@ Oyuna hiçbir şekilde dokunmaz, sadece ekranı okur.
 1. **`run.bat`** dosyasına çift tıklayın. İlk açılışta kendi kendine kurulur (birkaç dakika). Sonraki açılışlar hızlıdır.
 2. Bilgisayarda **PS Remote Play** uygulamasını açıp PS5'e bağlanın.
    - **CouchSubs kapalı olmalı.** PS5 aynı anda tek bir uzaktan bağlantıya izin verir.
-3. TRÇeviri'de **Oyun penceresi** listesinden `PS Remote Play` seçin, sonra **▶ Başlat**'a basın.
+3. Brolis Game Translate'de **Oyun penceresi** listesinden `PS Remote Play` seçin, sonra **▶ Başlat**'a basın.
 4. Oyunda **altyazıları açın.** Program yazıyı ekrandaki İngilizce altyazıdan okur; altyazı kapalıysa çevirecek bir şey olmaz.
 
 ## Çeviri motoru

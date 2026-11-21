@@ -227,7 +227,7 @@ class ZonesPage(QWidget):
             self.ctx.window.change_profile(p.name)
 
     def import_profile(self):
-        fn, _ = QFileDialog.getOpenFileName(self, "Profil içe aktar", "", "TRÇeviri profili (*.json)")
+        fn, _ = QFileDialog.getOpenFileName(self, "Profil içe aktar", "", "Brolis Game Translate profili (*.json)")
         if fn:
             try:
                 p = Profile.from_dict(json.loads(Path(fn).read_text(encoding="utf-8")))

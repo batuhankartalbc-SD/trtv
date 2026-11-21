@@ -72,7 +72,7 @@ def frozen() -> bool:
 
 # ---------------------------------------------------------------- Windows ile başlat
 def _startup_lnk() -> Path:
-    return Path(os.environ["APPDATA"]) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup" / "TRÇeviri.lnk"
+    return Path(os.environ["APPDATA"]) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup" / "Brolis Game Translate.lnk"
 
 
 def autostart_enabled() -> bool:
@@ -95,5 +95,5 @@ def set_autostart(on: bool) -> None:
     sh.TargetPath = target
     sh.Arguments = args
     sh.WorkingDirectory = cwd
-    sh.Description = "TRÇeviri — canlı Türkçe çeviri"
+    sh.Description = "Brolis Game Translate — canlı Türkçe çeviri"
     sh.Save()

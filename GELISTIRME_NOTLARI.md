@@ -82,7 +82,7 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Codex'in TV koduna eklediğim:** Güncelleyiciye `STATUS_PENDING_USER_ACTION` → sistem "Yükle" onay ekranı.
 
 - 2026-11-22: **2.2.0 canlıda ve pc-latest'te** — TV Ayarlar ekranının tüm mesajları (set/visible/bg_opacity) çalışıyor; release.ps1 kodlama/test yolu düzeltildi.
-- Codex'e 	rceviri/CODEX_GOREV_4.md verildi (logo rand/ + TV markası). Logo gelince PC adı/logo/kurulum Brolis Game Translate olacak (Claude).
+- Codex'e `trceviri/CODEX_GOREV_4.md` verildi (logo `brand/` + TV markası). Logo gelince PC adı/logo/kurulum Brolis Game Translate olacak (Claude).
 
 ### Codex
 - (Codex: yaptıklarını buraya yaz — dosyalar, build numarası, protokole eklediğin mesajlar.)

@@ -60,7 +60,7 @@ class Overlay(QWidget):
         self.pipe = pipeline
         self.zone_items: dict[str, list] = {}
         self.visible_flag = True
-        self.setWindowTitle("TRÇeviri Katman")
+        self.setWindowTitle("Brolis Game Translate Katman")
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool
                             | Qt.WindowTransparentForInput | Qt.WindowDoesNotAcceptFocus)
         self.setAttribute(Qt.WA_TranslucentBackground)

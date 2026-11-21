@@ -1,5 +1,5 @@
 ================================================================
-  TRÇeviri — PS5 oyunlarında ekrandaki İngilizceyi anında Türkçe yapar
+  Brolis Game Translate — PS5 oyunlarında ekrandaki İngilizceyi anında Türkçe yapar
 ================================================================
 
 NE İŞE YARAR?
@@ -34,7 +34,7 @@ EN KOLAY KURULUM: TRCeviri-Kurulum.exe
      github.com/batuhankartalbc-SD/trtv/releases/tag/pc-latest
   2. Çift tıklayın → İleri → Kur. (Yönetici izni istemez, Python gerekmez.)
      İsterseniz "Masaüstüne kısayol" ve "Windows açılınca başlat"ı seçin.
-  3. TRÇeviri açılır ve Kurulum sihirbazı sizi adım adım götürür.
+  3. Brolis Game Translate açılır ve Kurulum sihirbazı sizi adım adım götürür.
      Sihirbazdaki "Yerel modeli indir" (≈450 MB, bir kere) anlık ve internetsiz
      çeviriyi açar.
   Yeni sürüm çıkınca uygulamanın üstünde "Güncelle" şeridi belirir; tek tıkla
@@ -77,7 +77,7 @@ HER OYUNDA YAPILACAKLAR
   1. PS Remote Play'i açın, PS5'e bağlanın, oyunu açın.
   2. OYUNUN AYARLARINDAN ALTYAZILARI AÇIN!
      (Altyazı kapalıysa ekranda yazı olmaz, program da çevirecek bir şey bulamaz.)
-  3. TRÇeviri'de "▶ Başlat"a basın.
+  3. Brolis Game Translate'de "▶ Başlat"a basın.
   4. Oynayın. İngilizce yazılar çıktıkça Türkçeleri üstüne gelir.
 
   Not: Program "Otomatik mod"dadır; ekranın tamamını kendisi tarar,
@@ -87,7 +87,7 @@ HER OYUNDA YAPILACAKLAR
 TÜRKÇEYİ TV'DE GÖRMEK (Android TV / Google TV)
 ---------------------------------------------
 PS5 TV'ye HDMI ile bağlıyken Türkçe yazıları doğrudan TV'de, oyunun üstünde
-görmek için TV'ye küçük "TRÇeviri TV" uygulamasını kurun. Bilgisayar oyunu
+görmek için TV'ye küçük "Brolis Game Translate (TV)" uygulamasını kurun. Bilgisayar oyunu
 Remote Play'den okuyup çevirir, TV uygulaması çevirileri HDMI görüntüsünün
 üstüne çizer. Kumandanız normal çalışır.
 
@@ -99,15 +99,15 @@ Remote Play'den okuyup çevirir, TV uygulaması çevirileri HDMI görüntüsün�
   3. Downloader'a şu adresi yazın:
         github.com/batuhankartalbc-SD/trtv/releases/download/latest/a.apk
      İndirince "Yükle" deyin. (Aynı dosya bu klasörde: TRCeviri-TV.apk)
-  4. TV'de "TRÇeviri TV"yi açın. "Ekran üstünde gösterme" izni isterse
-     TRÇeviri TV'ye izin verin.
+  4. TV'de "Brolis Game Translate (TV)"yi açın. "Ekran üstünde gösterme" izni isterse
+     Brolis Game Translate (TV)'ye izin verin.
   5. "Oyuna dön"e basın, PS5 girişine geçin. Uygulama arka planda çalışır ve
      TV her açıldığında kendiliğinden başlar.
 
   Kullanırken:
   - Bilgisayar ve TV aynı modeme (aynı ev ağına) bağlı olmalı.
-  - Bilgisayarda TRÇeviri açıkken TV'yi kendisi bulur; "TV" sayfasında
-    "TV bağlı" yazar. TV'de bağlanınca yeşil "TRÇeviri bağlandı" yazısı çıkar.
+  - Bilgisayarda Brolis Game Translate açıkken TV'yi kendisi bulur; "TV" sayfasında
+    "TV bağlı" yazar. TV'de bağlanınca yeşil "Brolis Game Translate bağlandı" yazısı çıkar.
   - Bilgisayarda Remote Play penceresi açık kalmalı (küçültmeyin); oyunu
     TV'de oynamaya devam edersiniz.
   - Türkçe yazıları bilgisayarda görmek istemezseniz:
@@ -121,7 +121,7 @@ Gemini; argoyu, küfrü, bağlamı anlar, çok daha doğal Türkçe verir.
 
   1. aistudio.google.com adresine Google hesabınızla girin.
   2. "Get API key" > "Create API key" deyin, anahtarı kopyalayın (AIza... ile başlar).
-  3. TRÇeviri > "Çeviri" sekmesi > Motor: "Google Gemini (önerilen)".
+  3. Brolis Game Translate > "Çeviri" sekmesi > Motor: "Google Gemini (önerilen)".
   4. Anahtarı "API anahtarı" kutusuna yapıştırın > "Test et" > "Kaydet".
 
   ÖNEMLİ: Anahtarınızı kimseyle paylaşmayın, bir yere yazmayın.

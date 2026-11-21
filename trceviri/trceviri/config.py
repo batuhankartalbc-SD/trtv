@@ -98,7 +98,7 @@ class Settings:
     output_target: str = "both"           # Çevirilerin görüneceği yer: pc | tv | both
     setup_done: bool = False              # kurulum sihirbazı tamamlandı mı
     ocr_threads: int = 4                  # OCR iş parçacığı (işlemci çekirdeği)
-    tv_enabled: bool = True               # çevirileri Android TV'deki TRÇeviri TV'ye gönder
+    tv_enabled: bool = True               # çevirileri Android TV'deki Brolis Game Translate (TV)'ye gönder
     tv_host: str = ""                     # son bulunan TV adresi (boşsa ağ taranır)
     output_pc: bool = True                # çevirileri bilgisayar ekranında da göster                # tüm ekranı tara, bölge gerekmez
     auto_scan_width: int = 960            # tespit için küçültme genişliği (büyük = küçük yazıları da bulur, yavaş)

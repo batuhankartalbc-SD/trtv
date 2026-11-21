@@ -70,12 +70,14 @@ class SetupWizard(QDialog):
         super().__init__(parent)
         self.ctx = ctx
         self.s = ctx.settings
-        self.setWindowTitle("TRÇeviri — Kurulum")
+        self.setWindowTitle("Brolis Game Translate — Kurulum")
         self.resize(1060, 680)
         root = QHBoxLayout(self); root.setContentsMargins(0, 0, 0, 0); root.setSpacing(0)
         side = QWidget(); side.setObjectName("sidebar"); side.setFixedWidth(270)
         sv = QVBoxLayout(side); sv.setContentsMargins(22, 26, 18, 18); sv.setSpacing(4)
-        lg = QLabel(f"TR<span style='color:{ACCENT}'>Ç</span>eviri  <span style='color:{MUTED};font-size:14px'>kurulum</span>")
+        from .widgets import brand_logo
+        sv.addWidget(brand_logo(56))
+        lg = QLabel(f"Brolis Game Translate<br><span style='color:{MUTED};font-size:14px'>kurulum</span>")
         lg.setObjectName("logo"); lg.setTextFormat(Qt.RichText); sv.addWidget(lg); sv.addSpacing(20)
         self.titles = ["Hoş geldiniz", "PS Remote Play", "Oyun ayarı", "Çeviri motoru", "Nerede görünsün?",
                        "TV kurulumu", "Hizalama", "Hazır"]
@@ -107,7 +109,7 @@ class SetupWizard(QDialog):
     def _build(self):
         # 1 hoş geldiniz
         st = Step("Hoş geldiniz!", "Birkaç adımda kuralım; en sonda canlı çeviri başlayacak.", "logo")
-        st.text("TRÇeviri, PS5 oyunlarındaki İngilizce <b>konuşmaları, menüleri ve kontrolleri</b> anında Türkçeye çevirir ve "
+        st.text("Brolis Game Translate, PS5 oyunlarındaki İngilizce <b>konuşmaları, menüleri ve kontrolleri</b> anında Türkçeye çevirir ve "
                 "İngilizcenin <b>tam üstüne, aynı boyutta</b> yazar — sanki oyun Türkçeymiş gibi.<br><br>"
                 "<b>Nasıl çalışır?</b> Bilgisayarınız oyunu <b>PS Remote Play</b> ile izler, yazıları okur ve çevirir. "
                 "Türkçe yazılar ister bilgisayar ekranında, ister TV'de (PS5'in görüntüsünün üstünde), ister ikisinde görünür.<br><br>"
@@ -119,7 +121,7 @@ class SetupWizard(QDialog):
         st.text("1. PS Remote Play kurulu değilse indirip kurun.<br>"
                 "2. Uygulamayı açın, PSN hesabınızla <b>giriş yapın</b> ve <b>PS5</b>'inizi seçin.<br>"
                 "3. Oyun görüntüsü bilgisayara gelince bu adım kendiliğinden ✓ olur. "
-                "Pencereyi küçültebilirsiniz; TRÇeviri arka planda okumaya devam eder.<br>"
+                "Pencereyi küçültebilirsiniz; Brolis Game Translate arka planda okumaya devam eder.<br>"
                 "<span style='color:#8C98A6'>İpucu: CouchSubs gibi başka bir Remote Play programı açıksa kapatın — PS5 aynı anda tek bağlantıya izin verir.</span>")
         row = QHBoxLayout()
         b1 = ibtn("İndirme sayfası", "download"); b1.clicked.connect(lambda: webbrowser.open(RP_URL))
@@ -189,13 +191,13 @@ class SetupWizard(QDialog):
         st.v.addStretch(); self.stack.addWidget(st)
 
         # 6 TV
-        st = Step("TV'ye TRÇeviri TV'yi kurun", "Bir kere yapılır. Bilgisayar ve TV aynı modeme bağlı olmalı.", "tv")
+        st = Step("TV'ye Brolis Game Translate (TV)'yi kurun", "Bir kere yapılır. Bilgisayar ve TV aynı modeme bağlı olmalı.", "tv")
         st.text("1. TV'de Google Play'den <b>Downloader</b> uygulamasını kurun.<br>"
                 "2. TV <b>Ayarlar → Sistem → Hakkında</b>'da <b>Android TV OS derlemesi</b>ne 7 kez basın (geliştirici modu); "
                 "<b>Ayarlar → Uygulamalar → Güvenlik → Bilinmeyen uygulamalar</b>'da Downloader'a izin verin.<br>"
                 "3. Downloader'a şu adresi yazın ve kurun:<br>"
                 "&nbsp;&nbsp;&nbsp;<b style='color:#3EE6A0'>github.com/batuhankartalbc-SD/trtv/releases/download/latest/a.apk</b><br>"
-                "4. TV'de <b>TRÇeviri TV</b>'yi açın, <b>ekran üstünde gösterme</b> iznini verin, <b>Oyuna dön</b>'e basın.<br>"
+                "4. TV'de <b>Brolis Game Translate (TV)</b>'yi açın, <b>ekran üstünde gösterme</b> iznini verin, <b>Oyuna dön</b>'e basın.<br>"
                 "TV bulunduğunda bu adım kendiliğinden ✓ olur.")
         b = ibtn("APK dosyasının klasörünü aç", "folder"); b.clicked.connect(lambda: os.startfile(str(APK.parent)))
         st.v.addWidget(b, 0, Qt.AlignLeft)
@@ -304,7 +306,7 @@ class SetupWizard(QDialog):
         if self.i == 5:
             ok = self.ctx.tv.connected
             self.tv_ic.setPixmap(pixmap("check" if ok else "dot", ACCENT if ok else MUTED, 26))
-            self.tv_lb.setText(f"TV bağlı ({self.ctx.tv.host})" if ok else "TV aranıyor… (TV'de TRÇeviri TV açık mı?)")
+            self.tv_lb.setText(f"TV bağlı ({self.ctx.tv.host})" if ok else "TV aranıyor… (TV'de Brolis Game Translate (TV) açık mı?)")
 
     def _fill_summary(self):
         out = {"pc": "Bilgisayar ekranı", "tv": "TV", "both": "TV ve bilgisayar"}[self.s.output_target]

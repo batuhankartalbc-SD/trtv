@@ -1,6 +1,6 @@
 """Bilgisayar → Android TV bağlantısı.
 
-TV'deki "TRÇeviri TV" uygulaması 47800 numaralı TCP portunu dinler. Bilgisayar ev ağını tarayıp onu
+TV'deki "Brolis Game Translate (TV)" uygulaması 47800 numaralı TCP portunu dinler. Bilgisayar ev ağını tarayıp onu
 kendisi bulur ve bağlanır (giden bağlantı olduğu için Windows güvenlik duvarı izni gerekmez).
 Her çeviri değişikliği tek satırlık JSON olarak anında gönderilir; TV bunu HDMI görüntüsünün üstüne çizer.
 """
@@ -157,7 +157,7 @@ class TvLink(QObject):
                 continue
             host = self._find()
             if not host:
-                self.status.emit(False, "TV bulunamadı (TV'de TRÇeviri TV açık mı?)")
+                self.status.emit(False, "TV bulunamadı (TV'de Brolis Game Translate (TV) açık mı?)")
                 self.stop_evt.wait(5)
                 continue
             try:
