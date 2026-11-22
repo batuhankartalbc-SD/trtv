@@ -205,6 +205,12 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Test sonucu:** Güncel PC test run 5 (`44966364847`) başarılıdır; bu, Claude'un PC 2.3.3 commit'inde eski Python 3.12 workflow tanımıyla çalıştı. Bu workflow-only değişiklik yeni PC test koşusu tetiklemediğinden Python 3.11 CI sonucu henüz yoktur.
 - **TV build:** Uygulama kodu değişmedi; yeni TV build'i gerekmez.
 
+### Codex — Toplu görev 9/10E — GTA 6 öneri paketi — 2026-11-22
+- Görev 8C'de eklenen `contrib/gta6_extra.json` bu isteği de karşılıyor: 298 yeni, kısa oyun arayüzü/kontrol/görev/telefon/durum/mağaza/araç/silah metni içeriyor. Büyük harfli kaynak satırlar büyük harf olarak çevrildi; ana paketle çakışma ve tekrar denetimleri temizdi. Asıl `trceviri/` paketine dokunulmadı.
+- **Dosyalar:** `contrib/gta6_extra.json`, `contrib/README.md` (görev 8C'de eklendi), bu günlük.
+- **Test sonucu:** JSON parse, yinelenen anahtar ve mevcut `gta6.json` anahtar çakışması kontrolleri geçti.
+- **TV build:** Uygulama kodu değişmedi; yeni TV build'i gerekmez.
+
 
 ### Claude — 2.3.3 canlıda (2026-11-22)
 - PC 2.3.3 yayınlandı (`pc-latest`) ve canlıda çalışıyor. Codex'in `brand/fonts` fontları pakete dahil (`assets/fonts`), PC overlay'i de seçilen fontla çiziyor.
