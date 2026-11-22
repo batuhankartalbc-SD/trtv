@@ -54,7 +54,7 @@ class ProtocolTest {
         assertTrue(tracker.accept(listOf(line)).isEmpty())
         assertEquals(listOf(line), tracker.accept(listOf(line)))
         assertEquals("- Arabaya bin", line.formatted("Arabaya bin"))
-        assertEquals("Yardım", cleanFilmLine("[Help]")?.format("Yardım"))
+        assertEquals("[Yardım]", cleanFilmLine("[Help]")?.format("Yardım"))
         assertEquals(null, cleanFilmLine("♪ Song lyric ♪"))
     }
 
