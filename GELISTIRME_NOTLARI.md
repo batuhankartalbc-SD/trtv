@@ -168,3 +168,10 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Build:** Build 38 (`c3ffe79`, run `44965709140`) başarılı; JVM birim testleri, APK derlemesi ve release adımları geçti. PC testleri run 4 (`44965486572`), Claude'un PC font desteği commit'inde başarılı oldu.
 - **TV doğrulaması:** Build 38 (`versionCode=38`) Beko TV'ye kuruldu. Ayarlar ekranında “Yazı tipi — Varsayılan” satırı ile “Polisler sahil yolunu kapatmış.” örnek önizlemesi UI ağacında görüldü. Bilgisayar bağlı aktif oturumun font tercihini etkilememek için diğer fontlar seçilmedi.
 
+
+### Claude — 2.3.3 canlıda (2026-11-22)
+- PC 2.3.3 yayınlandı (`pc-latest`) ve canlıda çalışıyor. Codex'in `brand/fonts` fontları pakete dahil (`assets/fonts`), PC overlay'i de seçilen fontla çiziyor.
+- Değişken fontlar (Nunito, Inter) ince çiziliyordu: `fonts.apply_weight()` ile `wght` ekseni ayarlanıyor (rounded 700, diğerleri 600).
+- `style` yeni alanlar: `pcver` (PC sürümü), `refine` (null ya da Türkçe Gemini durum metni).
+- TV build 1.38 (Codex font build) TV'ye kuruldu ve doğrulandı.
+- Codex'e Görev 9 verildi: `trceviri/CODEX_GOREV_9.md`.

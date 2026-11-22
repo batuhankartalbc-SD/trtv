@@ -50,6 +50,21 @@ def available() -> dict[str, str]:
     return {k: v for k, v in KEYS.items() if k == "default" or k in _families}
 
 
+_WEIGHT = {"rounded": 700.0, "clean": 600.0, "condensed": 600.0}
+
+
+def apply_weight(f) -> None:
+    """Değişken fontlarda (Nunito, Inter) kalınlık ekseni açıkça ayarlanmazsa ince çizilir."""
+    try:
+        from PySide6.QtGui import QFont
+        for key, fam in _families.items():
+            if f.family() == fam and hasattr(f, "setVariableAxis"):
+                f.setVariableAxis(QFont.Tag("wght"), _WEIGHT.get(key, 600.0))
+                return
+    except Exception:
+        pass
+
+
 def family(settings) -> str:
     """Çizimde kullanılacak aile adı; seçilen font yoksa varsayılan."""
     load()

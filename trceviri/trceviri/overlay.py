@@ -45,6 +45,8 @@ def layout_item(text: str, family: str, px: float, box_w: float, box_h: float, m
     while True:
         f = QFont(family)
         f.setPixelSize(max(1, int(size)))
+        from .fonts import apply_weight
+        apply_weight(f)
         fm = QFontMetricsF(f)
         lines = wrap(text, fm, box_w)
         need = len(lines) * fm.lineSpacing()
@@ -137,8 +139,8 @@ class Overlay(QWidget):
         sub = it.kind in ("subtitle", "objective")
 
         def font_for(px):
-            from .fonts import family
-            f = QFont(family(s)); f.setPixelSize(max(9, int(px))); f.setWeight(QFont.DemiBold)
+            from .fonts import apply_weight, family
+            f = QFont(family(s)); f.setPixelSize(max(9, int(px))); f.setWeight(QFont.DemiBold); apply_weight(f)
             return f, QFontMetricsF(f)
 
         # 1) İngilizceyle aynı satır sayısında, aynı genişliğe sığdır (en çok %18 küçült)
