@@ -40,6 +40,15 @@ EN KOLAY KURULUM: TRCeviri-Kurulum.exe
   Yeni sürüm çıkınca uygulamanın üstünde "Güncelle" şeridi belirir; tek tıkla
   güncellenir, ayarlarınız korunur.
 
+YENİ (2.6)
+----------
+  SADECE İSTEDİĞİN YER  Bölgeler sayfasında "Bölgeleri kullan"a basın (ya da TV'de
+              Ayarlar → Çevrilecek yer → Sadece bölgelerim). Artık yalnızca çizdiğiniz
+              kutulardaki yazılar çevrilir. Kutu eklemek için "Bölge ekle", taşımak/boyutlamak
+              için köşelerden sürükleyin, bitince "Profili kaydet".
+  DAHA ÇOK HAZIR ÇEVİRİ  Ortak menü paketi 2.500 satıra çıktı; 10 oyunun kendi paketi var.
+  TV          Simsiyah zemin artık gerçekten opak (önceden Android %80'e kısıyordu).
+
 ÖZELLİKLER (2.5)
 ----------------
   HER OYUN    Sadece GTA 6 değil, PS5'teki bütün oyunlarda çalışır. Ana sayfadaki oyun

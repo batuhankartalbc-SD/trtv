@@ -105,7 +105,9 @@ class Toggle(QAbstractButton):
         self.setCheckable(True); self.setChecked(checked)
         self.setCursor(Qt.PointingHandCursor)
         self._pos = 1.0 if checked else 0.0
-        self.anim = QPropertyAnimation(self, b"pos", self); self.anim.setDuration(140)
+        # Özellik adı "pos" OLMAMALI: QWidget'ın kendi "pos" (konum) özelliğiyle çakışıp anahtarı
+        # panelin sol üst köşesine taşıyordu (Bölgeler → Etkin anahtarı).
+        self.anim = QPropertyAnimation(self, b"knob", self); self.anim.setDuration(140)
         self.toggled.connect(self._animate)
         self.setFixedSize(52, 28)
 
@@ -116,7 +118,7 @@ class Toggle(QAbstractButton):
 
     def setPos(self, v): self._pos = v; self.update()
 
-    pos = Property(float, getPos, setPos)
+    knob = Property(float, getPos, setPos)
 
     def paintEvent(self, _):
         p = QPainter(self); p.setRenderHint(QPainter.Antialiasing)
