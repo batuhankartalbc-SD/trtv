@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.pm.PackageInstaller
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Build
@@ -20,6 +21,7 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.ImageView
 import android.widget.ScrollView
 import android.widget.TextView
 import java.io.File
@@ -49,21 +51,25 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         rootView = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            setBackgroundColor(Color.TRANSPARENT)
-            setPadding(80, 44, 80, 44)
+            gravity = Gravity.TOP
+            setBackgroundColor(Color.rgb(11, 15, 20))
+            setPadding((resources.displayMetrics.widthPixels * .06f).toInt(), (resources.displayMetrics.heightPixels * .05f).toInt(), (resources.displayMetrics.widthPixels * .06f).toInt(), (resources.displayMetrics.heightPixels * .05f).toInt())
         }
-        rootView.addView(TextView(this).apply {
-            text = "Brolis Game Translate"; textSize = 40f; setTextColor(Color.rgb(61, 220, 151)); typeface = Typeface.DEFAULT_BOLD
+        val heading = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+        heading.addView(ImageView(this).apply {
+            setImageResource(R.drawable.logo); scaleType = ImageView.ScaleType.FIT_CENTER
+        }, LinearLayout.LayoutParams(64, 64).apply { rightMargin = 18 })
+        heading.addView(TextView(this).apply {
+            text = "Brolis Game Translate"; textSize = 34f; setTextColor(Color.rgb(61, 220, 151)); typeface = Typeface.DEFAULT_BOLD
         })
+        rootView.addView(heading)
         rootView.addView(TextView(this).apply {
-            text = "Bilgisayardaki TRÇeviri'nin çevirilerini oyun görüntüsünün üstünde gösterir."
-            textSize = 18f; setTextColor(Color.rgb(225, 232, 230)); setPadding(18, 12, 18, 20)
-            setBackgroundColor(Color.argb(170, 13, 17, 16))
+            text = "Bilgisayardaki uygulamanın çevirilerini oyunun üstünde gösterir."
+            textSize = 20f; setTextColor(Color.rgb(225, 232, 230)); setPadding(18, 12, 18, 20)
         })
         info = TextView(this).apply { textSize = 21f; setTextColor(Color.WHITE); setLineSpacing(8f, 1f) }
         info.setPadding(18, 14, 18, 14)
-        info.setBackgroundColor(Color.argb(185, 13, 17, 16))
+        info.background = cardBackground()
         rootView.addView(info)
         calibrateButton = Button(this).apply {
             text = "Kumandayla hizala"; textSize = 20f
@@ -100,11 +106,30 @@ class MainActivity : Activity() {
         val screen = ScrollView(this).apply { isFillViewport = true; isFocusable = false }
         screen.addView(rootView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         setContentView(screen)
+        setupFocusStyles()
         back.requestFocus()
         handleInstallResult(intent)
     }
 
-    private fun buttonParams() = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = 14 }
+    private fun cardBackground(focused: Boolean = false) = GradientDrawable().apply {
+        cornerRadius = 18f
+        setColor(if (focused) Color.rgb(24, 54, 45) else Color.rgb(18, 24, 33))
+        setStroke(if (focused) 3 else 1, if (focused) Color.rgb(62, 230, 160) else Color.rgb(30, 40, 51))
+    }
+
+    private fun buttonParams() = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 68).apply { topMargin = 12 }
+
+    private fun styleButton(button: Button) {
+        button.textSize = 21f
+        button.isAllCaps = false
+        button.setTextColor(Color.WHITE)
+        button.background = cardBackground()
+        button.setOnFocusChangeListener { view, focused ->
+            view.background = cardBackground(focused)
+            view.scaleX = if (focused) 1.03f else 1f
+            view.scaleY = if (focused) 1.03f else 1f
+        }
+    }
 
     override fun onResume() {
         super.onResume()
@@ -259,7 +284,26 @@ class MainActivity : Activity() {
             if (pcConnected) append("• TV IP: $tvAddress · port ${OverlayService.PORT}\n\n")
             else append("• PC bekleniyor… IP: $tvAddress port ${OverlayService.PORT}\n\n")
             append("Bilgisayarda TRÇeviri'yi açın; TV'yi kendisi bulup bağlanır.\n")
-            append("Bağlandıktan sonra 'Oyuna dön'e basıp PS5 girişine geçin.")
+            append("Bağlandıktan sonra 'Oyuna dön'e basıp PS5 girişine geçin.\n")
+            if (IndependentModeService.active || getSharedPreferences(IndependentModeService.PREFS, MODE_PRIVATE).getBoolean(IndependentModeService.KEY_ENABLED, false)) {
+                append("Bağımsız mod · OCR ${IndependentModeService.ocrLatencyMs} ms · Çeviri: ${IndependentModeService.translationSource}\n")
+            }
+            append("\nSon çeviriler\n")
+            val recent = OverlayService.historySnapshot().takeLast(3)
+            if (recent.isEmpty()) append("Henüz çeviri yok") else recent.forEach { append("• ${it.text}\n") }
         }
+    }
+
+    private fun setupFocusStyles() {
+        fun walk(group: android.view.ViewGroup) {
+            for (i in 0 until group.childCount) {
+                val view = group.getChildAt(i)
+                if (view is Button) {
+                    styleButton(view)
+                    if (view.textSize < 20f) view.textSize = 20f
+                } else if (view is android.view.ViewGroup) walk(view)
+            }
+        }
+        walk(rootView)
     }
 }
