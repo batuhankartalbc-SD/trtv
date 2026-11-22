@@ -187,11 +187,16 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 ### Codex — Toplu görev 9/10A — PC durum satırı — 2026-11-22
 - Ayarlar'ın altında PC/TV/Gemini durum satırı eklendi. `pcver` yoksa veya 2.3.0'dan eskiyse güncelleme uyarısı sarı; durum metninde kota/geçersiz varsa satır da sarı görünür.
 - **Dosyalar:** `app/src/main/java/com/trtv/SettingsActivity.kt`, bu günlük.
-- **Build:** Build 44 (`b12dc33`, run `44968061582`) devam ediyor.
+- **Build:** Build 44 (`b12dc33`, run `44968061582`) başarılı; JVM testleri, APK derlemesi ve release adımları geçti.
 
 ### Codex — Toplu görev 9/10B — Kumanda tuşları — 2026-11-22
 - Ayarlar'a Kumanda tuşları sayfası eklendi; TV gezinme/ayar/hizalama girdileri ve PC F6/F8/F9/F10/F11 kısayolları listeleniyor. Hizalama ilk açılışında 5 saniyelik ipucu bir defa gösterilip SharedPreferences'a kaydediliyor.
 - **Dosyalar:** `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{SettingsActivity,CalibrateActivity,RemoteKeysActivity}.kt`, bu günlük.
+- **Build:** Build 45 (`2c34d9e`) CI'da devam ediyor.
+
+### Codex — Toplu görev 9/10C — Güncelleme sonrası servis — 2026-11-22
+- BootReceiver'a `MY_PACKAGE_REPLACED` eylemi eklendi; TV ana ekranındaki bağlantı yokken mesajında bekleme durumu, TV IP'si ve 47800 portu birlikte gösteriliyor. OverlayService zaten `START_STICKY` döndürüyordu; kaynakta doğrulandı.
+- **Dosyalar:** `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/MainActivity.kt`, `OverlayService.kt` (servis davranışı kontrol edildi), bu günlük.
 - **Build:** Push sonrası eklenecek.
 
 

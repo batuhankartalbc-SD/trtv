@@ -251,10 +251,13 @@ class MainActivity : Activity() {
 
     private fun refresh() {
         val perm = Settings.canDrawOverlays(this)
+        val tvAddress = ip()
+        val pcConnected = OverlayService.isComputerConnected()
         info.text = buildString {
             append(if (perm) "✔ Ekran üstü izni var\n" else "✘ Ekran üstü izni YOK — ayarlardan TRÇeviri TV'ye izin verin\n")
             append("• Durum: ${OverlayService.status}\n")
-            append("• Bu TV'nin adresi: ${ip()}  (port ${OverlayService.PORT})\n\n")
+            if (pcConnected) append("• TV IP: $tvAddress · port ${OverlayService.PORT}\n\n")
+            else append("• PC bekleniyor… IP: $tvAddress port ${OverlayService.PORT}\n\n")
             append("Bilgisayarda TRÇeviri'yi açın; TV'yi kendisi bulup bağlanır.\n")
             append("Bağlandıktan sonra 'Oyuna dön'e basıp PS5 girişine geçin.")
         }
