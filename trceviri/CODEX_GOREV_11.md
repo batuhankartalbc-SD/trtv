@@ -80,4 +80,33 @@ PC→TV:
 - Build ve APK, CI'da `latest` sürümüne yüklensin.
 - Notlara kayıt düş: fizibilite tablosu, değişen dosyalar, build numarası, protokol eklemeleri (`ocr` / `tr`).
 
-Bu görev büyük. Sırayla 0 → 1 → 2 → 3 → 4 → 5 git; her adım ayrı commit olsun, her adımdan sonra push et.
+## 6. TV uygulamasının görünümünü baştan düzelt (kullanıcı: "çok kötü duruyor")
+
+PC uygulamasıyla aynı tasarım dili:
+- **Renkler:** koyu zemin `#0B0F14`, kartlar `#121821`, kenar `#1E2833`, vurgu yeşil `#3DE6A0`, mor `#9B7BFF`, ikincil metin `#8A97A6`.
+- **Logo:** `brand/` içindeki logo.
+- **Yazı:** Inter ya da Nunito (zaten `assets/fonts` içinde).
+
+**10-foot UI kuralları:**
+- Kumandayla gezilen büyük odaklanabilir kartlar.
+- Odakta yeşil çerçeve ve hafif büyüme (1.05).
+- En küçük yazı 20sp.
+- Kenarlarda en az %5 güvenli alan.
+- Yan menü: **Ana · Ayarlar · Hizalama · Geçmiş · Tanılama · Yardım**.
+
+**Ana ekran:**
+- Büyük durum kartı: `PC bağlı (BATU-PC)` ya da `PC bekleniyor` + IP/port.
+- "Oyuna dön" düğmesi.
+- Mod seçimi (PC / Bağımsız film).
+- Son 3 çeviri.
+
+**Ayarlar:** gruplu kartlar (Görünüm, Çeviri, Kategoriler, Ses, Bağlantı), her satırda o anki değer görünsün.
+- **"Her şey uygulamadan yönetilebilsin":** PC'deki ayarlardan TV'ye taşınabilecek her şey TV'de de olsun. Bugün protokolde olan `set` anahtarlarının hepsi Ayarlar'da görünsün: profile, engine, font_scale, bg_mode, bg_opacity, speaker_colors_on, tts_enabled, cat_*, font, replay.
+- **Yeni anahtarlar, PC 2.4.0 destekliyor:**
+  - `fps`: değer 10/20/30/45/60 seçenekli (PC `style.fps` gönderir)
+  - `instant`: true/false, "Anlık mod (daha hızlı, ilk okumada göster)"; PC `style.instant` gönderir
+  - `output`: pc/tv/both
+
+**Teslim:** Önce/sonra ekran görüntülerini (adb `screencap`) `brand/tv-screens/` klasörüne koy.
+
+Bu görev büyük. Sırayla 0 → 1 → 2 → 3 → 4 → 5 → 6 git. 6. adım (görünüm) bağımsız; istersen önce onu yap. Her adım ayrı commit olsun, her adımdan sonra push et.
