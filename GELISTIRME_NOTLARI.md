@@ -202,7 +202,7 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 ### Codex — Toplu görev 9/10D — PC test CI — 2026-11-22
 - PC test workflow'u Windows-latest/Python 3.11, `pytest PySide6 numpy` kurulumuyla ve `pytest trceviri/tests -q` komutuyla güncellendi. Push/PR otomatik tetikleyicisi yalnızca `trceviri/**` dosyalarını izler; workflow_dispatch korunmuştur.
 - **Dosyalar:** `.github/workflows/pc-tests.yml`, bu günlük.
-- **Test sonucu:** Güncel PC test run 5 (`44966364847`) başarılıdır; bu, Claude'un PC 2.3.3 commit'inde eski Python 3.12 workflow tanımıyla çalıştı. Bu workflow-only değişiklik yeni PC test koşusu tetiklemediğinden Python 3.11 CI sonucu henüz yoktur.
+- **Test sonucu:** Yeni Python 3.11 PC run 6 (`44968623196`) paket kurulumunu geçti ancak `pytest` toplama aşamasında `cv2` modülü bulunmadığı için başarısız oldu (`ModuleNotFoundError: No module named 'cv2'`). Gereken dağıtım paketi `opencv-python` (CI için `opencv-python-headless` uygundur). **Claude isteği:** Bu bağımlılığı `trceviri/requirements.txt` ve ilgili test ortamına ekleyip `trceviri/` tarafında düzeltin; Codex PC kaynaklarına dokunmadı. Eski Python 3.12 yapılandırmasıyla PC run 5 (`44966364847`) başarılıydı.
 - **TV build:** Uygulama kodu değişmedi; yeni TV build'i gerekmez.
 
 ### Codex — Toplu görev 9/10E — GTA 6 öneri paketi — 2026-11-22
@@ -214,13 +214,13 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 ### Codex — Toplu görev 9/10F — README ilk 5 dakika — 2026-11-22
 - README'nin üstüne beş dakikalık kurulum adımları ve F6 dahil kısayollar eklendi. İstenen beş sorun için çözüm tablosu ve iki mağaza görseli eklendi.
 - **Dosyalar:** `README.md`, bu günlük.
-- **Test sonucu:** Markdown ve görsel yolları gözle kontrol edildi; görseller G bölümünün ayrı commit'inde eklenecek.
+- **Test sonucu:** Markdown ve görsel yolları gözle kontrol edildi; `brand/store/` görselleri G bölümünde eklendi. README commit'inin Build 50 release adımı, aynı `latest` etiketi için paralel build yayınları çakıştığından başarısız oldu; son ağaçtaki Build 51 başarılı APK/release üretimini tamamladı.
 - **TV build:** Uygulama kodu değişmedi; yeni TV build'i gerekmez.
 
 ### Codex — Toplu görev 9/10G — Mağaza görselleri — 2026-11-22
 - Telifsiz, soyut oyun sahnesi tarzında 1280×720 iki vektör tanıtım görseli hazırlandı: önce/sonra altyazısı ve PC→TV akış şeması. README görselleri gösteriyor.
 - **Dosyalar:** `brand/store/once-sonra.svg`, `brand/store/pc-tv-akis.svg`, `README.md` (görsel bağlantıları), bu günlük.
-- **Test sonucu:** SVG/XML biçimi ve 1280×720 viewBox doğrulanacak.
+- **Test sonucu:** İki SVG XML olarak doğrulandı; ikisi de 1280×720 viewBox kullanıyor. Build 51 (`dad3a34`, run `44968666818`) JVM testleri, APK derlemesi ve release adımlarıyla başarılı.
 - **TV build:** Uygulama kodu değişmedi; yeni TV build'i gerekmez.
 
 
