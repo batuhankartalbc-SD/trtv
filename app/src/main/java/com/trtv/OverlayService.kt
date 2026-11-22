@@ -378,12 +378,14 @@ class OverlayService : Service() {
             return
         }
         val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+        // FLAG_NOT_TOUCHABLE YOK: Android 12+ dokunulamaz bindirme pencerelerinin opaklığını 0.8'e kısıyor
+        // (dumpsys: alpha=0.8) ve simsiyah zemin saydam görünüyordu. TV'de dokunmatik yok; kumanda tuşları
+        // FLAG_NOT_FOCUSABLE sayesinde yine alttaki uygulamaya gidiyor.
         val lp = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                 WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
