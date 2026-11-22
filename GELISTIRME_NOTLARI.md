@@ -338,3 +338,10 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Test:** pytest 22/22.
 - **Codex için:** Görev 12 hâlâ beklemede. Kullanıcı yapıştırmadı; Codex 11'i bitirip durdu.
 - **TV:** kapalı. Fizibilite tablosu ve ekran görüntüleri TV açılınca yapılacak.
+
+
+### Codex — Görev 12A — Ortak oyun arayüzü paketi — 2026-11-22
+- Tüm oyunlarda kullanılabilecek menü/ayar, erişilebilirlik, kayıt, görev/harita, envanter, kontrol ve kısa durum mesajları için **4.166** benzersiz JSON anahtarı eklendi. Tamamı büyük harf kaynak durumlarında hedef metin de büyük harf biçiminde tutuldu; uzun diyalog/emoji yok.
+- **Dosyalar:** `contrib/ortak_ui.json`, `contrib/README.md`, bu günlük.
+- **Doğrulama:** UTF-8 JSON parse edildi, tam anahtar yinelenmesi yok. Build 71 doğrulaması push sonrası yapılacak.
+- **Yarım kalan:** Claude'un `trceviri/profiles/packs/ortak.json` ile gözden geçirip birleştirmesi bekleniyor.
