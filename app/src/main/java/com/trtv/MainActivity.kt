@@ -37,6 +37,7 @@ class MainActivity : Activity() {
     private var downloading = false
     private var awaitingSourcePermission = false
     private var receiverRegistered = false
+    private var onboardingLaunchedThisSession = false
     private val updateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) { refreshUpdateButton() }
     }
@@ -85,6 +86,10 @@ class MainActivity : Activity() {
             text = "Yardım"; textSize = 20f
             setOnClickListener { rootView.visibility = android.view.View.INVISIBLE; startActivity(Intent(this@MainActivity, HelpActivity::class.java)) }
         }, buttonParams())
+        rootView.addView(Button(this).apply {
+            text = "Rehberi tekrar göster"; textSize = 20f
+            setOnClickListener { openOnboarding() }
+        }, buttonParams())
         updateButton = Button(this).apply {
             textSize = 20f; visibility = android.view.View.GONE
             setOnClickListener { updateApp() }
@@ -105,6 +110,13 @@ class MainActivity : Activity() {
         super.onResume()
         OverlayService.suppressOverlayUi(true)
         if (::rootView.isInitialized) rootView.visibility = android.view.View.VISIBLE
+        val onboardingPending = !getSharedPreferences("settings", MODE_PRIVATE).getBoolean("onboarding_done", false)
+        if (onboardingPending) {
+            if (!onboardingLaunchedThisSession) openOnboarding()
+            if (Settings.canDrawOverlays(this)) OverlayService.start(this)
+            h.removeCallbacks(tick)
+            return
+        }
         if (Settings.canDrawOverlays(this)) OverlayService.start(this) else try {
             startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
         } catch (_: Exception) { }
@@ -119,6 +131,18 @@ class MainActivity : Activity() {
             updateApp()
         }
         h.post(tick)
+    }
+
+    private fun openOnboarding() {
+        onboardingLaunchedThisSession = true
+        rootView.visibility = android.view.View.INVISIBLE
+        startActivityForResult(Intent(this, OnboardingActivity::class.java), REQUEST_ONBOARDING)
+    }
+
+    @Deprecated("Deprecated in Android, kept for API 28 compatibility")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_ONBOARDING && resultCode == RESULT_OK) finish()
     }
 
     override fun onPause() {
@@ -222,6 +246,8 @@ class MainActivity : Activity() {
         val lp = cm.getLinkProperties(cm.activeNetwork) ?: return "?"
         return lp.linkAddresses.map { it.address }.firstOrNull { it is Inet4Address }?.hostAddress ?: "?"
     }
+
+    companion object { private const val REQUEST_ONBOARDING = 804 }
 
     private fun refresh() {
         val perm = Settings.canDrawOverlays(this)

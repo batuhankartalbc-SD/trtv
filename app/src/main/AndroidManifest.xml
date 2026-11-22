@@ -27,6 +27,10 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".OnboardingActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.NoTitleBar" />
+        <activity
             android:name=".CalibrateActivity"
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />

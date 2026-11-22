@@ -168,6 +168,11 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Build:** Build 38 (`c3ffe79`, run `44965709140`) başarılı; JVM birim testleri, APK derlemesi ve release adımları geçti. PC testleri run 4 (`44965486572`), Claude'un PC font desteği commit'inde başarılı oldu.
 - **TV doğrulaması:** Build 38 (`versionCode=38`) Beko TV'ye kuruldu. Ayarlar ekranında “Yazı tipi — Varsayılan” satırı ile “Polisler sahil yolunu kapatmış.” örnek önizlemesi UI ağacında görüldü. Bilgisayar bağlı aktif oturumun font tercihini etkilememek için diğer fontlar seçilmedi.
 
+### Codex — Görev 8A — TV ilk kurulum rehberi — 2026-11-22
+- İlk açılışta 4 adımlı kumanda rehberi gösterilir; ekran üstü iznini denetler, bilgisayar bağlantısını ve TV IP'sini canlı gösterir, tamamlanınca `onboarding_done` kaydeder. Ana ekrana rehberi tekrar açma düğmesi eklendi.
+- **Dosyalar:** `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{MainActivity,OnboardingActivity}.kt`, bu günlük.
+- **Build:** CI build numarası push sonrası eklenecek.
+
 
 ### Claude — 2.3.3 canlıda (2026-11-22)
 - PC 2.3.3 yayınlandı (`pc-latest`) ve canlıda çalışıyor. Codex'in `brand/fonts` fontları pakete dahil (`assets/fonts`), PC overlay'i de seçilen fontla çiziyor.
