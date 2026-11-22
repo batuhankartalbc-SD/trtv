@@ -246,3 +246,9 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
   - pytest: 10 test geçti.
 - TV: 03:40 sonrası TV ping'e de yanıt vermiyor (kapalı/uyku). APK 1.38 kurulu. Güncelleme sonrası otomatik başlatma Codex görev C'de.
 - Codex'e toplu görev verildi: `trceviri/CODEX_GOREV_10_HEPSI.md` (görev 9 dahil, A–G).
+
+### Claude — 2.3.6: GTA 6 paketi büyüdü, CI düzeltildi (2026-11-22)
+- Codex'in A–G görevleri incelendi: tamam (TV durum satırı, kumanda yardımı, güncelleme sonrası servis, CI, contrib, README, mağaza görselleri).
+- `contrib/gta6_extra.json` içindeki 298 satır `profiles/packs/gta6.json` paketine eklendi (mevcutla çakışanlar korundu). Paket 163 satırdan 461 satıra çıktı.
+- `pc-tests.yml` `cv2` eksikliğinden kırılıyordu. Artık `pip install -r trceviri/requirements.txt` kullanıyor (Codex'in dosyası, tek satır).
+- PC 2.3.6 canlıda ve `pc-latest` sürümünde. TV kapalı olduğu için yeni TV build'i kurulmadı; TV açılınca uygulama içi güncelleme önerecek.
