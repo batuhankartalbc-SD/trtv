@@ -192,12 +192,18 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 ### Codex — Toplu görev 9/10B — Kumanda tuşları — 2026-11-22
 - Ayarlar'a Kumanda tuşları sayfası eklendi; TV gezinme/ayar/hizalama girdileri ve PC F6/F8/F9/F10/F11 kısayolları listeleniyor. Hizalama ilk açılışında 5 saniyelik ipucu bir defa gösterilip SharedPreferences'a kaydediliyor.
 - **Dosyalar:** `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{SettingsActivity,CalibrateActivity,RemoteKeysActivity}.kt`, bu günlük.
-- **Build:** Build 45 (`2c34d9e`) CI'da devam ediyor.
+- **Build:** Build 45 (`2c34d9e`, run `44968139289`) başarılı; JVM testleri, APK derlemesi ve release adımları geçti.
 
 ### Codex — Toplu görev 9/10C — Güncelleme sonrası servis — 2026-11-22
 - BootReceiver'a `MY_PACKAGE_REPLACED` eylemi eklendi; TV ana ekranındaki bağlantı yokken mesajında bekleme durumu, TV IP'si ve 47800 portu birlikte gösteriliyor. OverlayService zaten `START_STICKY` döndürüyordu; kaynakta doğrulandı.
 - **Dosyalar:** `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/MainActivity.kt`, `OverlayService.kt` (servis davranışı kontrol edildi), bu günlük.
-- **Build:** Push sonrası eklenecek.
+- **Build:** Build 46 (`c1a048c`, run `44968271735`) başarılı; JVM testleri, APK derlemesi ve release adımları geçti.
+
+### Codex — Toplu görev 9/10D — PC test CI — 2026-11-22
+- PC test workflow'u Windows-latest/Python 3.11, `pytest PySide6 numpy` kurulumuyla ve `pytest trceviri/tests -q` komutuyla güncellendi. Push/PR otomatik tetikleyicisi yalnızca `trceviri/**` dosyalarını izler; workflow_dispatch korunmuştur.
+- **Dosyalar:** `.github/workflows/pc-tests.yml`, bu günlük.
+- **Test sonucu:** Güncel PC test run 5 (`44966364847`) başarılıdır; bu, Claude'un PC 2.3.3 commit'inde eski Python 3.12 workflow tanımıyla çalıştı. Bu workflow-only değişiklik yeni PC test koşusu tetiklemediğinden Python 3.11 CI sonucu henüz yoktur.
+- **TV build:** Uygulama kodu değişmedi; yeni TV build'i gerekmez.
 
 
 ### Claude — 2.3.3 canlıda (2026-11-22)
