@@ -343,5 +343,12 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 ### Codex — Görev 12A — Ortak oyun arayüzü paketi — 2026-11-22
 - Tüm oyunlarda kullanılabilecek menü/ayar, erişilebilirlik, kayıt, görev/harita, envanter, kontrol ve kısa durum mesajları için **4.166** benzersiz JSON anahtarı eklendi. Tamamı büyük harf kaynak durumlarında hedef metin de büyük harf biçiminde tutuldu; uzun diyalog/emoji yok.
 - **Dosyalar:** `contrib/ortak_ui.json`, `contrib/README.md`, bu günlük.
-- **Doğrulama:** UTF-8 JSON parse edildi, tam anahtar yinelenmesi yok. Build 71 doğrulaması push sonrası yapılacak.
+- **Doğrulama:** UTF-8 JSON parse edildi, tam anahtar yinelenmesi yok. Build 71 (`f9c5ac3`, run 71) doğrulaması push sonrası yapılacak.
 - **Yarım kalan:** Claude'un `trceviri/profiles/packs/ortak.json` ile gözden geçirip birleştirmesi bekleniyor.
+
+
+### Codex — Görev 12B — Popüler oyun paketleri — 2026-11-22
+- 10 oyun profili için ayrı öneri JSON'ları hazırlandı; her biri 170–171 benzersiz kısa arayüz, terim, hedef ve kontrol kaydı içeriyor. Mevcut profil sözlükleri ve oyun terimleri okundu; karakter adları çevrilmedi.
+- **Dosyalar:** `contrib/packs/{gow_ragnarok,tlou2,ghost_tsushima,horizon_fw,re4,hogwarts,ea_fc,cod,ff7_rebirth,uncharted}.json`, `contrib/README.md`, bu günlük.
+- **Doğrulama:** JSON parse ve anahtar tekilliği kontrolü; her paket 150+ satır. Build 72 doğrulaması push sonrası yapılacak.
+- **Yarım kalan:** Oyun içi satır doğrulaması ve ana paketlere birleştirme Claude tarafından yapılmalı.

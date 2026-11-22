@@ -8,3 +8,8 @@ Dosya UTF-8 JSON olarak doğrulandı. Ana `trceviri/profiles/packs/gta6.json` do
 ## Ortak oyun arayüzü önerisi
 
 `ortak_ui.json`, menü ve ayarlar, erişilebilirlik, kayıt, görev/harita, envanter, kontrol ipuçları ve kısa durum bildirimlerinden **4.166 benzersiz İngilizce anahtar** içerir. Tamamı UTF-8 JSON'dur; uzun diyalog içermez. Bu dosya Claude'un `trceviri/profiles/packs/ortak.json` paketiyle karşılaştırıp birleştirmesi için öneridir.
+
+
+## Oyun paketleri (Görev 12B)
+
+`packs/` altında 10 oyun için ayrı, UTF-8 JSON önerileri bulunur. Her dosya 170–171 benzersiz satır içerir; kısa oyun terimleri, görev/HUD kalıpları ve yaygın kumanda/metin menüleri kapsanır. Profilde tanımlı özel adlar özgün hâlinde bırakıldı; uzun diyalog eklenmedi. Bu paketler Claude'un gözden geçirmesi için taslaktır; oyun sürümüne özgü satırları ana pakete almadan önce oyunda doğrulamak gerekir.
