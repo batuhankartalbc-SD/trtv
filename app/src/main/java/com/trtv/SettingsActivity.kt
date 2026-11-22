@@ -37,7 +37,8 @@ class SettingsActivity : Activity() {
         Row("cat_other", "Diğer yazılar"),
         Row("cat_nav", "GPS / yön"),
         Row("disconnect_warning", "Bağlantı uyarısı"),
-        Row("replay", "Son konuşmayı tekrar göster")
+        Row("replay", "Son konuşmayı tekrar göster"),
+        Row("remote_help", "Kumanda tuşları")
     )
     private val values = mutableMapOf<String, Any>()
     private val rowViews = mutableMapOf<String, Button>()
@@ -188,6 +189,7 @@ class SettingsActivity : Activity() {
             else -> "Varsayılan"
         }
         "replay" -> "Göster"
+        "remote_help" -> "Aç"
         else -> if (values[key] == true) "Açık" else "Kapalı"
     }
 
@@ -264,7 +266,7 @@ class SettingsActivity : Activity() {
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (event.action == KeyEvent.ACTION_DOWN && (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
             val key = (currentFocus?.tag as? Int)?.let { rows.getOrNull(it)?.key }
-            if (key != null && key != "disconnect_warning" && key != "replay") {
+            if (key != null && key != "disconnect_warning" && key != "replay" && key != "remote_help") {
                 change(key, event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)
                 return true
             }
@@ -276,6 +278,10 @@ class SettingsActivity : Activity() {
         if (key == "replay") {
             OverlayService.changeSetting("replay", true)
             finish()
+            return
+        }
+        if (key == "remote_help") {
+            startActivity(Intent(this, RemoteKeysActivity::class.java))
             return
         }
         when (key) {

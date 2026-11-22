@@ -4,6 +4,8 @@ import android.app.Activity
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.Gravity
 import android.view.KeyEvent
 import android.widget.LinearLayout
@@ -12,6 +14,7 @@ import org.json.JSONObject
 
 /** Kumandayla hizalama; saydam pencere HDMI görüntüsünü arkada bırakır. */
 class CalibrateActivity : Activity() {
+    private val handler = Handler(Looper.getMainLooper())
     private lateinit var hint: TextView
     private var scaleMode = false
     private var connected = false
@@ -39,7 +42,12 @@ class CalibrateActivity : Activity() {
         setContentView(root)
         root.requestFocus()
         connected = OverlayService.sendToPc(message("CAL_MODE_ON"))
-        updateHint()
+        val prefs = getSharedPreferences("settings", MODE_PRIVATE)
+        if (!prefs.getBoolean("alignment_hint_seen", false)) {
+            prefs.edit().putBoolean("alignment_hint_seen", true).apply()
+            hint.text = "İpucu · Oklarla hizala · OK: kaydırma/ölçek · MENU veya uzun OK: sıfırla · Geri: bitir"
+            handler.postDelayed({ if (!isFinishing) updateHint() }, 5000L)
+        } else updateHint()
     }
 
     private fun message(action: String) = JSONObject().put("t", "cal").put("a", action)
@@ -104,6 +112,7 @@ class CalibrateActivity : Activity() {
     }
 
     override fun onDestroy() {
+        handler.removeCallbacksAndMessages(null)
         if (isFinishing) OverlayService.sendToPc(message("CAL_MODE_OFF"))
         super.onDestroy()
     }
