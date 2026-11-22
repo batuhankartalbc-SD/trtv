@@ -6,7 +6,7 @@ import webbrowser
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtWidgets import (QButtonGroup, QDialog, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton,
+from PySide6.QtWidgets import (QButtonGroup, QComboBox, QDialog, QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton,
                                QStackedWidget, QVBoxLayout, QWidget)
 
 from . import keystore, winutil
@@ -138,6 +138,16 @@ class SetupWizard(QDialog):
                 "Altyazı boyutu ayarı varsa <b>Büyük</b> seçmek okumayı kolaylaştırır.")
         r = QHBoxLayout(); self.subs_ok = Toggle(False); r.addWidget(self.subs_ok); r.addWidget(QLabel("Altyazıları açtım")); r.addStretch()
         st.v.addLayout(r)
+        st.v.addWidget(sep())
+        g = QHBoxLayout()
+        g.addWidget(QLabel("<b>Hangi oyunu oynuyorsunuz?</b>"))
+        from .config import list_profiles
+        self.game_combo = QComboBox(); self.game_combo.addItems(list_profiles()); self.game_combo.setMinimumWidth(300)
+        self.game_combo.setCurrentText(self.s.profile)
+        g.addWidget(self.game_combo); g.addStretch(); st.v.addLayout(g)
+        st.text("<span style='color:#8C98A6'>Listede yoksa <b>Genel oyun (her oyun)</b> seçin — her oyunda çalışır. "
+                "Film/dizi izliyorsanız <b>Film / dizi</b>. Oyun sırasında karakter isimleri tanınırsa uygulama "
+                "doğru profile geçmeyi kendisi önerir.</span>")
         st.v.addStretch(); self.stack.addWidget(st)
 
         # 4 motor
@@ -324,6 +334,9 @@ class SetupWizard(QDialog):
             self.ctx.calibrate("CAL_MODE")
         self.s.setup_done = True
         self.s.save()
+        game = self.game_combo.currentText() if hasattr(self, "game_combo") else ""
+        if game and game != self.s.profile:
+            self.ctx.window.change_profile(game)
         self.accept()
         self.ctx.window.restart_if_running()
         self.ctx.window.start()

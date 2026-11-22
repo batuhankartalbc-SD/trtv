@@ -40,16 +40,41 @@ EN KOLAY KURULUM: TRCeviri-Kurulum.exe
   Yeni sürüm çıkınca uygulamanın üstünde "Güncelle" şeridi belirir; tek tıkla
   güncellenir, ayarlarınız korunur.
 
-YENİ ÖZELLİKLER
----------------
+ÖZELLİKLER (2.5)
+----------------
+  HER OYUN    Sadece GTA 6 değil, PS5'teki bütün oyunlarda çalışır. Ana sayfadaki oyun
+              listesinden seçin; listede yoksa "Genel oyun (her oyun)" seçin.
+              Hazır profiller: GTA 6, GTA 5, RDR2, Spider-Man 2, Cyberpunk 2077, Elden Ring,
+              AC Shadows, The Last of Us Part II, God of War Ragnarök, Ghost of Tsushima,
+              Ghost of Yōtei, Horizon Forbidden West, Resident Evil 4, Hogwarts Legacy,
+              EA SPORTS FC, Call of Duty, FF7 Rebirth, Death Stranding 2, Stellar Blade,
+              Black Myth: Wukong, Uncharted.
+  OYUN TANIMA Ekranda bir oyunun karakter isimleri görülürse (Kratos, Aloy, Ellie...)
+              üstte "bu oyun X gibi görünüyor — profiline geç" önerisi çıkar.
+  ORTAK PAKET Menü, ayar, kontrol, kayıt/yükleme yazılarının hazır Türkçeleri bütün
+              oyunlarda ilk seferde anında gelir ("Press X to continue" → "Devam etmek
+              için X'e basın").
+  DÜZELT      Bir çeviri yanlışsa Ana sayfa → "Son çeviriler"de satıra çift tıklayın,
+              doğrusunu yazın. O oyun için kaydedilir ve bir daha hep sizinki kullanılır.
+  FİLM / DİZİ Oyun listesinden "Film / dizi"yi seçin, filmi oynatan pencereyi (VLC,
+              tarayıcı, Plex) üstteki pencere listesinden seçin. Sadece alttaki altyazı
+              okunur, şarkı sözleri (♪) atlanır.
+  .SRT        Film TV'de Plex/Kodi/VLC ile oynuyorsa: Çeviri sayfası → "Film / dizi
+              altyazı dosyası çevir". İngilizce .srt'yi seçin, yanına film.tr.srt yazılır;
+              oynatıcıda Türkçe altyazıyı seçin. Zamanlamalar korunur.
+  TV KENDİSİ  TV uygulamasında "Bağımsız mod" ile PC olmadan da TV'deki filmlerin
+              altyazısını çevirebilir (Netflix/Disney+ gibi korumalı uygulamalar
+              ekran yakalamaya izin vermez; orada çalışmaz). PC açıksa çeviriyi PC yapar
+              (daha iyi kalite).
+  HIZ         Gelişmiş → "Yakalama hızı" 10–60 FPS; "Gerçek hız" gerçekte ulaşılanı
+              gösterir. "Anlık mod (1:1)" açıkken yazı ilk göründüğü karede çevrilir.
   F6          Son konuşmayı birkaç saniye tekrar göster (art arda basınca daha eskiler)
   Seslendirme Görünüm → "Türkçe seslendirme": konuşmaları Windows'un Türkçe sesiyle okur
-  Renkler     Görünüm → "Konuşmacı renkleri": Lucia pembe, Jason mavi… (değiştirilebilir)
+  Renkler     Görünüm → "Konuşmacı renkleri": her konuşmacıya kendi rengi
+  Yazı tipi   Görünüm → Ayrıntılar → "Yazı tipi": Varsayılan / Oyun stili / Yuvarlak / Sade
   Üslup       Çeviri → "Oyun ve karakter üslubu": Gemini bu talimata göre çevirir
-  Profiller   GTA 6, GTA 5, RDR2, Spider-Man 2, Cyberpunk 2077, Elden Ring, AC Shadows hazır.
-              Bölgeler → Profil → "Arkadaşla paylaş" profili masaüstüne kaydeder;
+  Paylaşım    Bölgeler → Profil → "Arkadaşla paylaş" profili masaüstüne kaydeder;
               arkadaşınız "Profili içe aktar" ile yükler.
-  GTA 6 paketi Menü, kontrol ve görev yazılarının hazır Türkçeleri: ilk seferde anında.
 
 KAYNAKTAN KURULUM (run.bat ile, isteğe bağlı)
 ---------------------------------------------
@@ -136,6 +161,7 @@ KISAYOL TUŞLARI (oyun açıkken de çalışır)
   F10  Bölge düzenleyici (sadece otomatik mod kapalıyken gerekir)
   F11  Son satırı yeniden çevir (çeviri kötü geldiyse)
   F7   Bölge çerçevelerini göster
+  F6   Son konuşmayı tekrar göster
 
 
 NELERİ ÇEVİRİR, NELERİ ÇEVİRMEZ?
@@ -149,6 +175,8 @@ NELERİ ÇEVİRİR, NELERİ ÇEVİRMEZ?
 
   ÇEVİRMEZ / ZORLANIR:
    ✘ Sesli konuşmalar: altyazı yoksa çeviremez (sesi değil, YAZIYI okur)
+   ✘ Netflix, Disney+, Prime gibi korumalı (DRM) uygulamalar: ekran yakalanamaz
+     (bu uygulamaların çoğunda zaten Türkçe altyazı vardır)
    ✘ Para, mesafe, saat gibi sayılar (bilerek dokunmaz)
    ✘ Zaten Türkçe olan yazılar
    ✘ Oyun dünyasındaki tabelalar, logolar, süslü/eğik yazılar (çoğunu okuyamaz)
@@ -172,6 +200,12 @@ SORUN GİDERME
 
   Yazılar çok küçük / büyük
     > Görünüm sekmesi > "Yazı boyutu çarpanı".
+
+  Bir çeviri hep yanlış geliyor
+    > Ana sayfa → Son çeviriler → satıra çift tıklayıp doğrusunu yazın.
+
+  Ekranda başka oyunun isimleri görülünce "profile geç" önerisi çıkıyor
+    > Doğruysa "profiline geç"e, değilse "Hayır"a basın (o oturumda tekrar sormaz).
 
   Program açılmıyor
     > run.bat'ı tekrar çalıştırın. Olmazsa şu dosyayı paylaşın:

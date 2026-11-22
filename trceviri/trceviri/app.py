@@ -182,6 +182,8 @@ class AppContext:
             elif key == "output" and value in ("pc", "tv", "both"):
                 self.window.set_output(value)
                 return
+            elif key in ("film_band", "mode"):              # TV'nin kendi (bağımsız mod) ayarları: PC'de karşılığı yok
+                return
             else:
                 log.info("TV'den bilinmeyen ayar: %s", key)
                 return
