@@ -252,3 +252,18 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - `contrib/gta6_extra.json` içindeki 298 satır `profiles/packs/gta6.json` paketine eklendi (mevcutla çakışanlar korundu). Paket 163 satırdan 461 satıra çıktı.
 - `pc-tests.yml` `cv2` eksikliğinden kırılıyordu. Artık `pip install -r trceviri/requirements.txt` kullanıyor (Codex'in dosyası, tek satır).
 - PC 2.3.6 canlıda ve `pc-latest` sürümünde. TV kapalı olduğu için yeni TV build'i kurulmadı; TV açılınca uygulama içi güncelleme önerecek.
+
+### Codex — Görev 11 / Adım 0 — MediaProjection fizibilite aracı (2026-11-22)
+- Tanılama'ya tek karelik ekran yakalama testi eklendi. İzin isteği, Android foreground service türü `mediaProjection`, PNG kare önizlemesi ve yaklaşık siyah-kare uyarısı var. Yardım'a DRM sınırı ve YouTube otomatik çeviri bilgisi eklendi. DRM atlatma yok.
+- **Fizibilite tablosu:** ADB'de TV/Android cihazı bağlı olmadığı için kaynak testleri henüz çalıştırılamadı; aşağıdaki sonuçlar açıkça beklemede.
+
+| Uygulama/kaynak | Kare geldi mi | Siyah mı |
+|---|---|---|
+| YouTube | Cihaz testi bekliyor | Cihaz testi bekliyor |
+| Netflix (TV'de varsa) | Cihaz testi bekliyor | Cihaz testi bekliyor |
+| Plex/Kodi/VLC (TV'de varsa) | Cihaz testi bekliyor | Cihaz testi bekliyor |
+| TV HDMI girişi (PS5) | Cihaz testi bekliyor | Cihaz testi bekliyor |
+
+- **Dosyalar:** `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{DiagnosticsActivity,ProjectionProbeActivity,ProjectionProbeService,HelpActivity}.kt`, bu günlük.
+- **Test:** Yerel Gradle çalıştırıcısı/gradlew mevcut değil; CI derlemesi bu adımın ardından çalışacak. Fiziksel test için TV ADB'ye bağlanınca yukarıdaki tablo ölçülmeli.
+- **Durum:** Adım 0 cihaz ölçümü tamamlanana kadar beklemede; DRM içeriği siyah çıkarsa uygulama kullanıcıya sınırlamayı bildirecek.

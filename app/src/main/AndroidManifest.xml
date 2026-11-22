@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
@@ -51,6 +52,10 @@
             android:exported="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity
+            android:name=".ProjectionProbeActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.NoTitleBar" />
+        <activity
             android:name=".HelpActivity"
             android:exported="false"
             android:theme="@android:style/Theme.NoTitleBar" />
@@ -62,6 +67,10 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Shows live game subtitle translations over the HDMI picture" />
         </service>
+        <service
+            android:name=".ProjectionProbeService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
         <receiver android:name=".BootReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

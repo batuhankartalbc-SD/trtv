@@ -2,6 +2,7 @@ package com.trtv
 
 import android.app.Activity
 import android.content.Context
+import android.net.Uri
 import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Handler
@@ -13,14 +14,20 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.ImageView
 import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Build
+import java.io.File
 import android.content.pm.PackageInfo
 import java.net.Inet4Address
 
 /** TV'de bilgisayar bağlantısı ve katman durumu için canlı tanılama ekranı. */
 class DiagnosticsActivity : Activity() {
     private lateinit var details: TextView
+    private lateinit var probeResult: TextView
+    private lateinit var probePreview: ImageView
+    private val probeRequest = 812
     private val handler = Handler(Looper.getMainLooper())
     private val refreshTask = object : Runnable {
         override fun run() {
@@ -55,6 +62,20 @@ class DiagnosticsActivity : Activity() {
         }
         scroll.addView(details, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         root.addView(scroll, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
+        probeResult = TextView(this).apply {
+            text = "Ekran yakalama testi: henüz yapılmadı"; textSize = 18f
+            setTextColor(Color.rgb(138, 151, 166)); setPadding(12, 8, 12, 8)
+        }
+        root.addView(probeResult)
+        probePreview = ImageView(this).apply {
+            visibility = ImageView.GONE; scaleType = ImageView.ScaleType.FIT_CENTER
+            contentDescription = "MediaProjection test karesi"
+        }
+        root.addView(probePreview, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 160))
+        root.addView(Button(this).apply {
+            text = "Ekran yakalama testini aç"; textSize = 18f
+            setOnClickListener { startActivityForResult(Intent(this@DiagnosticsActivity, ProjectionProbeActivity::class.java), probeRequest) }
+        })
         root.addView(Button(this).apply {
             text = "Geri dön"
             textSize = 20f
@@ -105,6 +126,23 @@ class DiagnosticsActivity : Activity() {
             appendLine("Uygulama sürümü: $version")
             appendLine("TV adresi: $ip · port ${OverlayService.PORT}")
             append("Hizalama: dx ${"%.4f".format(java.util.Locale.US, d.dx)}, dy ${"%.4f".format(java.util.Locale.US, d.dy)}, sx ${"%.4f".format(java.util.Locale.US, d.sx)}, sy ${"%.4f".format(java.util.Locale.US, d.sy)}")
+        }
+    }
+
+    @Deprecated("MediaProjection probe result")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != probeRequest) return
+        val file = data?.getStringExtra(ProjectionProbeService.EXTRA_FILE)?.let(::File)
+        if (resultCode == RESULT_OK && file?.exists() == true) {
+            val black = data.getBooleanExtra(ProjectionProbeService.EXTRA_BLACK, true)
+            probePreview.setImageURI(Uri.fromFile(file))
+            probePreview.visibility = ImageView.VISIBLE
+            probeResult.text = if (black) "Son kare: siyah içerik (DRM/kaynak kısıtı olabilir)" else "Son kare: görüntü yakalandı"
+            probeResult.setTextColor(if (black) Color.rgb(255, 205, 92) else Color.rgb(62, 230, 160))
+        } else {
+            probeResult.text = "Son kare alınamadı veya süre doldu."
+            probeResult.setTextColor(Color.rgb(255, 205, 92))
         }
     }
 

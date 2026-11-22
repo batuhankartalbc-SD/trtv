@@ -43,7 +43,8 @@ class HelpActivity : Activity() {
             "2. PS Remote Play'i açıp PS5'e bağlanın. Oyunda altyazıları açın.",
             "3. Bilgisayar ve TV aynı modemde olsun. Bilgisayardaki uygulama TV'yi kendisi bulur.",
             "4. Türkçe kayıyorsa: Ana ekran → Kumandayla hizala.",
-            "5. Bir şey çalışmıyorsa: Ana ekran → Tanılama."
+            "5. Bir şey çalışmıyorsa: Ana ekran → Tanılama.",
+            "Film izlerken: Mod'u TV'nin kendisi olarak seçin ve ekran yakalama izni verin. Netflix/Disney+ gibi DRM'li uygulamalar görüntüyü siyah gösterebilir; bu içerikler çevrilemez. YouTube'da varsa Altyazılar → Otomatik çeviri → Türkçe seçeneğini kullanın."
         )
         helpLines.forEachIndexed { index, line ->
             val normalColor = if (index % 2 == 0) Color.rgb(22, 29, 38) else Color.rgb(17, 23, 30)
