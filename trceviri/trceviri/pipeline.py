@@ -369,6 +369,9 @@ class AutoTracker:
             self.items = [it for it in self.items if it.misses < 2]
             changed |= len(self.items) != before
             seen_now: dict[str, int] = {}
+            if p.detector is not None:
+                for n in fresh:
+                    p.detector.feed(n.src)
             for n in fresh:
                 # aynı yerde farklı yazı çıktı: eski Türkçeyi yenisi onaylanmadan HEMEN kaldır (geç kalma yok)
                 # (OCR'ın aynı yazıyı biraz yanlış okuması "farklı yazı" sayılmasın: benzerlik < 70 şartı)
@@ -475,6 +478,7 @@ class Pipeline(QObject):
     translated = Signal(str, str, str, float)
     stats = Signal(dict)
     preview = Signal(object)               # küçültülmüş kare (QImage) — panel önizlemesi
+    profile_suggest = Signal(str, list)    # başka bir oyun algılandı: (profil adı, bulunan terimler)
 
     def __init__(self, settings: Settings, profile: Profile, cache: TranslationCache):
         super().__init__()
@@ -498,6 +502,8 @@ class Pipeline(QObject):
         self.total_ms: deque[float] = deque(maxlen=50)
         self.want_preview = True
         self.force_retranslate = False
+        self.detector = None                   # GameDetector (oyun tanıma), start() içinde kurulur
+        self.suggest_ignored: set[str] = set()
 
     @property
     def scope(self) -> str:
@@ -545,6 +551,13 @@ class Pipeline(QObject):
         label = {"local": "Yerel (anlık)", "free": "Ücretsiz (MyMemory)"}.get(engine.name, engine.name)
         self.status.emit("ceviri", True, f"Çeviri: {label}" + (f" + {refine.name} iyileştirme" if refine else ""))
         self.reload_zones()
+        try:
+            from .config import list_profiles, load_profile
+            from .gamedetect import GameDetector
+            self.detector = GameDetector([load_profile(n) for n in list_profiles()])
+        except Exception:
+            log.exception("oyun tanıma kurulamadı")
+            self.detector = None
         self.running.set()
         self.thread = threading.Thread(target=self._loop, daemon=True, name="yakalama")
         self.thread.start()
@@ -575,28 +588,43 @@ class Pipeline(QObject):
 
     # --- hazır paket, sözlük, önbellek
     def load_pack(self) -> None:
-        self.pack = {}
-        name = getattr(self.profile, "pack", "")
-        if not name:
-            return
+        """Ortak arayüz paketi (tüm oyunlar: menü, ayar, kontrol metinleri) + profilin kendi oyun paketi (öncelikli).
+        Film/dizi profilinde ortak oyun paketi kullanılmaz."""
         import json
         from .config import BUNDLED_PROFILES, PROFILE_DIR
-        for d in (PROFILE_DIR / "packs", BUNDLED_PROFILES / "packs"):
-            f = d / f"{name}.json"
-            if f.exists():
-                try:
-                    data = json.loads(f.read_text(encoding="utf-8"))
-                    self.pack = {cache_key(k): v for k, v in data.items()}
-                    log.info("Hazır çeviri paketi: %s (%d satır)", name, len(self.pack))
-                except Exception as e:
-                    log.warning("paket okunamadı: %s", e)
-                return
+        pack: dict[str, str] = {}
+        names = ([] if getattr(self.profile, "is_film", False) else ["ortak"]) + \
+                ([self.profile.pack] if getattr(self.profile, "pack", "") else [])
+        for name in names:
+            for d in (PROFILE_DIR / "packs", BUNDLED_PROFILES / "packs"):
+                f = d / f"{name}.json"
+                if f.exists():
+                    try:
+                        data = json.loads(f.read_text(encoding="utf-8"))
+                        pack.update({cache_key(k): v for k, v in data.items() if v})
+                        log.info("Hazır çeviri paketi: %s (%d satır)", name, len(data))
+                    except Exception as e:
+                        log.warning("paket okunamadı (%s): %s", name, e)
+                    break
+        self.pack = pack
 
     def lookup(self, text: str, fuzzy: bool = True) -> str | None:
-        """Sırayla: sözlük (tam eşleşme) → hazır oyun paketi → çeviri önbelleği."""
-        return (apply_glossary_exact(text, self.profile.glossary)
-                or getattr(self, "pack", {}).get(cache_key(text))
-                or self.cache.get(self.scope, text, fuzzy=fuzzy))
+        """Sırayla: sözlük (tam eşleşme) → hazır paketler → çeviri önbelleği.
+        İngilizce TAMAMI BÜYÜK HARF ise Türkçesi de büyük harfle döner (MISSION FAILED → GÖREV BAŞARISIZ)."""
+        hit = (apply_glossary_exact(text, self.profile.glossary)
+               or getattr(self, "pack", {}).get(cache_key(text))
+               or self.cache.get(self.scope, text, fuzzy=fuzzy))
+        if not hit:
+            return hit
+        if sum(c.isalpha() for c in text) >= 2 and text.upper() == text and hit.upper() != hit:
+            hit = hit.replace("i", "İ").replace("ı", "I").upper()
+        # sondaki nokta İngilizceye uysun (paketler/önbellek noktalama farkını yok sayarak eşleşir)
+        src_end = text.rstrip()[-1:] if text.strip() else ""
+        if hit.endswith(".") and not hit.endswith("...") and src_end not in ".!?…":
+            hit = hit[:-1]
+        elif src_end == "." and hit[-1:] not in ".!?…":
+            hit += "."
+        return hit
 
     def speaker_color(self, name: str) -> str:
         pal = ["#FF7AB6", "#5EC8FF", "#FFD54A", "#7CFFB2", "#C9A2FF", "#FF9F5A", "#7FE3FF", "#F4F48C"]
@@ -749,6 +777,14 @@ class Pipeline(QObject):
                 except Exception:
                     log.exception("bölge güncelleme hatası")
             frames += 1
+            if self.detector is not None and tick - getattr(self, "_last_detect", 0.0) > 15.0:
+                self._last_detect = tick
+                try:
+                    sug = self.detector.suggest(self.profile.name)
+                    if sug and sug[0] not in self.suggest_ignored:
+                        self.profile_suggest.emit(sug[0], sug[1])
+                except Exception:
+                    log.exception("oyun tanıma")
             if tick - last_stats > 1.0:
                 self.real_fps = frames / max(1e-3, tick - last_stats) if last_stats else 0.0
                 frames = 0

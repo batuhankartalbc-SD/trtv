@@ -176,6 +176,7 @@ class MainWindow(QMainWindow):
         p.stats.connect(self.on_stats)
         p.preview.connect(self.preview.set_frame)
         p.items_changed.connect(self.preview.set_items)
+        p.profile_suggest.connect(self.on_profile_suggest)
         ctx.tv.status.connect(self.on_tv_status)
         applog.bridge.line.connect(self.log_view.appendPlainText)
         self.test_done.connect(self._on_test_done)
@@ -228,6 +229,14 @@ class MainWindow(QMainWindow):
         ub.addWidget(iconlabel("download", ACCENT, 20)); self.upd_lbl = QLabel(); ub.addWidget(self.upd_lbl, 1)
         self.upd_btn = ibtn("Güncelle", "download", "primary"); ub.addWidget(self.upd_btn)
         self.upd_bar.hide(); v.addWidget(self.upd_bar)
+        # oyun tanıma önerisi
+        self.sug_bar = QFrame(); self.sug_bar.setObjectName("card2"); sb_ = QHBoxLayout(self.sug_bar); sb_.setContentsMargins(16, 10, 16, 10)
+        sb_.addWidget(iconlabel("gamepad", ACCENT, 20)); self.sug_lbl = QLabel(); self.sug_lbl.setWordWrap(True); sb_.addWidget(self.sug_lbl, 1)
+        self.sug_yes = ibtn("Profili değiştir", "play", "primary"); self.sug_no = ibtn("Hayır")
+        sb_.addWidget(self.sug_yes); sb_.addWidget(self.sug_no)
+        self.sug_yes.clicked.connect(self._accept_suggestion); self.sug_no.clicked.connect(self._reject_suggestion)
+        self.sug_bar.hide(); v.addWidget(self.sug_bar)
+        self._sug_name = ""
         top = QHBoxLayout()
         t = QLabel("Canlı çeviri"); t.setObjectName("h1"); top.addWidget(t); top.addStretch()
         # Çıkış seçimi başlık satırında: tam ekranda (1536 px mantıksal genişlik) alt satır taşmasın
@@ -322,6 +331,25 @@ class MainWindow(QMainWindow):
         self.win_combo.addItems(list(dict.fromkeys(rp + [t for t in titles if t not in rp])))
         self.win_combo.setCurrentText(cur or (rp[0] if rp else "PS Remote Play"))
         self.win_combo.blockSignals(False)
+
+    def on_profile_suggest(self, name: str, terms: list):
+        if name == self._sug_name and self.sug_bar.isVisible():
+            return
+        self._sug_name = name
+        self.sug_lbl.setText(f"Ekranda <b>{', '.join(terms[:4])}</b> görüldü: bu oyun <b>{name}</b> gibi görünüyor. "
+                             f"Doğru profille isimler ve terimler daha iyi çevrilir.")
+        self.sug_yes.setText(f"{name} profiline geç")
+        self.sug_bar.show()
+        log.info("Oyun tanıma önerisi: %s (%s)", name, ", ".join(terms))
+
+    def _accept_suggestion(self):
+        self.sug_bar.hide()
+        if self._sug_name:
+            self.change_profile(self._sug_name)
+
+    def _reject_suggestion(self):
+        self.sug_bar.hide()
+        self.ctx.pipeline.suggest_ignored.add(self._sug_name)
 
     def set_window(self, *_):
         """Okunacak pencere değişti: çeviri çalışırken de hemen geçerli olsun."""

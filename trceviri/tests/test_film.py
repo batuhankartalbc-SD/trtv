@@ -84,6 +84,39 @@ def test_srt_parse_translate_write(tmp_path):
     assert "00:00:04,000 --> 00:00:06,000" in res.read_text(encoding="utf-8-sig")
 
 
+def test_game_detector_suggests_profile():
+    from trceviri.gamedetect import GameDetector
+    profs = [load_from(f) for f in PROFILES.glob("*.json")]
+    det = GameDetector(profs)
+    for t in ["Kratos: Stay close, boy.", "Atreus, wait!", "Mimir: Brother, look there.", "Press R1 to attack"]:
+        det.feed(t)
+    assert det.suggest("GTA 6")[0] == "God of War Ragnarök"
+    assert det.suggest("God of War Ragnarök") is None
+    det2 = GameDetector(profs)
+    det2.feed("Kratos")                       # tek terim yetmez
+    assert det2.suggest("GTA 6") is None
+
+
+def test_common_pack_and_uppercase():
+    from trceviri.cache import TranslationCache
+    from trceviri.config import Settings
+    from trceviri.pipeline import Pipeline
+    import tempfile
+    p = Pipeline(Settings(), load_from(PROFILES / "gta6.json"), TranslationCache(Path(tempfile.mkdtemp()) / "c.db"))
+    p.load_pack()
+    assert p.lookup("Any unsaved progress will be lost.") == "Kaydedilmemiş ilerleme kaybolacak."   # ortak paket
+    assert p.lookup("Quit to Main Menu") == "Ana Menüye Dön"            # oyun paketi ortak paketten önce gelir
+    assert p.lookup("INVENTORY FULL") == "ENVANTER DOLU"                # büyük harf eşleşmesi
+    film = Pipeline(Settings(), Profile.from_dict({"name": "Film / dizi", "kind": "film"}),
+                    TranslationCache(Path(tempfile.mkdtemp()) / "c.db"))
+    film.load_pack()
+    assert film.lookup("Quit to Main Menu") is None                     # film modunda oyun paketi yok
+
+
+def load_from(f):
+    return Profile.from_dict(json.loads(Path(f).read_text(encoding="utf-8")))
+
+
 def test_vtt_timestamps():
     cues = srt.parse("WEBVTT\n\n00:01.000 --> 00:02.500\nHi there\n".replace("00:01.000", "00:00:01.000")
                      .replace("00:02.500", "00:00:02.500"))
