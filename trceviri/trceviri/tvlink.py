@@ -183,7 +183,7 @@ class TvLink(QObject):
                 continue
             host = self._find()
             if not host:
-                self.status.emit(False, "TV bulunamadı (TV'de Brolis Game Translate (TV) açık mı?)")
+                self.status.emit(False, "TV bulunamadı: TV açık ve aynı Wi-Fi'da mı, TV uygulaması çalışıyor mu?")
                 self.stop_evt.wait(5)
                 continue
             try:

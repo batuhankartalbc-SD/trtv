@@ -77,7 +77,8 @@ class SetupWizard(QDialog):
         sv = QVBoxLayout(side); sv.setContentsMargins(22, 26, 18, 18); sv.setSpacing(4)
         from .widgets import brand_logo
         sv.addWidget(brand_logo(56))
-        lg = QLabel(f"Brolis Game Translate<br><span style='color:{MUTED};font-size:14px'>kurulum</span>")
+        lg = QLabel(f"Brolis<br><span style='color:{ACCENT};font-size:15px'>Game Translate</span>"
+                    f"<br><span style='color:{MUTED};font-size:14px'>kurulum</span>")
         lg.setObjectName("logo"); lg.setTextFormat(Qt.RichText); sv.addWidget(lg); sv.addSpacing(20)
         self.titles = ["Hoş geldiniz", "PS Remote Play", "Oyun ayarı", "Çeviri motoru", "Nerede görünsün?",
                        "TV kurulumu", "Hizalama", "Hazır"]

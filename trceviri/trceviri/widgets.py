@@ -149,6 +149,7 @@ class Segmented(QWidget):
             style = (f"border-top-left-radius:{radius};border-bottom-left-radius:{radius};" if i == 0 else "") + \
                     (f"border-top-right-radius:{radius};border-bottom-right-radius:{radius};" if i == len(options) - 1 else "")
             b.setStyleSheet(style)
+            b.setMinimumWidth(b.sizeHint().width() + 18)   # seçili düğme kalın yazılır; metin kesilmesin
             self.group.addButton(b); self.buttons[key] = b; h.addWidget(b)
             b.clicked.connect(lambda _=False, k=key: self.changed.emit(k))
         self.set(current)
@@ -185,10 +186,10 @@ class Sparkline(QWidget):
 class Metric(QFrame):
     def __init__(self, ic: str, name: str, color: str):
         super().__init__(); self.setObjectName("card")
-        h = QHBoxLayout(self); h.setContentsMargins(20, 14, 20, 14); h.setSpacing(14)
-        h.addWidget(iconlabel(ic, "#C5CED8", 26))
+        h = QHBoxLayout(self); h.setContentsMargins(18, 8, 18, 8); h.setSpacing(14)
+        h.addWidget(iconlabel(ic, "#C5CED8", 24))
         col = QVBoxLayout(); col.setSpacing(0)
-        n = QLabel(name); n.setStyleSheet("font-weight:600;font-size:15px;")
+        n = QLabel(name); n.setStyleSheet("font-weight:600;font-size:14px;")
         self.val = QLabel("–"); self.color = color
         self.val.setTextFormat(Qt.RichText)
         col.addWidget(n); col.addWidget(self.val)
@@ -198,7 +199,7 @@ class Metric(QFrame):
 
     def set(self, ms: float):
         txt = f"{ms:.0f}" if ms else "–"
-        self.val.setText(f"<span style='font-size:28px;font-weight:700;color:{self.color}'>{txt}</span>"
+        self.val.setText(f"<span style='font-size:24px;font-weight:700;color:{self.color}'>{txt}</span>"
                          f"<span style='font-size:16px;color:{self.color}'> ms</span>")
         if ms:
             self.spark.push(ms)
@@ -207,16 +208,16 @@ class Metric(QFrame):
 class StatusRow(QWidget):
     def __init__(self, name: str):
         super().__init__()
-        h = QHBoxLayout(self); h.setContentsMargins(4, 8, 4, 8)
+        h = QHBoxLayout(self); h.setContentsMargins(4, 5, 4, 5)
         col = QVBoxLayout(); col.setSpacing(1)
         self.name = QLabel(name); self.name.setStyleSheet("font-weight:700;font-size:16px;")
-        self.msg = QLabel("bekleniyor"); self.msg.setObjectName("muted")
+        self.msg = QLabel("bekleniyor"); self.msg.setObjectName("muted"); self.msg.setWordWrap(True)
         col.addWidget(self.name); col.addWidget(self.msg)
         self.dot = QLabel()
-        h.addLayout(col); h.addStretch(); h.addWidget(self.dot)
+        h.addLayout(col, 1); h.addWidget(self.dot)
         self.set(None, "bekleniyor")
 
     def set(self, ok: bool | None, msg: str):
-        self.msg.setText(msg)
+        self.msg.setText(msg); self.msg.setToolTip(msg)
         self.dot.setPixmap(pixmap({True: "check", False: "cross", None: "dot"}[ok],
                                   {True: ACCENT, False: "#F87171", None: MUTED}[ok], 26))

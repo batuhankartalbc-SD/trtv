@@ -218,3 +218,19 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - `style` yeni alanlar: `pcver` (PC sürümü), `refine` (null ya da Türkçe Gemini durum metni).
 - TV build 1.38 (Codex font build) TV'ye kuruldu ve doğrulandı.
 - Codex'e Görev 9 verildi: `trceviri/CODEX_GOREV_9.md`.
+
+### Claude — 2.3.5 canlıda: tam ekran düzeni (2026-11-22)
+- Sorun: 1920x1080 ekran %125 ölçekte uygulamaya sadece 1536x792 mantıksal alan kalıyordu. Ana sayfanın en küçük yüksekliği 924, Bölgeler sayfasınınki 1130 idi. Taşan alan sıkışınca Sistem durumu satırları üst üste biniyor, çıkış seçimi düğmeleri kesiliyordu.
+- Çözüm:
+  - Tüm sayfalar kaydırma alanında; sığmazsa kaydırma çubuğu çıkıyor, öğeler üst üste binmiyor.
+  - Çıkış seçimi (PC/TV/İkisi) başlık satırına taşındı.
+  - Ölçüm kartları sıkılaştırıldı, önizleme ve bölge tuvalinin en küçük boyutları küçültüldü.
+  - Segmented düğmeler, seçiliyken kalın yazıya göre en az genişlik alıyor.
+  - StatusRow mesajları satır kaydırıyor ve ipucu olarak da gösteriliyor.
+  - Sihirbaz başlığı iki satır.
+- Test:
+  - Ekran görüntüsü testleri 1536x792, 1280x680 ve 1920x1000 boyutlarında yapıldı.
+  - Canlı exe büyütülmüş pencerede yakalandı: temiz.
+  - pytest: 10 test geçti.
+- TV: 03:40 sonrası TV ping'e de yanıt vermiyor (kapalı/uyku). APK 1.38 kurulu. Güncelleme sonrası otomatik başlatma Codex görev C'de.
+- Codex'e toplu görev verildi: `trceviri/CODEX_GOREV_10_HEPSI.md` (görev 9 dahil, A–G).

@@ -108,7 +108,7 @@ class ZonesPage(QWidget):
         bh.addWidget(b_add); bh.addWidget(b_save)
         left.addWidget(bar)
         self.canvas = ChipCanvas(self.zones)
-        self.canvas.setMinimumSize(760, 428)
+        self.canvas.setMinimumSize(560, 315)
         self.canvas.selected.connect(self.select)
         self.canvas.changed.connect(self._canvas_changed)
         left.addWidget(self.canvas, 1)

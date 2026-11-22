@@ -47,7 +47,7 @@ class Preview(QWidget):
         self.ctx = ctx
         self.img: QImage | None = None
         self.items: dict[str, list] = {}
-        self.setMinimumSize(560, 315)
+        self.setMinimumSize(400, 225)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def set_frame(self, img):
@@ -164,8 +164,9 @@ class MainWindow(QMainWindow):
         self.pages = [self._page_main(), self._page_zones(), self._page_translate(), self._page_look(),
                       self._page_tv(), self._page_adv()]
         for i, page in enumerate(self.pages):
-            wrap = QWidget(); v = QVBoxLayout(wrap); v.setContentsMargins(30, 24, 30, 24); v.addWidget(page)
-            self.stack.addWidget(wrap if i in (0, 1) else scroll(wrap))
+            # Her sayfa kaydırılabilir: pencere küçük/ekran ölçekli (ör. %125) olunca öğeler üst üste binmez
+            wrap = QWidget(); v = QVBoxLayout(wrap); v.setContentsMargins(28, 20, 28, 20); v.addWidget(page)
+            self.stack.addWidget(scroll(wrap))
         lay.addWidget(self.stack, 1)
         self.setCentralWidget(root)
 
@@ -207,7 +208,8 @@ class MainWindow(QMainWindow):
         v.addWidget(wiz); v.addWidget(hlp)
         from . import __version__
         from .config import DEV
-        ver = QLabel(f"v{__version__}" + (" · GELİŞTİRME" if DEV else " · PS Remote Play + Android TV"))
+        ver = QLabel(f"v{__version__}" + (" · GELİŞTİRME" if DEV else " · PS5 + Android TV"))
+        ver.setContentsMargins(6, 6, 0, 0)
         if DEV:
             ver.setStyleSheet("color:#F5B942;font-weight:700;"); ver.setObjectName("small"); ver.setContentsMargins(6, 6, 0, 0)
         v.addWidget(ver)
@@ -228,9 +230,13 @@ class MainWindow(QMainWindow):
         self.upd_bar.hide(); v.addWidget(self.upd_bar)
         top = QHBoxLayout()
         t = QLabel("Canlı çeviri"); t.setObjectName("h1"); top.addWidget(t); top.addStretch()
-        self.btn_run = ibtn("Çeviri çalışıyor", "play", "primary"); self.btn_run.setMinimumHeight(44); self.btn_run.setMinimumWidth(210)
+        # Çıkış seçimi başlık satırında: tam ekranda (1536 px mantıksal genişlik) alt satır taşmasın
+        self.out_main = Segmented(OUTPUTS, self.s.output_target); self.out_main.changed.connect(self.set_output)
+        self.out_main.setToolTip("Çeviri nerede görünsün: bilgisayar, TV ya da ikisi")
+        top.addWidget(self.out_main); top.addSpacing(16)
+        self.btn_run = ibtn("Çeviri çalışıyor", "play", "primary"); self.btn_run.setMinimumHeight(44); self.btn_run.setMinimumWidth(200)
         self.btn_run.clicked.connect(self.start)
-        self.btn_stop = ibtn("Durdur", "stop"); self.btn_stop.setMinimumHeight(44); self.btn_stop.setMinimumWidth(160)
+        self.btn_stop = ibtn("Durdur", "stop"); self.btn_stop.setMinimumHeight(44); self.btn_stop.setMinimumWidth(130)
         self.btn_stop.clicked.connect(self.stop)
         top.addWidget(self.btn_run); top.addSpacing(10); top.addWidget(self.btn_stop)
         v.addLayout(top)
@@ -250,9 +256,7 @@ class MainWindow(QMainWindow):
         self.prof_combo.addItems(list_profiles()); self.prof_combo.setCurrentText(self.s.profile)
         self.prof_combo.currentTextChanged.connect(self.change_profile); ph.addWidget(self.prof_combo)
         ph.addWidget(QLabel("·  16:9  "))
-        self.out_main = Segmented(OUTPUTS, self.s.output_target); self.out_main.changed.connect(self.set_output)
-        row.addWidget(wbox); row.addWidget(b_ref); row.addWidget(pbox); row.addStretch()
-        ol = QLabel("Çeviri nerede görünsün:"); ol.setObjectName("muted"); row.addWidget(ol); row.addWidget(self.out_main)
+        row.addWidget(wbox, 2); row.addWidget(b_ref); row.addWidget(pbox, 1); row.addStretch()
         v.addLayout(row)
 
         body = QHBoxLayout(); body.setSpacing(18)
@@ -273,7 +277,7 @@ class MainWindow(QMainWindow):
         left.addWidget(rc, 2)
         body.addLayout(left, 3)
 
-        right = QVBoxLayout(); right.setSpacing(14)
+        right = QVBoxLayout(); right.setSpacing(10); right.setContentsMargins(0, 0, 0, 0)
         sc, sv = card("Sistem durumu", "monitor")
         sv.setSpacing(0)
         self.st = {}
@@ -293,12 +297,12 @@ class MainWindow(QMainWindow):
         ii = iconlabel("info", MUTED, 18); ii.setToolTip("Değerler son 50 çevrilen satırın ortalamasıdır."); fr.addWidget(ii)
         right.addLayout(fr)
         right.addStretch()
-        rw = QWidget(); rw.setLayout(right); rw.setFixedWidth(400)
+        rw = QWidget(); rw.setLayout(right); rw.setFixedWidth(370)
         body.addWidget(rw)
         v.addLayout(body, 1)
 
         keys = QFrame(); keys.setObjectName("card")
-        kh = QHBoxLayout(keys); kh.setContentsMargins(40, 12, 40, 12)
+        kh = QHBoxLayout(keys); kh.setContentsMargins(24, 8, 24, 8)
         for i, (k, d) in enumerate((("F8", "Katman (Aç/Kapat)"), ("F9", "Duraklat (Çeviri)"), ("F6", "Son konuşma"),
                                     ("F10", "Bölgeler"), ("F11", "Yeniden çevir"), ("F7", "Hata ayıklama"))):
             if i:
