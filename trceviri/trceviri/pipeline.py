@@ -559,7 +559,7 @@ class Pipeline(QObject):
             log.exception("oyun tanıma kurulamadı")
             self.detector = None
         self.running.set()
-        self.thread = threading.Thread(target=self._loop, daemon=True, name="yakalama")
+        self.thread = threading.Thread(target=self._supervise, daemon=True, name="yakalama")
         self.thread.start()
 
     def stop(self) -> None:
@@ -701,6 +701,25 @@ class Pipeline(QObject):
             cap.close()
 
     # --- iş parçacığı
+    def _supervise(self) -> None:
+        """Yakalama döngüsünü korur: beklenmeyen bir hata olursa kaydeder ve döngüyü yeniden başlatır
+        (eskiden iş parçacığı sessizce ölüyor, çeviri kullanıcı fark etmeden duruyordu)."""
+        fails = 0
+        while self.running.is_set():
+            t0 = time.monotonic()
+            try:
+                self._loop()
+                return                              # normal çıkış (durduruldu ya da OCR açılamadı)
+            except Exception:
+                log.exception("yakalama döngüsü çöktü; yeniden başlatılıyor")
+                fails = 1 if time.monotonic() - t0 > 60 else fails + 1
+                self.status.emit("ocr", False, "Beklenmeyen hata; yeniden başlatılıyor…")
+                if fails >= 5:
+                    self.status.emit("ocr", False, "Sürekli hata oluşuyor; günlüğe bakın (Gelişmiş → Kayıtlar)")
+                    self.running.clear()
+                    return
+                time.sleep(min(10.0, 1.5 * fails))
+
     def _loop(self) -> None:
         try:
             self.status.emit("ocr", False, "OCR yükleniyor…")

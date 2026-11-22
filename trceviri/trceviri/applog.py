@@ -42,3 +42,12 @@ def setup() -> None:
         logging.getLogger("hata").error("Beklenmeyen hata", exc_info=(et, ev, tb))
 
     sys.excepthook = hook
+
+    import threading
+
+    def thook(args):          # arka plan iş parçacıklarındaki yakalanmamış hatalar da günlüğe yazılsın
+        if args.exc_type is not SystemExit:
+            logging.getLogger("hata").error("İş parçacığı hatası (%s)", getattr(args.thread, "name", "?"),
+                                            exc_info=(args.exc_type, args.exc_value, args.exc_traceback))
+
+    threading.excepthook = thook

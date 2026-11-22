@@ -113,6 +113,48 @@ def test_common_pack_and_uppercase():
     assert film.lookup("Quit to Main Menu") is None                     # film modunda oyun paketi yok
 
 
+def test_line_memo_distinguishes_different_subtitles():
+    """Regresyon: aynı yerde benzer uzunlukta iki farklı altyazı eski metni döndürmemeli."""
+    import numpy as np
+    from PIL import Image, ImageDraw, ImageFont
+    from trceviri.ocr import FullScreenReader
+    font = ImageFont.truetype("C:/Windows/Fonts/georgia.ttf", 40) if Path("C:/Windows/Fonts/georgia.ttf").exists() \
+        else ImageFont.load_default()
+
+    def crop(text, noise=0):
+        im = Image.new("RGB", (1300, 60), (40, 60, 80))
+        ImageDraw.Draw(im).text((650, 30), text, font=font, fill=(255, 255, 255), anchor="mm")
+        a = np.array(im).astype(np.int16)
+        if noise:
+            a = a + np.random.default_rng(1).integers(-noise, noise + 1, a.shape)
+        return np.clip(a, 0, 255).astype(np.uint8)
+
+    a = FullScreenReader._sig(crop("The bridge is out. We have to find another way across."))
+    b = FullScreenReader._sig(crop("Follow the river until you reach the old mill to rest."))
+    a2 = FullScreenReader._sig(crop("The bridge is out. We have to find another way across.", noise=6))
+    assert not FullScreenReader._same(a, b)
+    assert FullScreenReader._same(a, a2)
+
+
+def test_capture_loop_restarts_after_crash(monkeypatch):
+    import tempfile
+    import trceviri.pipeline as pl
+    from trceviri.cache import TranslationCache
+    from trceviri.config import Settings
+    p = pl.Pipeline(Settings(), Profile(), TranslationCache(Path(tempfile.mkdtemp()) / "c.db"))
+    calls = []
+
+    def loop():
+        calls.append(1)
+        if len(calls) < 3:
+            raise RuntimeError("çökme")
+    monkeypatch.setattr(p, "_loop", loop)
+    monkeypatch.setattr(pl.time, "sleep", lambda s: None)
+    p.running.set()
+    p._supervise()
+    assert len(calls) == 3                      # iki çökmeden sonra yeniden başladı ve normal bitti
+
+
 def load_from(f):
     return Profile.from_dict(json.loads(Path(f).read_text(encoding="utf-8")))
 
