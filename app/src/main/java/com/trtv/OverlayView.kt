@@ -127,10 +127,10 @@ class OverlayView(ctx: Context) : View(ctx) {
             }
         }
         val removed = entries.filter { it.id !in incomingIds }
-        removed.forEach(::mark)
+        removed.forEach { mark(it.item) }
         if (removed.isNotEmpty()) entries.removeAll { it.id !in incomingIds }
         if (dirty != null) postInvalidateOnAnimation(dirty!!.left, dirty!!.top, dirty!!.right, dirty!!.bottom)
-        if (layoutCache.size > 400) { layoutCache.clear(); boxLayoutCache.clear() }
+        if (dirty != null && layoutCache.size > 400) { layoutCache.clear(); boxLayoutCache.clear() }
         if (needsFade) animateUntilSettled()
     }
 
