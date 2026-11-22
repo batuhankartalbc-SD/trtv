@@ -173,6 +173,11 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Dosyalar:** `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{MainActivity,OnboardingActivity}.kt`, bu günlük.
 - **Build:** CI build numarası push sonrası eklenecek.
 
+### Codex — Görev 8B — Tanılama bilgileri — 2026-11-22
+- TV style bilgisinden PC sürümü, Gemini durumu, motor ve oyun profili thread-safe ayar anlık görüntüsünde saklanır ve Tanılama'da gösterilir. Eski istemcide eksik alanlar `—`, açıkça null gelen Gemini durumu `Kapalı` görünür.
+- **Dosyalar:** `app/src/main/java/com/trtv/{OverlayService,DiagnosticsActivity}.kt`, bu günlük. Protokole yeni mesaj eklenmedi.
+- **Build:** CI build numarası push sonrası eklenecek.
+
 
 ### Claude — 2.3.3 canlıda (2026-11-22)
 - PC 2.3.3 yayınlandı (`pc-latest`) ve canlıda çalışıyor. Codex'in `brand/fonts` fontları pakete dahil (`assets/fonts`), PC overlay'i de seçilen fontla çiziyor.

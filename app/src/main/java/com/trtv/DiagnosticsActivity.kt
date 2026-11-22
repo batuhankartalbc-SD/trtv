@@ -78,6 +78,7 @@ class DiagnosticsActivity : Activity() {
 
     private fun diagnosticText(): String {
         val d = OverlayService.diagnosticsSnapshot()
+        val pc = OverlayService.currentSettings()
         val display = resources.displayMetrics
         val version = try {
             val p = packageManager.getPackageInfo(packageName, 0)
@@ -92,6 +93,10 @@ class DiagnosticsActivity : Activity() {
         return buildString {
             appendLine("Bilgisayar bağlantısı: ${if (d.connected) "Bağlı" else "Bağlı değil"}")
             appendLine("Bilgisayar adı: ${d.computerName}")
+            appendLine("Bilgisayar sürümü: ${pc.pcVersion}")
+            appendLine("Gemini durumu: ${pc.geminiStatus}")
+            appendLine("Çeviri motoru: ${pc.pcEngine}")
+            appendLine("Oyun profili: ${pc.pcProfile}")
             appendLine("Son mesaj: $age")
             appendLine("Son 10 saniyedeki items mesajı: ${d.itemsLast10Seconds}")
             appendLine("Ekrandaki çeviri kutusu: ${d.visibleBoxes}")

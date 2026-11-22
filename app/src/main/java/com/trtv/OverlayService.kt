@@ -44,7 +44,12 @@ data class TvSettings(
     val profile: String = "",
     val engine: String = "local",
     val engines: List<String> = emptyList(),
-    val font: String = "default"
+    val font: String = "default",
+    val fonts: List<String> = emptyList(),
+    val pcVersion: String = "—",
+    val geminiStatus: String = "—",
+    val pcEngine: String = "—",
+    val pcProfile: String = "—"
 )
 
 data class DiagnosticsSnapshot(
@@ -231,7 +236,16 @@ class OverlayService : Service() {
             engine = o.optString("engine", settings.engine),
             engines = stringList(o, "engines", settings.engines),
             // Eski PC sürümleri font alanı göndermez; varsayılan fontta kal.
-            font = o.optString("font", "default").takeIf { it in setOf("default", "condensed", "rounded", "clean") } ?: "default"
+            font = o.optString("font", "default").takeIf { it in setOf("default", "condensed", "rounded", "clean") } ?: "default",
+            fonts = stringList(o, "fonts", settings.fonts),
+            pcVersion = o.optString("pcver", "—").ifBlank { "—" },
+            geminiStatus = when {
+                !o.has("refine") -> "—"
+                o.isNull("refine") -> "Kapalı"
+                else -> o.optString("refine", "—").ifBlank { "—" }
+            },
+            pcEngine = o.optString("engine", "—").ifBlank { "—" },
+            pcProfile = o.optString("profile", "—").ifBlank { "—" }
         )
         alignDx = o.optDouble("dx", alignDx.toDouble()).toFloat()
         alignDy = o.optDouble("dy", alignDy.toDouble()).toFloat()
