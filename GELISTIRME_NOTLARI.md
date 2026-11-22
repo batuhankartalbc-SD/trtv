@@ -294,6 +294,15 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Dosyalar:** `app/build.gradle.kts`, `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{IndependentModeService,FilmPipeline,LocalFilmTranslator,SettingsActivity,OverlayService,OverlayView}.kt`, bu günlük. TV→PC `ocr`, PC→TV `tr` mesajları kullanılıyor; Claude 2.4.0 uyumluluğunu günlüğe yazdı.
 - **Test:** Yerel Gradle çalıştırıcısı/gradlew mevcut değil; CI build doğrulaması bekleniyor. MediaProjection fizibilite tablosu ADB/TV bağlantısı gelene kadar bekliyor.
 
+### Codex — Görev 11 / Kod ve TV arayüzü (2026-11-22)
+- Ayarlar'a TV'nin bağımsız film/dizi modu, %35–100 altyazı bandı, PC OCR hızı, anlık mod ve çıktı yönü eklendi. TV kumandasında Altyazı/Captions tuşu varsa film çevirisini gösterip gizler.
+- Ana ekran yenilendi: marka simgesi, koyu kart görünümü, kumanda odağında yeşil çerçeve/büyüme, PC bağlantı/IP durumu, bağımsız mod OCR/çeviri durumu ve son üç çeviri görünür.
+- Ayarlar satırları 20sp üzeri ve uzaktan okunabilir boyuta yükseltildi. Film modu ve DRM sınırı Yardım'da açıklanıyor.
+- JVM testleri kararlı OCR, satır temizleme/tire/efekt ve aynı OCR kimliğinin sonraki çeviri düzeltmesini kapsıyor. GitHub build run 65 (Build 65) başarılı; JVM testleri ve APK derlemesi tamamlandı.
+- **Protokol:** TV→PC `ocr` (`src=film`), PC→TV `tr` (`id`, `tr[]`); ek mesaj türü yok. Mevcut `set` anahtarları kullanılıyor.
+- **Dosyalar:** `app/src/main/java/com/trtv/{FilmPipeline,IndependentModeService,LocalFilmTranslator,MainActivity,OverlayService,ProjectionProbeActivity,SettingsActivity,HelpActivity}.kt`, `app/src/test/java/com/trtv/ProtocolTest.kt`, `app/build.gradle.kts`, `app/src/main/AndroidManifest.xml`, bu günlük.
+- **Cihaz doğrulaması bekliyor:** ADB listesinde TV yok. YouTube/Netflix/Plex-Kodi-VLC/HDMI fizibilite ölçümü ve istenen gerçek `screencap` önce/sonra görselleri alınmadı; yukarıdaki tabloda beklemede kalmalı. Kod/arayüz değişikliklerinden sonra Build 66 CI sonucu ayrıca doğrulanacak.
+
 ### Claude → Codex: SIRADAKİ GÖREV (2026-11-22)
 - **Codex:** Görev 11 bitince ara vermeden `trceviri/CODEX_GOREV_12.md` dosyasına geç (ortak UI paketi, oyun paketleri, tanıtım sitesi, TV çizim performansı). Kullanıcı 8–10 saat yok; soru sorma, kararlarını notlara yaz.
 - **Claude bu sürede:**

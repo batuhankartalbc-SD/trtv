@@ -86,6 +86,7 @@ class OverlayService : Service() {
         const val UPDATE_ACTION = "com.trtv.UPDATE_AVAILABLE"
         const val SETTINGS_ACTION = "com.trtv.SETTINGS_CHANGED"
         private const val HISTORY_LIMIT = 50
+        fun toggleFilmShown(): Boolean = activeService?.toggleFilmShownInternal() ?: false
 
         /** Hizalama kumandası ve diğer uygulama mesajları için güvenli TCP gönderimi. */
         fun sendToPc(o: JSONObject): Boolean = activeService?.sendToClient(o) ?: false
@@ -131,6 +132,7 @@ class OverlayService : Service() {
     private val warningHide = Runnable { view?.setConnectionWarning(false) }
     private val warningRepeat = Runnable { showDisconnectWarning() }
     private var localFilmTranslator: LocalFilmTranslator? = null
+    @Volatile private var filmShown = true
     private var latestFilmId = 0
     private val filmLinesById = LinkedHashMap<Int, List<FilmLine>>()
     private val filmReplies = TranslationRevisionCache(2000)
@@ -147,6 +149,18 @@ class OverlayService : Service() {
 
     fun settingsSnapshot(): TvSettings = settings
     fun isPcConnected(): Boolean = connected
+
+    private fun toggleFilmShownInternal(): Boolean {
+        filmShown = !filmShown
+        if (!filmShown) main.post { view?.clearZoneImmediately("film") }
+        else {
+            val id = latestFilmId
+            filmReplies[id]?.let { translations ->
+                showFilmTranslations(id, translations, if (filmPcTranslations.contains(id)) "PC" else "cihazda")
+            }
+        }
+        return filmShown
+    }
 
     private fun diagnosticsSnapshotInternal(): DiagnosticsSnapshot {
         val now = SystemClock.elapsedRealtime()
@@ -547,7 +561,6 @@ class OverlayService : Service() {
         val lines = filmLinesById[id] ?: return
         if (id != latestFilmId) return
         IndependentModeService.translationSource = "cihazda"
-        IndependentModeService.publishExternalStatus("Cihazda çeviri hazırlanıyor")
         val translator = localFilmTranslator ?: LocalFilmTranslator(applicationContext).also { localFilmTranslator = it }
         translator.translate(lines) { translations, error ->
             if (error != null || translations == null) {
@@ -560,11 +573,12 @@ class OverlayService : Service() {
             filmReplies.put(id, translations)
             showFilmTranslations(id, translations, "cihazda")
         }
+        IndependentModeService.publishExternalStatus(translator.state)
     }
 
     private fun showFilmTranslations(id: Int, translations: List<String>, source: String) {
         val lines = filmLinesById[id] ?: return
-        if (id != latestFilmId) return
+        if (id != latestFilmId || !filmShown) return
         IndependentModeService.translationSource = source
         val items = lines.mapIndexedNotNull { index, line ->
             val translated = translations.getOrNull(index)?.trim().orEmpty()

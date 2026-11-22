@@ -286,7 +286,8 @@ class MainActivity : Activity() {
             append("Bilgisayarda TRÇeviri'yi açın; TV'yi kendisi bulup bağlanır.\n")
             append("Bağlandıktan sonra 'Oyuna dön'e basıp PS5 girişine geçin.\n")
             if (IndependentModeService.active || getSharedPreferences(IndependentModeService.PREFS, MODE_PRIVATE).getBoolean(IndependentModeService.KEY_ENABLED, false)) {
-                append("Bağımsız mod · OCR ${IndependentModeService.ocrLatencyMs} ms · Çeviri: ${IndependentModeService.translationSource}\n")
+                val detail = IndependentModeService.externalStatus.ifBlank { "Çeviri: ${IndependentModeService.translationSource}" }
+                append("Bağımsız mod · OCR ${IndependentModeService.ocrLatencyMs} ms · $detail\n")
             }
             append("\nSon çeviriler\n")
             val recent = OverlayService.historySnapshot().takeLast(3)

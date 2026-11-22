@@ -14,11 +14,13 @@ import android.media.Image
 import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.media.session.MediaSession
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.IBinder
 import android.os.SystemClock
+import android.view.KeyEvent
 import android.util.Log
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -35,6 +37,7 @@ class IndependentModeService : Service() {
     private var reader: ImageReader? = null
     private var worker: HandlerThread? = null
     private var workerHandler: Handler? = null
+    private var mediaSession: MediaSession? = null
     private val recognizer by lazy { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
     private val stability = StableFilmLines(2)
     private var lastFrameAt = 0L
@@ -93,6 +96,7 @@ class IndependentModeService : Service() {
             DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, reader!!.surface, null, workerHandler
         )
         active = true
+        enableSubtitleRemoteShortcut()
         getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean(KEY_ENABLED, true).apply()
         publishStatus("Altyazı bandı yakalanıyor")
     }
@@ -187,6 +191,26 @@ class IndependentModeService : Service() {
         workerHandler?.postDelayed(clearTask, CLEAR_DELAY_MS)
     }
 
+    /** TV kumandasında altyazı tuşu varsa bağımsız çeviriyi hızlıca gösterip gizler. */
+    private fun enableSubtitleRemoteShortcut() {
+        mediaSession?.release()
+        mediaSession = MediaSession(this, "BrolisFilmMode").apply {
+            setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS)
+            setCallback(object : MediaSession.Callback() {
+                override fun onMediaButtonEvent(mediaButtonIntent: Intent): Boolean {
+                    @Suppress("DEPRECATION")
+                    val event = mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT) as? KeyEvent ?: return false
+                    if (event.action != KeyEvent.ACTION_DOWN || event.repeatCount != 0 ||
+                        event.keyCode != KeyEvent.KEYCODE_CAPTIONS) return false
+                    val shown = OverlayService.toggleFilmShown()
+                    publishStatus(if (shown) "Altyazı çevirisi açık" else "Altyazı çevirisi gizli")
+                    return true
+                }
+            })
+            isActive = true
+        }
+    }
+
     private fun imageToBitmap(image: Image): Bitmap? {
         val plane = image.planes.firstOrNull() ?: return null
         val pixelStride = plane.pixelStride
@@ -235,6 +259,7 @@ class IndependentModeService : Service() {
         try { virtualDisplay?.release() } catch (_: Exception) {}; virtualDisplay = null
         try { reader?.close() } catch (_: Exception) {}; reader = null
         try { projection?.stop() } catch (_: Exception) {}; projection = null
+        try { mediaSession?.isActive = false; mediaSession?.release() } catch (_: Exception) {}; mediaSession = null
         try { recognizer.close() } catch (_: Exception) {}
         try { worker?.quitSafely() } catch (_: Exception) {}; worker = null; workerHandler = null
         OverlayService.suppressOverlayUi(false)
