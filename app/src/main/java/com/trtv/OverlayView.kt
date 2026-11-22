@@ -78,7 +78,8 @@ class OverlayView(ctx: Context) : View(ctx) {
     private var bannerGeneration = 0
     private var connectionWarning = false
     private var uiSuppressed = false
-    private val typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
+    private var selectedFont = "default"
+    private var typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
     private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { typeface = this@OverlayView.typeface }
     private val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         typeface = this@OverlayView.typeface; style = Paint.Style.STROKE; color = Color.argb(220, 0, 0, 0)
@@ -150,9 +151,35 @@ class OverlayView(ctx: Context) : View(ctx) {
         sx = o.optDouble("sx", 1.0).toFloat(); sy = o.optDouble("sy", 1.0).toFloat()
         calib = o.optBoolean("calib", false)
         bgMode = o.optString("bgm", "black")
+        val requestedFont = o.optString("font", "default").takeIf { it in setOf("default", "condensed", "rounded", "clean") } ?: "default"
+        if (requestedFont != selectedFont) {
+            selectedFont = requestedFont
+            typeface = loadFont(requestedFont)
+            fill.typeface = typeface
+            stroke.typeface = typeface
+        }
         layoutCache.clear()
         boxLayoutCache.clear()
         invalidate()
+    }
+
+    private fun loadFont(font: String): Typeface {
+        if (font == "default") return Typeface.create("sans-serif-medium", Typeface.BOLD)
+        return try {
+            if (font == "condensed") {
+                return Typeface.create(Typeface.createFromAsset(context.assets, "fonts/condensed.ttf"), Typeface.BOLD)
+            }
+            val variation = when (font) {
+                "rounded" -> "'wght' 700"
+                "clean" -> "'opsz' 18, 'wght' 600"
+                else -> "'wght' 600"
+            }
+            Typeface.Builder(context.assets, "fonts/$font.ttf")
+                .setFontVariationSettings(variation)
+                .build().let { Typeface.create(it, Typeface.BOLD) }
+        } catch (_: Exception) {
+            Typeface.create("sans-serif-medium", Typeface.BOLD)
+        }
     }
 
     fun banner(text: String, durationMs: Long = 3500L) {

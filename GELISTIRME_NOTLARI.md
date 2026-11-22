@@ -45,7 +45,7 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 | Mesaj | Alanlar |
 |---|---|
 | `{"t":"hello","name":…}` | TV cevap verir: `{"t":"hello","app":"trceviri-tv","v":1,"w":…,"h":…,"overlay":bool}`. Tarama için gönderilen `probe:true` ise sadece cevap alır, bağlanmaz. |
-| `{"t":"style",…}` | Çizim: `box`, `opacity` (0–255), `text`, `speaker`, `scale`, `mode`, `match`, `bgm` (`black`/`semi`/`none`/`game`). Hizalama: `dx`, `dy`, `sx`, `sy`, `calib`. Ayarlar ekranı için: `tts`, `spkcol`, `cats{dialogue,menu,controls,other,nav}`, `output`. |
+| `{"t":"style",…}` | Çizim: `box`, `opacity` (0–255), `text`, `speaker`, `scale`, `mode`, `match`, `bgm` (`black`/`semi`/`none`/`game`). Hizalama: `dx`, `dy`, `sx`, `sy`, `calib`. Ayarlar ekranı için: `tts`, `spkcol`, `cats{dialogue,menu,controls,other,nav}`, `output`. Font: `font` (`default`/`condensed`/`rounded`/`clean`); alan yoksa TV varsayılan yazı tipini kullanır. |
 | `{"t":"items","z":<bölge>,"items":[…]}` | Her öğe: `b` [x0,y0,x1,y1] (0–1), `lh`, `s` konuşmacı, `tr` Türkçe, `k` (`subtitle`/`menu`/`controls`/`other`), `n` satır sayısı, `fg`/`bg`/`sc` renkler, `a` hizalama. |
 | `{"t":"clear"}` | Ekrandaki tüm çevirileri temizle. |
 | `{"t":"visible","v":bool}` | Türkçeyi göster/gizle. |
@@ -56,7 +56,7 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 | Mesaj | Değerler |
 |---|---|
 | `{"t":"cal","a":…}` | `CAL_MODE_ON`, `CAL_MODE_OFF`, `CAL_LEFT`, `CAL_RIGHT`, `CAL_UP`, `CAL_DOWN`, `CAL_BIGGER`, `CAL_SMALLER`, `CAL_RESET` |
-| `{"t":"set","k":…,"v":…}` | `k`: `profile` (ad), `engine` (`local`/`gemini`/`free`), `font_scale`, `bg_mode`, `bg_opacity` (0–100), `speaker_colors_on`, `tts_enabled`, `cat_dialogue`, `cat_menu`, `cat_controls`, `cat_other`, `cat_nav`, `replay`. Bilinmeyen anahtar yok sayılır. |
+| `{"t":"set","k":…,"v":…}` | `k`: `profile` (ad), `engine` (`local`/`gemini`/`free`), `font` (`default`/`condensed`/`rounded`/`clean`), `font_scale`, `bg_mode`, `bg_opacity` (0–100), `speaker_colors_on`, `tts_enabled`, `cat_dialogue`, `cat_menu`, `cat_controls`, `cat_other`, `cat_nav`, `replay`. Bilinmeyen anahtar yok sayılır. |
 | `{"t":"visible","v":bool}` | Türkçeyi göster/gizle. |
 
 ## Kullanıcı tercihleri (değiştirmeden önce sor)
@@ -158,3 +158,12 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
   - Gemini'nin "düşünme ayarı yok" bilgisi model başına hatırlanıyor.
 - **Yayın:** 2.3.3, fontlar gelince yayınlanacak (canlıyı gereksiz yere yeniden başlatmamak için).
 - Codex'e `trceviri/CODEX_GOREV_8.md` verildi: TV ilk kurulum rehberi, Tanılama'ya PC bilgisi, `contrib/gta6_extra.json` paket önerileri.
+
+### Codex — Görev 7 — 2026-11-22
+- **Yazı tipleri:** `brand/fonts/` içine Barlow Semi Condensed SemiBold (dar/oyun stili), Nunito değişken fontu (700 ağırlıkta yuvarlak) ve Inter değişken fontu (18 optik boyut, 600 ağırlıkta sade) eklendi. Kaynak Google Fonts deposu `06bfe0d62a98375cb09c942fa18e68bd32cff057` anlık görüntüsüdür; üçü de SIL Open Font License 1.1 ile lisanslı. Resmî lisans metinleri ayrı dosyalarda; kaynak, ağırlık ve lisans ayrıntıları `brand/fonts/README.md` içinde.
+- **TV:** Üç font Android uygulama varlıklarına eklendi. Overlay `style.font` alanına göre fontu seçip değişince metin düzeni önbelleklerini temizler. Alan yoksa varsayılan sans-serif-medium kullanılır. Ayarlar'a dört seçenekli “Yazı tipi” satırı ve seçilen fontla örnek altyazı önizlemesi eklendi; değişiklikler mevcut `set` mesajının `font` anahtarıyla gönderilir.
+- **Protokol:** Yeni mesaj türü yok. PC→TV `style.font`: `default`/`condensed`/`rounded`/`clean`; TV→PC `{"t":"set","k":"font","v":"condensed"}` (değer seçenek anahtarlarından biri).
+- **Değişen dosyalar:** `app/src/main/java/com/trtv/OverlayService.kt`, `OverlayView.kt`, `SettingsActivity.kt`; `app/src/main/assets/fonts/{condensed,rounded,clean}.ttf`; `brand/fonts/{condensed,rounded,clean}.ttf`, `OFL-Barlow-SemiCondensed.txt`, `OFL-Nunito.txt`, `OFL-Inter.txt`, `README.md`; `GELISTIRME_NOTLARI.md`.
+- **Claude eşgüdümü:** Claude, PC tarafı font seçimini ve `style.font`/`set font` desteğini geliştirme sürümünde tamamladı (2.3.3 hazırlığı, yukarıdaki Claude kaydı). Bu commit ile paylaşılan Google Fonts varlıkları kullanılabilir durumda; PC tarafı fontları pakete dahil ediyor.
+- **Build:** Push sonrası Android CI'nin atadığı build numarası ve doğrulama durumu eklenecek.
+

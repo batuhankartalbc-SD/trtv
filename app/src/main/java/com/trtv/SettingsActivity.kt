@@ -24,6 +24,7 @@ class SettingsActivity : Activity() {
     private val rows = listOf(
         Row("profile", "Oyun profili"),
         Row("engine", "Çeviri motoru"),
+        Row("font", "Yazı tipi"),
         Row("visible", "Türkçe yazılar"),
         Row("font_scale", "Yazı boyutu"),
         Row("bg_mode", "Yazı arkası"),
@@ -42,6 +43,7 @@ class SettingsActivity : Activity() {
     private val rowViews = mutableMapOf<String, Button>()
     private lateinit var connectionLabel: TextView
     private lateinit var preview: TextView
+    private lateinit var fontPreview: TextView
     private var receiverRegistered = false
     private val stateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) { loadState(); renderRows(); renderConnection() }
@@ -95,6 +97,16 @@ class SettingsActivity : Activity() {
                     isFocusable = false
                 })
             }
+            if (row.key == "font") {
+                fontPreview = TextView(this).apply {
+                    text = "Polisler sahil yolunu kapatmış."
+                    textSize = 18f
+                    setTextColor(Color.WHITE)
+                    setPadding(20, 10, 20, 14)
+                    isFocusable = false
+                }
+                list.addView(fontPreview)
+            }
         }
         scroll.addView(list)
         panel.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
@@ -147,6 +159,7 @@ class SettingsActivity : Activity() {
         values["profile"] = state.profile
         values["engines"] = state.engines
         values["engine"] = state.engine
+        values["font"] = state.font
     }
 
     private fun displayValue(key: String): String = when (key) {
@@ -159,6 +172,12 @@ class SettingsActivity : Activity() {
             "gemini" -> "Gemini (en doğal)"
             "free" -> "Ücretsiz (internet)"
             else -> "Seçilemez"
+        }
+        "font" -> when (values["font"]) {
+            "condensed" -> "Oyun stili (dar)"
+            "rounded" -> "Yuvarlak"
+            "clean" -> "Sade"
+            else -> "Varsayılan"
         }
         "replay" -> "Göster"
         else -> if (values[key] == true) "Açık" else "Kapalı"
@@ -187,6 +206,20 @@ class SettingsActivity : Activity() {
                 else -> "Örnek Türkçe yazı · Simsiyah %$percent"
             }
         }
+        if (::fontPreview.isInitialized) fontPreview.typeface = selectedTypeface(values["font"] as? String ?: "default")
+    }
+
+    private fun selectedTypeface(font: String): Typeface {
+        if (font == "default") return Typeface.create("sans-serif-medium", Typeface.BOLD)
+        return try {
+            if (font == "condensed") return Typeface.create(Typeface.createFromAsset(assets, "fonts/condensed.ttf"), Typeface.BOLD)
+            val variation = when (font) {
+                "rounded" -> "'wght' 700"
+                "clean" -> "'opsz' 18, 'wght' 600"
+                else -> "'wght' 600"
+            }
+            Typeface.Builder(assets, "fonts/$font.ttf").setFontVariationSettings(variation).build().let { Typeface.create(it, Typeface.BOLD) }
+        } catch (_: Exception) { Typeface.create("sans-serif-medium", Typeface.BOLD) }
     }
 
     private fun renderConnection() {
@@ -219,7 +252,7 @@ class SettingsActivity : Activity() {
                 OverlayService.setDisconnectWarning(enabled)
                 renderRows()
             }
-            "font_scale", "bg_mode", "bg_opacity" -> change(key, true)
+            "font_scale", "bg_mode", "bg_opacity", "font" -> change(key, true)
             "profile", "engine" -> change(key, true)
             else -> change(key, null)
         }
@@ -234,6 +267,11 @@ class SettingsActivity : Activity() {
                 val modes = listOf("black", "semi", "none", "game")
                 val current = modes.indexOf(values[key] as? String ?: "black").coerceAtLeast(0)
                 modes[(current + if (increase == false) modes.size - 1 else 1) % modes.size].also { values[key] = it }
+            }
+            "font" -> {
+                val fonts = listOf("default", "condensed", "rounded", "clean")
+                val current = fonts.indexOf(values[key] as? String ?: "default").coerceAtLeast(0)
+                fonts[(current + if (increase == false) fonts.size - 1 else 1) % fonts.size].also { values[key] = it }
             }
             "profile", "engine" -> {
                 val options = (values[if (key == "profile") "profiles" else "engines"] as? List<*>)

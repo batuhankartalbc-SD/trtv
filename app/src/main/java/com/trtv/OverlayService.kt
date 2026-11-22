@@ -43,7 +43,8 @@ data class TvSettings(
     val profiles: List<String> = emptyList(),
     val profile: String = "",
     val engine: String = "local",
-    val engines: List<String> = emptyList()
+    val engines: List<String> = emptyList(),
+    val font: String = "default"
 )
 
 data class DiagnosticsSnapshot(
@@ -208,6 +209,7 @@ class OverlayService : Service() {
         "cat_nav" -> s.copy(nav = value as Boolean)
         "profile" -> s.copy(profile = value as String)
         "engine" -> s.copy(engine = value as String)
+        "font" -> s.copy(font = (value as String).takeIf { it in setOf("default", "condensed", "rounded", "clean") } ?: "default")
         else -> s
     }
 
@@ -227,7 +229,9 @@ class OverlayService : Service() {
             profiles = stringList(o, "profiles", settings.profiles),
             profile = o.optString("profile", settings.profile),
             engine = o.optString("engine", settings.engine),
-            engines = stringList(o, "engines", settings.engines)
+            engines = stringList(o, "engines", settings.engines),
+            // Eski PC sürümleri font alanı göndermez; varsayılan fontta kal.
+            font = o.optString("font", "default").takeIf { it in setOf("default", "condensed", "rounded", "clean") } ?: "default"
         )
         alignDx = o.optDouble("dx", alignDx.toDouble()).toFloat()
         alignDy = o.optDouble("dy", alignDy.toDouble()).toFloat()
