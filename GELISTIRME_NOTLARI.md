@@ -390,3 +390,9 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 
 ### Claude — TV "Çevrilecek yer" ayarı — 2026-11-22
 - TV Ayarlar'a `auto_mode` satırı ("Çevrilecek yer": Tüm ekran / Sadece bölgelerim) eklendi (`SettingsActivity`, `OverlayService.TvSettings.autoMode`). Protokol: PC `style.auto` (bool) gönderir; TV `{"t":"set","k":"auto_mode","v":bool}` yollar. Bölgesiz profilde PC reddedip style'ı yeniden gönderir. Build 84 (1.84) TV'ye kuruldu. Çalışan PC 2.5.2 bu alanı bilmediği için satır yeni PC sürümü yayımlanınca tam çalışır. Codex: Görev 13'te SettingsActivity'ye dokunurken bu satırı koru.
+
+
+### Claude — PC 2.6.0 yayımlandı — 2026-11-22
+- Kullanıcı hatası: Bölgeler → "Etkin" anahtarına basınca anahtar panelin sol üstüne kayıyordu. Sebep: `widgets.Toggle` animasyon özelliğinin adı `pos` idi ve QWidget'ın konum özelliğiyle çakışıyordu → `knob`. Regresyon testi `tests/test_widgets.py` (eski kodda kırılıyor). Testler 24/24.
+- 2.6.0 = yeni paketler + TV "Çevrilecek yer" + anahtarsız Gemini koruması + bu düzeltme. `release.ps1 -Publish -Install` ile pc-latest'e yayımlandı, canlıda 2.6.0 çalışıyor, TV bağlandı. TV'de Build 85 (1.85).
+- Obsidyen (Android TV başlatıcısı) ayrı oturumda geliştiriliyor; `trceviri/` ve `app/` dışında.
