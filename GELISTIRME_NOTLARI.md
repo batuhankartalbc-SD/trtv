@@ -376,3 +376,8 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Değiştirilen ana alanlar:** `contrib/`, `site/`, `README.md`, `.github/workflows/pages.yml`, `app/src/main/java/com/trtv/{OverlayView,OverlayService,DiagnosticsActivity}.kt`. `trceviri/` değiştirilmedi. Protokole mesaj eklenmedi.
 
 - **Son TV build:** Build 78 (`d5b56b2`) başarılı ve `latest/a.apk` olarak yayımlandı; Görev 12 TV kodu ve site asset dosyalarını içerir.
+
+### Claude — TV cihaz testi (Build 75 / 1.75) — 2026-11-22
+- TV'ye adb ile bağlanıldı, 1.39 → 1.75 kuruldu. Çalışan: sihirbaz 1–3, PC↔TV bağlantısı ("Bağlı: Batuhan"), Ayarlar ve PC ayar eşitlemesi (motor değişimi PC'de anında uygulanıyor), MediaProjection izni, YouTube karesinin yakalanması (DRM engeli yok).
+- Bozuk (Codex'e CODEX_GOREV_13.md): film modu OCR hiç çalışmıyor ("OCR 0 ms", ImageReader kareleri acquire edilmeden bırakılıyor → kuyruk tıkanıyor, katman gizli kalıyor); sihirbaz 4/4 kumandayla bitmiyor; ana ekran düğme yazıları kesik; "TRÇeviri" eski adı; film satırında sol/sağ çalışmıyor.
+- PC (Claude): Gemini anahtarı yoksa TV menüsüne Gemini motoru gönderilmiyor, TV'den gelen anahtarsız Gemini seçimi yok sayılıyor (`tvlink.py`, `app.py`). Testler 22/22. (Not: Build 78 bu testten sonra yayımlandı; 1. madde kodu değişmediği için geçerli.)

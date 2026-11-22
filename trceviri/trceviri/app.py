@@ -160,6 +160,10 @@ class AppContext:
                     self.window.prof_combo.blockSignals(True); self.window.prof_combo.setCurrentText(value)
                     self.window.prof_combo.blockSignals(False)
             elif key == "engine" and value in ("local", "gemini", "free"):
+                if value == "gemini" and not s.api_keys_enc.get("gemini"):
+                    log.info("TV'den Gemini seçildi ama anahtar yok; yok sayıldı")
+                    self.tv.send_style()            # TV menüsü eski değere dönsün
+                    return
                 s.engine = value
                 s.save()
                 self.window.restart_if_running()

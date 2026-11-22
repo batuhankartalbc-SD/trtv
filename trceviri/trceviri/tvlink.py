@@ -118,7 +118,8 @@ class TvLink(QObject):
                    "output": s.output_target,
                    # TV Ayarlar: oyun profili ve çeviri motoru seçimi
                    "profiles": self._profiles(), "profile": s.profile, "engine": s.engine,
-                   "engines": ["local", "gemini", "free"]})
+                   # anahtarı olmayan motor TV menüsünde gösterilmez (seçilirse çeviri durur)
+                   "engines": ["local"] + (["gemini"] if s.api_keys_enc.get("gemini") else []) + ["free"]})
 
     @staticmethod
     def _fonts() -> list:
