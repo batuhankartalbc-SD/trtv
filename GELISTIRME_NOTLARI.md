@@ -341,7 +341,7 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 
 
 ### Codex — Görev 12A — Ortak oyun arayüzü paketi — 2026-11-22
-- Tüm oyunlarda kullanılabilecek menü/ayar, erişilebilirlik, kayıt, görev/harita, envanter, kontrol ve kısa durum mesajları için **4.166** benzersiz JSON anahtarı eklendi. Tamamı büyük harf kaynak durumlarında hedef metin de büyük harf biçiminde tutuldu; uzun diyalog/emoji yok.
+- Tüm oyunlarda kullanılabilecek menü/ayar, erişilebilirlik, kayıt, görev/harita, envanter, kontrol ve kısa durum mesajları için **4.165** benzersiz JSON anahtarı eklendi. Tamamı büyük harf kaynak durumlarında hedef metin de büyük harf biçiminde tutuldu; uzun diyalog/emoji yok.
 - **Dosyalar:** `contrib/ortak_ui.json`, `contrib/README.md`, bu günlük.
 - **Doğrulama:** UTF-8 JSON parse edildi, tam anahtar yinelenmesi yok. Build 71 (`f9c5ac3`, run 71) doğrulaması push sonrası yapılacak.
 - **Yarım kalan:** Claude'un `trceviri/profiles/packs/ortak.json` ile gözden geçirip birleştirmesi bekleniyor.
@@ -365,5 +365,5 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 ### Codex — Görev 12D — TV çizim performansı — 2026-11-22
 - Overlay kutuları kimliğe göre güncelleniyor; değişmeyen öğelerin metin düzeni önbellekten kullanılıyor. Metin ölçümü/satır kırılımı için Android `StaticLayout` nesnesi düzen önbelleğinde tutuluyor. İçerik kaldırma ve temizleme animasyonsuz, anında; yeni/yenilenen çeviri 80 ms alfa ile beliriyor. Tanılama'da yalnızca debug derlemesinde son kare çizim süresi gösteriliyor.
 - **Dosyalar:** `app/src/main/java/com/trtv/OverlayView.kt`, `app/src/main/java/com/trtv/OverlayService.kt`, `app/src/main/java/com/trtv/DiagnosticsActivity.kt`, bu günlük.
-- **Doğrulama:** Build 74 CI ile derleme/JVM testleri yapılacak. 1080p'de ≤8 ms hedefi fiziksel TV'de ölçülmedi; debug Tanılama ekranında ölçüm görünür olacak.
+- **Doğrulama:** Build 74 (`6d9fe20`) JVM derlemesinde `BuildConfig` referansı bulunamadığı için başarısız oldu; debug tespiti Android `ApplicationInfo.FLAG_DEBUGGABLE` ile düzeltildi. Build 75 doğrulaması push sonrası yapılacak. 1080p'de ≤8 ms hedefi fiziksel TV'de ölçülmedi; debug Tanılama ekranında ölçüm görünür olacak.
 - **Yarım kalan:** Gerçek cihazdaki kare süresi/8 ms hedefi, TV yeniden bağlandığında ölçülmeli.

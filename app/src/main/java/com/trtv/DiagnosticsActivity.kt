@@ -21,6 +21,7 @@ import android.graphics.Typeface
 import android.os.Build
 import java.io.File
 import android.content.pm.PackageInfo
+import android.content.pm.ApplicationInfo
 import java.net.Inet4Address
 
 /** TV'de bilgisayar bağlantısı ve katman durumu için canlı tanılama ekranı. */
@@ -127,7 +128,7 @@ class DiagnosticsActivity : Activity() {
             appendLine("Uygulama sürümü: $version")
             appendLine("TV adresi: $ip · port ${OverlayService.PORT}")
             append("Hizalama: dx ${"%.4f".format(java.util.Locale.US, d.dx)}, dy ${"%.4f".format(java.util.Locale.US, d.dy)}, sx ${"%.4f".format(java.util.Locale.US, d.sx)}, sy ${"%.4f".format(java.util.Locale.US, d.sy)}")
-            if (BuildConfig.DEBUG) appendLine("TV çizim süresi: ${"%.2f".format(java.util.Locale.US, d.lastDrawMs)} ms (son kare)")
+            if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0) appendLine("TV çizim süresi: ${"%.2f".format(java.util.Locale.US, d.lastDrawMs)} ms (son kare)")
         }
     }
 
