@@ -1,0 +1,40 @@
+{
+  "name": "Stellar Blade",
+  "game": "Stellar Blade",
+  "kind": "game",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    }
+  ],
+  "glossary": {
+    "Map": "Harita",
+    "Inventory": "Envanter",
+    "Settings": "Ayarlar",
+    "Resume": "Devam et",
+    "Quit Game": "Oyundan çık",
+    "Objective": "Hedef",
+    "Mission Failed": "Görev başarısız",
+    "Checkpoint": "Kontrol noktası",
+    "Eve": "",
+    "Adam": "",
+    "Lily": "",
+    "Naytiba": "",
+    "Xion": "",
+    "Beta Skill": "Beta Yeteneği"
+  },
+  "ignore": [],
+  "style": "Bilimkurgu aksiyon. Eve kararlı ve az konuşur. İsimleri çevirme.",
+  "pack": "",
+  "speaker_colors": {},
+  "window_hint": ""
+}

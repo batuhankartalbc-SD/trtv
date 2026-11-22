@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import threading
 import time
 from collections import deque
@@ -221,13 +222,33 @@ def _same_color(a, b, tol: float = 70.0) -> bool:
     return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5 <= tol
 
 
+FILM_TOP = 0.55        # film modunda altyazı bandı: ekranın alt %45'i
+
+
+def film_clean(t: str) -> str:
+    """Film altyazısı satırını sadeleştirir: <i> etiketleri, baştaki konuşma tiresi korunur, boşluklar."""
+    t = re.sub(r"</?[ibu]>", "", t, flags=re.I).strip()
+    t = re.sub(r"^[-–—]\s*", "- ", t)
+    return t.strip()
+
+
 def build_blocks(lines: list[Line], W: int, H: int, ignore: list[str], show_speaker: bool,
-                 cats: set[str] | None = None, frame=None) -> list[Item]:
+                 cats: set[str] | None = None, frame=None, film: bool = False) -> list[Item]:
     """Tüm ekrandaki satırları paragraflara (bloklara) ayırır, türünü belirler ve
-    sadece istenen türleri döndürür: subtitle (konuşma), menu, controls, other, nav (GPS)."""
+    sadece istenen türleri döndürür: subtitle (konuşma), menu, controls, other, nav (GPS).
+    film=True: film/dizi — sadece ekranın alt kısmındaki altyazı okunur (oynatıcı düğmeleri, başlıklar atlanır)."""
     clean = []
     for ln in lines:
-        t = clean_symbols(normalize(ln.text))
+        if film:
+            raw = normalize(ln.text)
+            if "♪" in raw or "♫" in raw or ln.box[1] < FILM_TOP * H:
+                continue                       # şarkı sözü satırı ya da altyazı bandı dışında
+            raw = film_clean(raw)
+            if not raw:
+                continue
+            t = clean_symbols(raw) if not raw.startswith(("[", "(", "-")) else raw
+        else:
+            t = clean_symbols(normalize(ln.text))
         if is_noise(t, ignore) or not looks_english(t):
             continue
         if letters(t) < 3 or not any(len(w) >= 3 and w.isalpha() for w in t.replace("'", "").split()):
@@ -270,7 +291,9 @@ def build_blocks(lines: list[Line], W: int, H: int, ignore: list[str], show_spea
         x1 = max(l.box[2] for l in blk); y1 = max(l.box[3] for l in blk)
         cx, cy = (x0 + x1) / 2 / W, (y0 + y1) / 2 / H
         text = " ".join(l.text for l in blk)
-        if is_navigation(text):
+        if film:
+            kind = "subtitle"                  # film modunda alt banttaki her şey altyazıdır
+        elif is_navigation(text):
             kind = "nav"
         elif cy > 0.6 and abs(cx - 0.5) < 0.18 and (x1 - x0) / W > 0.12 and not is_controls(text):
             kind = "subtitle"
@@ -308,7 +331,8 @@ class AutoTracker:
 
     def update(self, lines: list[Line], W: int, H: int, frame=None) -> None:
         p = self.pipe
-        new = build_blocks(lines, W, H, p.profile.ignore, p.settings.show_speaker, p.settings.categories(), frame)
+        film = getattr(p.profile, "is_film", False)
+        new = build_blocks(lines, W, H, p.profile.ignore, p.settings.show_speaker, p.settings.categories(film), frame, film)
         pending: list[Item] = []
         with self.lock:
             changed = False
@@ -354,7 +378,10 @@ class AutoTracker:
                     changed = True
                 key = cache_key(n.src)
                 hit = p.lookup(n.src, fuzzy=False)
-                if hit or n.score >= 0.85 or key in self.candidates:
+                # anlık mod: yazı ilk karede (okuma güveni yeterliyse) hemen gösterilir; normal modda
+                # emin değilsek bir kare daha görülmesi beklenir (yanlış okumayı çevirmemek için)
+                instant = p.settings.instant and n.score >= 0.6
+                if hit or instant or n.score >= 0.85 or key in self.candidates:
                     # aynı yerde eski yazı varsa (satır değişti) hemen kaldır
                     self.items = [it for it in self.items if _iou(it.box, n.box) < 0.3]
                     n.tr = clean_symbols(hit) or hit if hit else hit
@@ -477,9 +504,19 @@ class Pipeline(QObject):
         return f"{self.profile.name}|{self.settings.engine}"
 
     # --- dış API
-    def start(self) -> None:
-        if self.running.is_set():
-            return
+    def ensure_manager(self) -> TranslationManager:
+        """Çeviri motoru; yakalama çalışmıyorken de (TV bağımsız mod çevirileri için) kullanılabilir."""
+        sig = (self.settings.engine, self.settings.refine, self.profile.name)
+        m = self.manager
+        if m is None or m.stop_evt.is_set() or (not self.running.is_set() and getattr(self, "_mgr_sig", None) != sig):
+            if m is not None and not m.stop_evt.is_set():
+                m.stop()
+            self.manager = self._build_manager()
+            self._mgr_sig = sig
+            self.load_pack()
+        return self.manager
+
+    def _build_manager(self) -> TranslationManager:
         s = self.settings
         key = keystore.decrypt(s.api_keys_enc.get(s.engine, ""))
         engine = make_engine(s.engine, key, s.models.get(s.engine, ""))
@@ -491,9 +528,19 @@ class Pipeline(QObject):
                 if k2:
                     refine = make_engine(name, k2, s.models.get(name, ""))
                     break
-        self.manager = TranslationManager(engine, fallback, self.profile.game or self.profile.name,
-                                          self.profile.glossary, s.tone, s.context_lines, refine=refine,
-                                          style=self.profile.style)
+        return TranslationManager(engine, fallback, self.profile.game or self.profile.name,
+                                  self.profile.glossary, s.tone, s.context_lines, refine=refine,
+                                  style=self.profile.style, kind=getattr(self.profile, "kind", "game"))
+
+    def start(self) -> None:
+        if self.running.is_set():
+            return
+        s = self.settings
+        if self.manager is not None:
+            self.manager.stop()
+        self.manager = self._build_manager()
+        self._mgr_sig = (s.engine, s.refine, self.profile.name)
+        engine, refine = self.manager.engine, self.manager.refine
         self.load_pack()
         label = {"local": "Yerel (anlık)", "free": "Ücretsiz (MyMemory)"}.get(engine.name, engine.name)
         self.status.emit("ceviri", True, f"Çeviri: {label}" + (f" + {refine.name} iyileştirme" if refine else ""))
@@ -639,6 +686,7 @@ class Pipeline(QObject):
         cap = Capturer(self.settings.capture_mode)
         reader = FullScreenReader(ocr, self.settings.auto_scan_width)
         last_stats = 0.0
+        frames = 0
         last_prev = 0.0
         last_win_ok = None
         while self.running.is_set():
@@ -700,9 +748,13 @@ class Pipeline(QObject):
                     t.update(lines, x1 - x0, y1 - y0, frame)
                 except Exception:
                     log.exception("bölge güncelleme hatası")
+            frames += 1
             if tick - last_stats > 1.0:
+                self.real_fps = frames / max(1e-3, tick - last_stats) if last_stats else 0.0
+                frames = 0
                 last_stats = tick
                 self.stats.emit({
+                    "fps": round(self.real_fps, 1),
                     "ocr": sum(self.ocr_ms) / len(self.ocr_ms) if self.ocr_ms else 0,
                     "ceviri": sum(self.tr_ms) / len(self.tr_ms) if self.tr_ms else 0,
                     "toplam": sum(self.total_ms) / len(self.total_ms) if self.total_ms else 0,

@@ -22,12 +22,19 @@ class TranslateError(Exception):
     pass
 
 
-def system_prompt(game: str, glossary: dict[str, str], tone: str, style: str = "") -> str:
+def system_prompt(game: str, glossary: dict[str, str], tone: str, style: str = "", kind: str = "game") -> str:
     keep = [k for k, v in glossary.items() if not v]
     pairs = [f"{k} → {v}" for k, v in glossary.items() if v]
+    if kind == "film":
+        head = ("You are a professional film and TV series subtitle translator translating English subtitles into Turkish "
+                "in real time. Write natural Turkish subtitles as a Turkish streaming service would. "
+                "Keep a leading '- ' dialogue dash. Translate sound descriptions in brackets, e.g. [door creaks] → [kapı gıcırdıyor].\n"
+                f"Title: {game or 'unknown'}.\n")
+    else:
+        head = ("You are a professional video game localizer translating English on-screen text into Turkish in real time.\n"
+                f"Game: {game or 'unknown'}.\n")
     s = (
-        "You are a professional video game localizer translating English on-screen text into Turkish in real time.\n"
-        f"Game: {game or 'unknown'}.\n"
+        head +
         f"Style: natural, short, spoken Turkish ({'informal, friendly' if tone == 'samimi' else 'neutral, polite'}). "
         "Keep the meaning and the attitude; translate slang and profanity faithfully, do not soften or censor. "
         "Keep it about as short as the original so it fits on screen. "
@@ -322,14 +329,14 @@ class TranslationManager:
     BATCH_WINDOW = 0.04
 
     def __init__(self, engine: Engine, fallback: Engine | None, game: str, glossary: dict, tone: str, context_lines: int,
-                 refine: Engine | None = None, style: str = ""):
+                 refine: Engine | None = None, style: str = "", kind: str = "game"):
         self.engine = engine
         self.fallback = fallback
         self.refine = refine          # anlık çeviriden sonra daha kaliteli çeviriyle değiştir (ör. Gemini)
         self.rq: queue.Queue = queue.Queue()
         self.refine_pause_until = 0.0     # kota/hata sonrası iyileştirmeye ara
         self.refine_status = "hazır"
-        self.sys = system_prompt(game, glossary, tone, style)
+        self.sys = system_prompt(game, glossary, tone, style, kind)
         self.context: deque[str] = deque(maxlen=max(0, context_lines))
         self.q: queue.PriorityQueue[Job] = queue.PriorityQueue()
         self.seq = itertools.count()

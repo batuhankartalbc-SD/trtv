@@ -1,0 +1,46 @@
+{
+  "name": "Final Fantasy VII Rebirth",
+  "game": "Final Fantasy VII Rebirth",
+  "kind": "game",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    }
+  ],
+  "glossary": {
+    "Map": "Harita",
+    "Inventory": "Envanter",
+    "Settings": "Ayarlar",
+    "Resume": "Devam et",
+    "Quit Game": "Oyundan çık",
+    "Objective": "Hedef",
+    "Mission Failed": "Görev başarısız",
+    "Checkpoint": "Kontrol noktası",
+    "Cloud": "",
+    "Tifa": "",
+    "Aerith": "",
+    "Barret": "",
+    "Red XIII": "",
+    "Yuffie": "",
+    "Sephiroth": "",
+    "Shinra": "",
+    "Midgar": "",
+    "Materia": "",
+    "Limit Break": "Limit Atağı",
+    "ATB": ""
+  },
+  "ignore": [],
+  "style": "Japon RYO. Cloud soğuk ve kısa; Barret yüksek sesli ve argolu; Aerith neşeli; Tifa sıcak. Materia ve isimleri çevirme.",
+  "pack": "",
+  "speaker_colors": {},
+  "window_hint": ""
+}

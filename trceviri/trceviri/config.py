@@ -65,6 +65,12 @@ class Profile:
     style: str = ""                                           # LLM için oyun/karakter üslup talimatı
     pack: str = ""                                            # hazır çeviri paketi (profiles/packs/<pack>.json)
     speaker_colors: dict[str, str] = field(default_factory=dict)   # konuşmacı adı → renk
+    kind: str = "game"                                        # game (oyun) | film (film/dizi: sadece alttaki altyazı)
+    window_hint: str = ""                                     # boş değilse bu profil seçilince okunacak pencere (ör. VLC)
+
+    @property
+    def is_film(self) -> bool:
+        return self.kind == "film"
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -79,6 +85,8 @@ class Profile:
         p.style = d.get("style", "")
         p.pack = d.get("pack", "")
         p.speaker_colors = dict(d.get("speaker_colors", {}))
+        p.kind = d.get("kind", "game") if d.get("kind") in ("game", "film") else "game"
+        p.window_hint = d.get("window_hint", "")
         return p
 
 
@@ -102,7 +110,7 @@ class Settings:
     tv_host: str = ""                     # son bulunan TV adresi (boşsa ağ taranır)
     output_pc: bool = True                # çevirileri bilgisayar ekranında da göster                # tüm ekranı tara, bölge gerekmez
     auto_scan_width: int = 960            # tespit için küçültme genişliği (büyük = küçük yazıları da bulur, yavaş)
-    profile: str = "GTA 6"
+    profile: str = "Genel oyun (her oyun)"
     engine: str = "local"                 # local | gemini | openai | claude | deepl | free
     refine: bool = True                   # yerel anlık çeviriden sonra Gemini (anahtar varsa) ile iyileştir
     models: dict[str, str] = field(default_factory=lambda: {
@@ -114,7 +122,8 @@ class Settings:
     fallback_free: bool = True
     context_lines: int = 6
     tone: str = "samimi"
-    fps: int = 20
+    fps: int = 30
+    instant: bool = True                  # anlık mod: yazı ilk görüldüğü karede çevrilip gösterilir
     change_threshold: float = 3.0
     use_gpu: bool = True                  # yazı tespiti DirectML ile ekran kartında (yoksa kendiliğinden işlemci)
     font_family: str = "Segoe UI Semibold"
@@ -142,7 +151,9 @@ class Settings:
         self.output_pc = target in ("pc", "both")
         self.tv_enabled = target in ("tv", "both")
 
-    def categories(self) -> set[str]:
+    def categories(self, film: bool = False) -> set[str]:
+        if film:                       # film/dizi: ekrandaki diğer yazılar (oynatıcı düğmeleri vb.) çevrilmez
+            return {"subtitle"}
         m = {"subtitle": self.cat_dialogue, "menu": self.cat_menu, "controls": self.cat_controls,
              "other": self.cat_other, "nav": self.cat_nav}
         return {k for k, v in m.items() if v}
@@ -229,7 +240,9 @@ def list_profiles() -> list[str]:
             names.append(json.loads(f.read_text(encoding="utf-8")).get("name", f.stem))
         except Exception:
             continue
-    return list(dict.fromkeys(names)) or ["Genel"]
+    names = list(dict.fromkeys(names)) or ["Genel"]
+    first = [n for n in ("Genel oyun (her oyun)", "Film / dizi") if n in names]
+    return first + sorted((n for n in names if n not in first), key=str.casefold)
 
 
 def load_profile(name: str) -> Profile:

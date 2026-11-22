@@ -248,6 +248,8 @@ class MainWindow(QMainWindow):
         self.win_combo = QComboBox(); self.win_combo.setEditable(True); self.win_combo.setMinimumWidth(220)
         self.win_combo.setStyleSheet("QComboBox{border:none;background:transparent;font-size:16px;}")
         self.win_combo.setCurrentText(self.s.window_hint); wh.addWidget(self.win_combo)
+        self.win_combo.activated.connect(self.set_window)
+        self.win_combo.lineEdit().editingFinished.connect(self.set_window)
         b_ref = ibtn("Pencereyi yenile", "refresh"); b_ref.setMinimumHeight(44); b_ref.clicked.connect(self.refresh_windows)
         pbox = QFrame(); pbox.setObjectName("card2"); ph = QHBoxLayout(pbox); ph.setContentsMargins(14, 4, 6, 4)
         ph.addWidget(iconlabel("monitor", TEXT, 22))
@@ -321,6 +323,14 @@ class MainWindow(QMainWindow):
         self.win_combo.setCurrentText(cur or (rp[0] if rp else "PS Remote Play"))
         self.win_combo.blockSignals(False)
 
+    def set_window(self, *_):
+        """Okunacak pencere değişti: çeviri çalışırken de hemen geçerli olsun."""
+        hint = self.win_combo.currentText().strip()
+        if hint and hint != self.s.window_hint:
+            self.s.window_hint = hint; self.s.save()
+            self.ctx.pipeline.hwnd = None
+            self.ctx.pipeline._last_find = 0
+
     def start(self):
         p = self.ctx.pipeline
         if p.running.is_set():
@@ -356,6 +366,7 @@ class MainWindow(QMainWindow):
         if not self.s.tv_enabled:
             self.ctx.tv.clear()
         self.ctx.tv.reconnect() if self.s.tv_enabled and not self.ctx.tv.connected else None
+        self.ctx.tv.send_style()
         log.info("Çeviri gösterimi: %s", dict((k, t) for k, t, _ in OUTPUTS)[target])
 
     def set_auto(self, on: bool):
@@ -381,6 +392,11 @@ class MainWindow(QMainWindow):
         if hasattr(self, "spk_table"):
             self.load_speakers()
         self.zones_page.reload_from_profile()
+        prof = self.ctx.profile
+        if getattr(prof, "window_hint", ""):            # profil kendi penceresini söylüyorsa onu oku
+            self.win_combo.setCurrentText(prof.window_hint); self.set_window()
+        if getattr(prof, "is_film", False):
+            self.on_status("pencere", None, "Film modu: filmi oynatan pencereyi (VLC, tarayıcı, Plex) üstteki listeden seçin")
 
     def on_status(self, key, ok, msg):
         log.info("Durum [%s] %s", key, msg)
@@ -412,6 +428,8 @@ class MainWindow(QMainWindow):
     def on_stats(self, d):
         self.m_ocr.set(d["ocr"]); self.m_tr.set(d["ceviri"]); self.m_tot.set(d.get("toplam", 0))
         self.lbl_cache.setText(f"Son 50 satır · önbellekte {d['onbellek']} çeviri")
+        if hasattr(self, "fps_real") and d.get("fps"):
+            self.fps_real.setText(f"Gerçek hız: {d['fps']:.0f} FPS (OCR {d['ocr']:.0f} ms)")
         if d.get("refine") != getattr(self.ctx.tv, "refine_status", None):
             self.ctx.tv.refine_status = d.get("refine")        # TV Tanılama ekranı için (style.refine)
             self.ctx.tv.send_style()
@@ -518,8 +536,70 @@ class MainWindow(QMainWindow):
         cv2.addLayout(r)
         v.addWidget(c2)
         self.load_glossary()
+
+        # --- Film / dizi altyazı dosyası
+        c3, cv3 = card("Film / dizi altyazı dosyası çevir (.srt)", "film")
+        d3 = QLabel("Film TV'de Plex, Kodi ya da VLC ile oynatılıyorsa en iyi sonuç budur: İngilizce altyazı dosyasını seçin, "
+                    "aynı klasöre <b>film.tr.srt</b> olarak Türkçesi kaydedilir. Oynatıcıda altyazı olarak Türkçeyi seçin. "
+                    "Zamanlamalar korunur. Gemini anahtarı varsa onunla (daha doğal), yoksa yerel modelle çevrilir.")
+        d3.setWordWrap(True); d3.setObjectName("muted"); cv3.addWidget(d3)
+        r3 = QHBoxLayout()
+        self.srt_btn = ibtn("Altyazı dosyası seç...", "upload", "primary"); self.srt_btn.clicked.connect(self.translate_srt)
+        self.srt_lbl = QLabel(""); self.srt_lbl.setWordWrap(True)
+        r3.addWidget(self.srt_btn); r3.addWidget(self.srt_lbl, 1)
+        cv3.addLayout(r3)
+        v.addWidget(c3)
         v.addStretch()
         return w
+
+    srt_prog = Signal(str)
+
+    def translate_srt(self):
+        path, _ = QFileDialog.getOpenFileName(self, "İngilizce altyazı dosyası", "", "Altyazı (*.srt *.vtt)")
+        if not path:
+            return
+        from pathlib import Path
+        from . import srt, keystore
+        from .translate import LocalEngine, make_engine, system_prompt
+        s = self.s
+        eng = None
+        k = keystore.decrypt(s.api_keys_enc.get("gemini", ""))
+        if k:
+            eng = make_engine("gemini", k, s.models.get("gemini", ""))
+        elif s.engine not in ("local", "free"):
+            k = keystore.decrypt(s.api_keys_enc.get(s.engine, ""))
+            if k:
+                eng = make_engine(s.engine, k, s.models.get(s.engine, ""))
+        if eng is None:
+            eng = make_engine("local", "", "")
+        sysp = system_prompt(Path(path).stem, {}, s.tone, "", "film")
+        self.srt_btn.setEnabled(False)
+        if not hasattr(self, "_srt_conn"):
+            self.srt_prog.connect(self._srt_status); self._srt_conn = True
+        self.srt_prog.emit(f"Çevriliyor ({eng.name})…")
+
+        def tr(lines, ctx):
+            try:
+                return eng.translate(lines, ctx, sysp)
+            except Exception as e:
+                if eng.name == "local":
+                    raise
+                log.warning("Altyazı: %s başarısız (%s), yerel modelle devam", eng.name, e)
+                return make_engine("local", "", "").translate(lines, ctx, sysp)
+
+        def work():
+            try:
+                out, n = srt.translate_file(Path(path), tr, lambda a, b: self.srt_prog.emit(f"Çevriliyor… {a}/{b}"))
+                self.srt_prog.emit(f"✓ Hazır: {out.name} ({n} satır) — {out.parent}")
+            except Exception as e:
+                log.exception("altyazı çevirisi")
+                self.srt_prog.emit(f"Hata: {e}")
+        threading.Thread(target=work, daemon=True, name="srt").start()
+
+    def _srt_status(self, msg: str):
+        self.srt_lbl.setText(msg)
+        if msg.startswith(("✓", "Hata")):
+            self.srt_btn.setEnabled(True)
 
     def load_engine_fields(self):
         k = self.eng.currentData()
@@ -691,6 +771,22 @@ class MainWindow(QMainWindow):
         if p.running.is_set():
             p.stop(); p.start()
         self.sync_run_buttons()
+
+    def apply_setting(self, key: str, value):
+        """Bilgisayardan değişen ayar: kaydet ve TV'ye bildir (TV Ayarlar ekranı aynı değeri göstersin)."""
+        setattr(self.s, key, value); self.s.save()
+        self.ctx.tv.send_style()
+
+    def sync_from_settings(self):
+        """TV'den gelen ayar değişikliklerini bilgisayardaki kontrollere yansıtır."""
+        if hasattr(self, "fps_combo"):
+            c = self.fps_combo
+            c.blockSignals(True)
+            c.setCurrentIndex(min(range(c.count()), key=lambda i: abs(c.itemData(i) - self.s.fps)))
+            c.blockSignals(False)
+        if hasattr(self, "inst_toggle"):
+            t = self.inst_toggle
+            t.blockSignals(True); t.setChecked(self.s.instant); t.setPos(1.0 if self.s.instant else 0.0); t.blockSignals(False)
 
     # ================================================================ Görünüm
     def _page_look(self) -> QWidget:
@@ -972,11 +1068,20 @@ class MainWindow(QMainWindow):
             return box
 
         fps = QComboBox()
-        for fv in (10, 15, 20, 30):
+        for fv in (10, 15, 20, 30, 45, 60):
             fps.addItem(f"{fv} FPS", fv)
         fps.setCurrentIndex(min(range(fps.count()), key=lambda i: abs(fps.itemData(i) - self.s.fps))); fps.setFixedWidth(210)
-        fps.currentIndexChanged.connect(lambda _: (setattr(self.s, "fps", fps.currentData()), self.s.save()))
-        L.addLayout(row("Yakalama (ekran görüntüsü) hızı", "Daha yüksek değerler akıcılığı artırır, CPU/GPU kullanımını yükseltir.", fps))
+        fps.currentIndexChanged.connect(lambda _: self.apply_setting("fps", fps.currentData()))
+        self.fps_combo = fps
+        self.fps_real = QLabel("Gerçek hız: –"); self.fps_real.setObjectName("muted")
+        L.addLayout(row("Yakalama (ekran görüntüsü) hızı",
+                        "Yüksek değer yazıyı daha erken yakalar; gerçek hız OCR süresiyle sınırlıdır (aşağıda görünür).", fps))
+        L.addWidget(self.fps_real)
+        L.addWidget(sep())
+        inst = Toggle(self.s.instant); self.inst_toggle = inst
+        inst.toggled.connect(lambda b: self.apply_setting("instant", b))
+        L.addLayout(row("Anlık mod (1:1)", "Yazı ekranda ilk göründüğü karede çevrilip tam üstüne çizilir. "
+                                           "Kapalıyken yanlış okumayı önlemek için bir kare daha beklenir.", inst))
         L.addWidget(sep())
         thr = QComboBox()
         for n in (1, 2, 4, 6, 8):

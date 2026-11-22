@@ -1,0 +1,43 @@
+{
+  "name": "Call of Duty",
+  "game": "Call of Duty",
+  "kind": "game",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    }
+  ],
+  "glossary": {
+    "Map": "Harita",
+    "Inventory": "Envanter",
+    "Settings": "Ayarlar",
+    "Resume": "Devam et",
+    "Quit Game": "Oyundan çık",
+    "Objective": "Hedef",
+    "Mission Failed": "Görev başarısız",
+    "Checkpoint": "Kontrol noktası",
+    "Price": "",
+    "Soap": "",
+    "Ghost": "",
+    "Gaz": "",
+    "Loadout": "Teçhizat",
+    "Killstreak": "Seri ödül",
+    "Perk": "Özellik",
+    "Respawn": "Yeniden doğ",
+    "Extract": "Tahliye"
+  },
+  "ignore": [],
+  "style": "Askeri aksiyon. Telsiz konuşmaları kısa, sert, emir kipinde; askeri terimleri Türk Silahlı Kuvvetleri diliyle çevir.",
+  "pack": "",
+  "speaker_colors": {},
+  "window_hint": ""
+}

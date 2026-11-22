@@ -253,6 +253,7 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - `pc-tests.yml` `cv2` eksikliğinden kırılıyordu. Artık `pip install -r trceviri/requirements.txt` kullanıyor (Codex'in dosyası, tek satır).
 - PC 2.3.6 canlıda ve `pc-latest` sürümünde. TV kapalı olduğu için yeni TV build'i kurulmadı; TV açılınca uygulama içi güncelleme önerecek.
 
+<<<<<<< Updated upstream
 ### Codex — Görev 11 / Adım 0 — MediaProjection fizibilite aracı (2026-11-22)
 - Tanılama'ya tek karelik ekran yakalama testi eklendi. İzin isteği, Android foreground service türü `mediaProjection`, PNG kare önizlemesi ve yaklaşık siyah-kare uyarısı var. Yardım'a DRM sınırı ve YouTube otomatik çeviri bilgisi eklendi. DRM atlatma yok.
 - **Fizibilite tablosu:** ADB'de TV/Android cihazı bağlı olmadığı için kaynak testleri henüz çalıştırılamadı; aşağıdaki sonuçlar açıkça beklemede.
@@ -267,3 +268,23 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Dosyalar:** `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{DiagnosticsActivity,ProjectionProbeActivity,ProjectionProbeService,HelpActivity}.kt`, bu günlük.
 - **Test:** Yerel Gradle çalıştırıcısı/gradlew mevcut değil. İlk CI build 56, DiagnosticsActivity'deki eksik `Intent` import'u yüzünden başarısız oldu; import düzeltildi ve yeni build bekleniyor. Fiziksel test için TV ADB'ye bağlanınca yukarıdaki tablo ölçülmeli.
 - **Durum:** Adım 0 cihaz ölçümü tamamlanana kadar beklemede; DRM içeriği siyah çıkarsa uygulama kullanıcıya sınırlamayı bildirecek.
+=======
+### Claude — PC 2.4.0: her oyun + film/dizi, 60 FPS, anlık mod, TV çevirisi, .srt (2026-11-22)
+- **Her oyun:** Profil listesi en üstte `Genel oyun (her oyun)` (yeni kurulumların varsayılanı) ve `Film / dizi`. Yeni oyun profilleri: TLOU2, GoW Ragnarök, Ghost of Tsushima, Ghost of Yōtei, Horizon FW, RE4, Hogwarts Legacy, EA FC, Call of Duty, FF7 Rebirth, Death Stranding 2, Stellar Blade, Black Myth Wukong, Uncharted. Toplam 23 profil.
+- **Profil alanları:** `kind` (`game` | `film`) ve `window_hint` (profil seçilince okunacak pencere).
+- **Film modu (PC):**
+  - Sadece ekranın alt %45'i okunur ve oradaki her şey altyazı sayılır.
+  - `♪` satırları atlanır; `<i>` etiketleri temizlenir; baştaki `-` korunur.
+  - Çeviri istemi film/dizi altyazısına göre.
+  - Pencere listesinden VLC/tarayıcı seçilebilir; seçilen pencere çalışırken anında geçerli olur.
+- **FPS:** 10–60 arası seçilebilir; yeni varsayılan 30. Gelişmiş'te gerçekte ulaşılan FPS ve OCR süresi görünür.
+- **Anlık mod (1:1):** varsayılan açık. Yazı ilk karede (okuma güveni ≥ 0.6) gösterilir.
+- **Protokol:**
+  - `style` içine `fps` ve `instant` eklendi.
+  - TV→PC `set` anahtarlarına `fps`, `instant`, `output` eklendi.
+  - Yeni TV→PC `ocr` (`id`, `src`, `lines[{en, b, lh}]`), PC→TV `tr` (`id`, `tr[]`). PC hazır olanları hemen, kalanları çevrildikçe aynı id ile tekrar gönderir. Yakalama kapalıyken de çalışır (`Pipeline.ensure_manager`).
+  - Gerçek yerel modelle uçtan uca test edildi.
+- **.srt çevirici:** Çeviri sayfası → "Film / dizi altyazı dosyası çevir". `.srt` ve `.vtt` okunur, aynı klasöre `film.tr.srt` yazılır, zamanlamalar korunur. Gemini anahtarı varsa onunla, yoksa yerel modelle çevrilir (`trceviri/srt.py`).
+- **Test:** pytest 16 test geçti (`tests/test_film.py` yeni). Ekran görüntüsü kontrolü 1536x792'de yapıldı.
+- **Codex:** Görev 11 = TV bağımsız mod (MediaProjection + ML Kit + `ocr`/`tr`) ve TV görünümünün baştan tasarımı.
+>>>>>>> Stashed changes

@@ -31,6 +31,7 @@ class AppContext:
         self.pipeline.listeners.append(self.tv.send_items)
         self.tv.calib_request.connect(self.calibrate_from_tv)
         self.tv.setting_request.connect(self.setting_from_tv)
+        self.tv.ocr_request.connect(self.translate_for_tv)
         from .tts import Speaker
         self.pipeline.tts = Speaker(self.settings)
         self.window = MainWindow(self)
@@ -100,6 +101,40 @@ class AppContext:
         self.wizard = SetupWizard(self, self.window)
         self.wizard.show()
 
+    def translate_for_tv(self, rid: int, lines: list, src: str) -> None:
+        """TV bağımsız mod: TV'nin okuduğu İngilizce satırları bilgisayarın motoru, oyun paketi ve önbelleğiyle çevirir.
+        Hazır olanlar hemen, kalanlar çevrildikçe aynı id ile tekrar gönderilir (Gemini iyileştirmesi de)."""
+        p = self.pipeline
+        try:
+            mgr = p.ensure_manager()
+        except Exception as e:
+            log.warning("TV çevirisi başlatılamadı: %s", e)
+            return
+        from .pipeline import film_clean
+        from .textproc import normalize
+        out = [""] * len(lines)
+        pending: dict[str, list[int]] = {}
+        for i, en in enumerate(lines):
+            en = film_clean(normalize(str(en)))
+            if not en or "♪" in en or "♫" in en:
+                continue
+            hit = p.lookup(en)
+            if hit:
+                out[i] = hit
+            else:
+                pending.setdefault(en, []).append(i)
+        self.tv.send_tr(rid, out)
+        for en, idxs in pending.items():
+            def done(text, tr, engine, ms, idxs=idxs):
+                if not tr:
+                    return
+                p.cache.put(p.scope, text, tr, engine)
+                p.record(text, tr, engine, ms)
+                for i in idxs:
+                    out[i] = tr
+                self.tv.send_tr(rid, out)
+            mgr.submit(en, 0, True, done)
+
     def setting_from_tv(self, key: str, value) -> None:
         """TV kumandasından ayar değişikliği (Brolis Game Translate (TV) → Ayarlar). Sadece güvenli, bilinen ayarlar."""
         s = self.settings
@@ -137,6 +172,15 @@ class AppContext:
                     self.window.font_combo.blockSignals(False)
             elif key == "replay":
                 self.show_history()
+                return
+            elif key == "fps":
+                s.fps = max(5, min(60, int(value)))
+                self.window.sync_from_settings()
+            elif key == "instant":
+                s.instant = bool(value)
+                self.window.sync_from_settings()
+            elif key == "output" and value in ("pc", "tv", "both"):
+                self.window.set_output(value)
                 return
             else:
                 log.info("TV'den bilinmeyen ayar: %s", key)

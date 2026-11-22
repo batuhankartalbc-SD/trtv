@@ -1,0 +1,25 @@
+{
+  "name": "Film / dizi",
+  "game": "",
+  "kind": "film",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Film altyazısı",
+      "type": "subtitle",
+      "x": 0.05,
+      "y": 0.7,
+      "w": 0.9,
+      "h": 0.28,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    }
+  ],
+  "glossary": {},
+  "ignore": [],
+  "style": "Film ve dizi altyazısı. Türkçe yayın platformlarındaki altyazı dilini kullan: doğal, akıcı, kısa. Hitap ve argoyu sahneye uygun çevir; küfürleri yumuşatma. Şarkı sözlerini çevirme.",
+  "pack": "",
+  "speaker_colors": {},
+  "window_hint": ""
+}

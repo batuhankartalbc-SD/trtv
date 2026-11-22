@@ -1,0 +1,46 @@
+{
+  "name": "Hogwarts Legacy",
+  "game": "Hogwarts Legacy",
+  "kind": "game",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    }
+  ],
+  "glossary": {
+    "Map": "Harita",
+    "Inventory": "Envanter",
+    "Settings": "Ayarlar",
+    "Resume": "Devam et",
+    "Quit Game": "Oyundan çık",
+    "Objective": "Hedef",
+    "Mission Failed": "Görev başarısız",
+    "Checkpoint": "Kontrol noktası",
+    "Hogwarts": "",
+    "Hogsmeade": "",
+    "Gryffindor": "",
+    "Slytherin": "",
+    "Ravenclaw": "",
+    "Hufflepuff": "",
+    "Professor Fig": "Profesör Fig",
+    "Accio": "",
+    "Lumos": "",
+    "Expelliarmus": "",
+    "Wand": "Asa",
+    "Room of Requirement": "İhtiyaç Odası"
+  },
+  "ignore": [],
+  "style": "Büyücülük dünyası, 1800'ler. Türkçe Harry Potter çevirilerindeki karşılıkları kullan (ör. Gryffindor = Gryffindor, Muggle = Muggle). Büyü adlarını çevirme.",
+  "pack": "",
+  "speaker_colors": {},
+  "window_hint": ""
+}

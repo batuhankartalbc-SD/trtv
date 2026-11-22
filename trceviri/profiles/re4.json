@@ -1,0 +1,45 @@
+{
+  "name": "Resident Evil 4",
+  "game": "Resident Evil 4",
+  "kind": "game",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    }
+  ],
+  "glossary": {
+    "Map": "Harita",
+    "Inventory": "Envanter",
+    "Settings": "Ayarlar",
+    "Resume": "Devam et",
+    "Quit Game": "Oyundan çık",
+    "Objective": "Hedef",
+    "Mission Failed": "Görev başarısız",
+    "Checkpoint": "Kontrol noktası",
+    "Leon": "",
+    "Ashley": "",
+    "Luis": "",
+    "Ada": "",
+    "Saddler": "",
+    "Salazar": "",
+    "Krauser": "",
+    "Ganado": "",
+    "Las Plagas": "",
+    "Merchant": "Tüccar",
+    "Attaché Case": "Evrak çantası"
+  },
+  "ignore": [],
+  "style": "Korku ve aksiyon. Leon esprili ve soğukkanlı; tüccarın konuşmaları kısa ve tuhaf. İsimleri çevirme.",
+  "pack": "",
+  "speaker_colors": {},
+  "window_hint": ""
+}

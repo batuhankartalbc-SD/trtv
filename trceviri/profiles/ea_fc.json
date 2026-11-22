@@ -1,0 +1,37 @@
+{
+  "name": "EA SPORTS FC",
+  "game": "EA SPORTS FC",
+  "kind": "game",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    }
+  ],
+  "glossary": {
+    "Ultimate Team": "",
+    "Kick-Off": "Başlama Vuruşu",
+    "Career Mode": "Kariyer Modu",
+    "Squad": "Kadro",
+    "Substitution": "Oyuncu değişikliği",
+    "Free Kick": "Serbest vuruş",
+    "Penalty": "Penaltı",
+    "Corner": "Korner",
+    "Offside": "Ofsayt",
+    "Half Time": "Devre arası",
+    "Full Time": "Maç sonu"
+  },
+  "ignore": [],
+  "style": "Futbol oyunu. Türk futbol yayınlarındaki terimleri kullan (corner = korner, offside = ofsayt, kick-off = başlama vuruşu). Kulüp ve oyuncu adlarını çevirme.",
+  "pack": "",
+  "speaker_colors": {},
+  "window_hint": ""
+}

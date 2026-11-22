@@ -1,0 +1,48 @@
+{
+  "name": "God of War Ragnarök",
+  "game": "God of War Ragnarök",
+  "kind": "game",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    }
+  ],
+  "glossary": {
+    "Map": "Harita",
+    "Inventory": "Envanter",
+    "Settings": "Ayarlar",
+    "Resume": "Devam et",
+    "Quit Game": "Oyundan çık",
+    "Objective": "Hedef",
+    "Mission Failed": "Görev başarısız",
+    "Checkpoint": "Kontrol noktası",
+    "Kratos": "",
+    "Atreus": "",
+    "Boy": "Evlat",
+    "Mimir": "",
+    "Freya": "",
+    "Odin": "",
+    "Thor": "",
+    "Ragnarök": "",
+    "Midgard": "",
+    "Asgard": "",
+    "Leviathan Axe": "Leviathan Baltası",
+    "Blades of Chaos": "Kaos Kılıçları",
+    "Spartan Rage": "Spartalı Öfkesi",
+    "Realm": "Diyar"
+  },
+  "ignore": [],
+  "style": "İskandinav mitolojisi. Kratos az ve ağır konuşur, otoriter; Atreus genç ve meraklı; Mimir esprili ve bilgiç. Mitolojik isimleri çevirme.",
+  "pack": "",
+  "speaker_colors": {},
+  "window_hint": ""
+}

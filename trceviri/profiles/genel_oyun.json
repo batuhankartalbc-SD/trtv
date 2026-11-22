@@ -1,0 +1,34 @@
+{
+  "name": "Genel oyun (her oyun)",
+  "game": "",
+  "kind": "game",
+  "zones": [
+    {
+      "id": "sub",
+      "name": "Diyalog altyazısı",
+      "type": "subtitle",
+      "x": 0.1,
+      "y": 0.76,
+      "w": 0.8,
+      "h": 0.2,
+      "enabled": true,
+      "min_confidence": 0.6,
+      "font_scale": 1.0
+    }
+  ],
+  "glossary": {
+    "Map": "Harita",
+    "Inventory": "Envanter",
+    "Settings": "Ayarlar",
+    "Resume": "Devam et",
+    "Quit Game": "Oyundan çık",
+    "Objective": "Hedef",
+    "Mission Failed": "Görev başarısız",
+    "Checkpoint": "Kontrol noktası"
+  },
+  "ignore": [],
+  "style": "Herhangi bir PS5 oyunu. Konuşmaları doğal ve akıcı, menü ve kontrolleri kısa ve net çevir. Oyun terimlerini Türk oyuncuların kullandığı biçimde çevir (ör. checkpoint = kontrol noktası, loot = ganimet, skill tree = yetenek ağacı).",
+  "pack": "",
+  "speaker_colors": {},
+  "window_hint": ""
+}

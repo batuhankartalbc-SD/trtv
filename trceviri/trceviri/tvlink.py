@@ -75,6 +75,7 @@ class TvLink(QObject):
     status = Signal(bool, str)
     calib_request = Signal(str)            # TV kumandasıyla hizalama: CAL_LEFT, CAL_MODE_ON ...
     setting_request = Signal(str, object)  # TV kumandasıyla ayar: ("font_scale", 1.1) ...
+    ocr_request = Signal(int, list, str)   # TV bağımsız mod: TV'nin okuduğu satırlar (id, ["İngilizce", ...], kaynak)
 
     def __init__(self, settings):
         super().__init__()
@@ -107,6 +108,7 @@ class TvLink(QObject):
                    "mode": s.display_mode, "match": s.match_colors, "bgm": s.bg_mode,
                    "font": getattr(s, "font_choice", "default"), "fonts": self._fonts(),
                    "pcver": self._pcver(), "refine": getattr(self, "refine_status", None),
+                   "fps": s.fps, "instant": s.instant,
                    "dx": s.tv_dx / 100, "dy": s.tv_dy / 100, "sx": s.tv_sx / 100, "sy": s.tv_sy / 100,
                    "calib": self.calib,
                    # TV ayar menüsü için mevcut değerler
@@ -138,6 +140,10 @@ class TvLink(QObject):
             return list_profiles()
         except Exception:
             return []
+
+    def send_tr(self, rid: int, tr: list[str]) -> None:
+        """TV bağımsız mod: `ocr` isteğine cevap (aynı sırayla; boş = gösterme). Aynı id tekrar gelirse son gelen kazanır."""
+        self._put({"t": "tr", "id": rid, "tr": list(tr)})
 
     def set_visible(self, v: bool) -> None:
         self.visible = v
@@ -223,10 +229,14 @@ class TvLink(QObject):
                     line = f.readline()
                     if not line:
                         break
-                    if b"\"cal\"" in line or b"\"set\"" in line or b"\"visible\"" in line:
+                    if (b"\"cal\"" in line or b"\"set\"" in line or b"\"visible\"" in line
+                            or b"\"ocr\"" in line):
                         try:
                             msg = json.loads(line.decode("utf-8"))
-                            if msg.get("t") == "cal":
+                            if msg.get("t") == "ocr":                # TV kendisi okudu, PC çevirsin
+                                lines = [str(l.get("en", "")) for l in msg.get("lines", []) if isinstance(l, dict)][:40]
+                                self.ocr_request.emit(int(msg.get("id", 0)), lines, str(msg.get("src", "film")))
+                            elif msg.get("t") == "cal":
                                 self.calib_request.emit(str(msg.get("a", "")))
                             elif msg.get("t") == "visible":          # TV Ayarlar: Türkçe yazılar aç/kapa
                                 self.setting_request.emit("visible", bool(msg.get("v", True)))
