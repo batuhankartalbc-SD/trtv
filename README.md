@@ -6,6 +6,8 @@
 
 PS5 oyunlarındaki İngilizce konuşma, menü ve kontrolleri anında Türkçeye çevirir; Türkçe yazı TV'de oyunun tam üstünde, aynı boyutta görünür.
 
+[**Tanıtım ve indirme sitesi →**](https://batuhankartalbc-sd.github.io/trtv/)
+
 ## İlk 5 dakika
 
 1. [PC kurulum dosyasını indirin](https://github.com/batuhankartalbc-SD/trtv/releases/download/pc-latest/TRCeviri-Kurulum.exe) (`pc-latest`) ve Windows bilgisayarınıza kurun.
@@ -66,6 +68,10 @@ Bilgisayarda PS Remote Play görüntüsü okunur ve çevrilir. TV uygulaması T�
 - TV kumandasıyla yazı ayarları ve hizalama
 - İsteğe bağlı Türkçe seslendirme
 - Bilgisayar ve TV uygulamaları için otomatik güncelleme
+
+## Film ve altyazı dosyaları
+
+TV uygulamasındaki bağımsız mod, desteklenen kaynaklarda ekrandaki altyazıyı TV üzerinde okuyup çevirebilir. DRM korumalı uygulamalar görüntüyü siyah verebilir; bu durumda oynatıcının kendi altyazı özelliğini kullanın. PC uygulamasındaki `.srt` / `.vtt` çevirici zaman kodlarını koruyarak yeni bir Türkçe dosya oluşturur.
 
 ## Sık sorulanlar
 

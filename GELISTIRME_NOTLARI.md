@@ -350,5 +350,13 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 ### Codex — Görev 12B — Popüler oyun paketleri — 2026-11-22
 - 10 oyun profili için ayrı öneri JSON'ları hazırlandı; her biri 170–171 benzersiz kısa arayüz, terim, hedef ve kontrol kaydı içeriyor. Mevcut profil sözlükleri ve oyun terimleri okundu; karakter adları çevrilmedi.
 - **Dosyalar:** `contrib/packs/{gow_ragnarok,tlou2,ghost_tsushima,horizon_fw,re4,hogwarts,ea_fc,cod,ff7_rebirth,uncharted}.json`, `contrib/README.md`, bu günlük.
-- **Doğrulama:** JSON parse ve anahtar tekilliği kontrolü; her paket 150+ satır. Build 72 doğrulaması push sonrası yapılacak.
+- **Doğrulama:** JSON parse ve anahtar tekilliği kontrolü; her paket 150+ satır. Build 72 (`838cb3b`, run 72) başarılı; APK derlemesi ve release tamamlandı.
 - **Yarım kalan:** Oyun içi satır doğrulaması ve ana paketlere birleştirme Claude tarafından yapılmalı.
+
+
+### Codex — Görev 12C — Tanıtım ve indirme sitesi — 2026-11-22
+- Türkçe, mobil uyumlu statik tanıtım sitesi hazırlandı: indirme düğmeleri, kurulum akışı, marka görselleri, 23 profil (Genel + Film/dizi + 21 oyun), film/.srt modu, sorun giderme ve gizlilik metni. `actions/deploy-pages` ile Pages workflow eklendi. README'ye site bağlantısı ve film modu açıklaması eklendi.
+- **Dosyalar:** `site/index.html`, `site/style.css`, `.github/workflows/pages.yml`, `README.md`, bu günlük.
+- **Doğrulama:** Yerel statik dosya/link kontrolü yapılacak; GitHub Pages yayını CI'da doğrulanacak. Android Build 73 tetiklenecek.
+- **Ayar notu:** Repo Pages kaynağı açılmamışsa Settings → Pages → Source → GitHub Actions seçilmeli.
+- **Yarım kalan:** İlk Pages deploy sonucu ve canlı URL açılışı bekleniyor.
