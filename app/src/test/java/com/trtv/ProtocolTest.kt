@@ -47,4 +47,23 @@ class ProtocolTest {
         assertEquals("line 6", capped.first().text)
         assertEquals("line 55", capped.last().text)
     }
+
+    @Test fun filmLinesRequireTwoStableFramesAndPreserveFormatting() {
+        val tracker = StableFilmLines()
+        val line = FilmLine("Get in the car", listOf(.1f, .8f, .5f, .05f), .04f, prefix = "- ")
+        assertTrue(tracker.accept(listOf(line)).isEmpty())
+        assertEquals(listOf(line), tracker.accept(listOf(line)))
+        assertEquals("- Arabaya bin", line.formatted("Arabaya bin"))
+        assertEquals("Yardım", cleanFilmLine("[Help]")?.format("Yardım"))
+        assertEquals(null, cleanFilmLine("♪ Song lyric ♪"))
+    }
+
+    @Test fun laterPcTranslationReplacesFallbackAndCacheIsBounded() {
+        val cache = TranslationRevisionCache(limit = 2)
+        assertTrue(cache.put(1, listOf("Yerel")))
+        assertTrue(cache.put(1, listOf("PC düzeltmesi")))
+        assertEquals(listOf("PC düzeltmesi"), cache[1])
+        cache.put(2, listOf("İki")); cache.put(3, listOf("Üç"))
+        assertEquals(null, cache[1])
+    }
 }
