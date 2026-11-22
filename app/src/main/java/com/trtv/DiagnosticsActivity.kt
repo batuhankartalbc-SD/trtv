@@ -127,6 +127,7 @@ class DiagnosticsActivity : Activity() {
             appendLine("Uygulama sürümü: $version")
             appendLine("TV adresi: $ip · port ${OverlayService.PORT}")
             append("Hizalama: dx ${"%.4f".format(java.util.Locale.US, d.dx)}, dy ${"%.4f".format(java.util.Locale.US, d.dy)}, sx ${"%.4f".format(java.util.Locale.US, d.sx)}, sy ${"%.4f".format(java.util.Locale.US, d.sy)}")
+            if (BuildConfig.DEBUG) appendLine("TV çizim süresi: ${"%.2f".format(java.util.Locale.US, d.lastDrawMs)} ms (son kare)")
         }
     }
 

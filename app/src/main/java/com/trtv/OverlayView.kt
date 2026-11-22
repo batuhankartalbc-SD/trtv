@@ -5,6 +5,9 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.text.Layout
+import android.text.StaticLayout
+import android.text.TextPaint
 import android.graphics.Typeface
 import android.os.SystemClock
 import android.view.View
@@ -35,17 +38,16 @@ class OverlayView(ctx: Context) : View(ctx) {
     private data class AnimatedItem(
         var item: ViewItem,
         val id: String,
-        val startedAt: Long,
-        var removedAt: Long? = null
+        var startedAt: Long
     )
     private data class MatchLayout(
         val lines: List<String>, val widths: List<Float>, val size: Float, val lineHeight: Float,
         val lineWidth: Float, val totalHeight: Float, val textX: Float, val textY: Float,
-        val pad: Float, val cover: RectF, val prefixWidth: Float
+        val pad: Float, val cover: RectF, val prefixWidth: Float, val textLayout: StaticLayout
     )
     private data class BoxLayout(
         val cover: RectF, val lines: List<String>, val widths: List<Float>, val size: Float,
-        val lineHeight: Float, val pad: Float, val prefixWidth: Float
+        val lineHeight: Float, val pad: Float, val prefixWidth: Float, val textLayout: StaticLayout
     )
     private val zones = LinkedHashMap<String, MutableList<AnimatedItem>>()
     private val layoutCache = HashMap<String, MatchLayout>()
@@ -55,8 +57,7 @@ class OverlayView(ctx: Context) : View(ctx) {
         override fun run() {
             animationScheduled = false
             val now = SystemClock.uptimeMillis()
-            zones.values.forEach { entries -> entries.removeAll { it.removedAt?.let { t -> now - t >= 120L } == true } }
-            if (zones.values.flatten().any { it.removedAt != null || now - it.startedAt < 120L }) {
+            if (zones.values.flatten().any { now - it.startedAt < 80L }) {
                 animationScheduled = true
                 postDelayed(this, 16L)
             } else invalidate()
@@ -92,7 +93,7 @@ class OverlayView(ctx: Context) : View(ctx) {
     fun setItems(zone: String, items: List<ViewItem>) {
         val now = SystemClock.uptimeMillis()
         val entries = zones.getOrPut(zone) { ArrayList() }
-        val current = entries.filter { it.removedAt == null }.associateBy { it.id }
+        val current = entries.associateBy { it.id }
         val incomingIds = HashSet<String>()
         var geometryChanged = false
         for (item in items) {
@@ -101,21 +102,21 @@ class OverlayView(ctx: Context) : View(ctx) {
             val old = current[id]
             if (old != null) {
                 if (old.item != item) geometryChanged = true
+                if (old.item.tr != item.tr) old.startedAt = now
                 old.item = item // Aynı kutudaki iyileştirilmiş metin anında değişir.
             } else { entries.add(AnimatedItem(item, id, now)); geometryChanged = true }
         }
-        current.filterKeys { it !in incomingIds }.values.forEach { it.removedAt = now; geometryChanged = true }
+        if (entries.removeAll { it.id !in incomingIds }) geometryChanged = true
         if (geometryChanged && layoutCache.size > 300) { layoutCache.clear(); boxLayoutCache.clear() }
         animateUntilSettled()
     }
 
     fun visibleItemCount(): Int = if (!shown || uiSuppressed || calib) 0 else
-        zones.values.sumOf { entries -> entries.count { it.removedAt == null } }
+        zones.values.sumOf { entries -> entries.size }
 
     fun clearAll() {
-        val now = SystemClock.uptimeMillis()
-        zones.values.flatten().filter { it.removedAt == null }.forEach { it.removedAt = now }
-        animateUntilSettled()
+        zones.clear()
+        invalidate()
     }
 
     fun clearZoneImmediately(zone: String) {
@@ -124,9 +125,8 @@ class OverlayView(ctx: Context) : View(ctx) {
     }
 
     fun clearGameZones() {
-        val now = SystemClock.uptimeMillis()
-        zones.filterKeys { it != "film" }.values.flatten().filter { it.removedAt == null }.forEach { it.removedAt = now }
-        animateUntilSettled()
+        zones.keys.filter { it != "film" }.toList().forEach(zones::remove)
+        invalidate()
     }
 
     private fun itemIdentity(item: ViewItem) = "${item.kind}|${item.speaker}|${item.b.joinToString(",") { "%.4f".format(java.util.Locale.US, it) }}"
@@ -205,6 +205,16 @@ class OverlayView(ctx: Context) : View(ctx) {
     private fun my(v: Float, H: Float) = mapY(v, sy, dy, H)
 
     override fun onDraw(c: Canvas) {
+        val started = SystemClock.elapsedRealtimeNanos()
+        try { drawOverlay(c) } finally {
+            lastDrawDurationMs = (SystemClock.elapsedRealtimeNanos() - started) / 1_000_000f
+        }
+    }
+
+    @Volatile private var lastDrawDurationMs = 0f
+    fun lastDrawDurationMs(): Float = lastDrawDurationMs
+
+    private fun drawOverlay(c: Canvas) {
         if (uiSuppressed) return
         val W = width.toFloat(); val H = height.toFloat()
         bannerText?.let { drawBanner(c, it, W, H) }
@@ -213,8 +223,7 @@ class OverlayView(ctx: Context) : View(ctx) {
         if (!shown) return
         val now = SystemClock.uptimeMillis()
         for (items in zones.values) for (animated in items) {
-            val alpha = animated.removedAt?.let { (255f * (1f - (now - it) / 120f)).toInt() }
-                ?: (255f * ((now - animated.startedAt) / 120f).coerceIn(0f, 1f)).toInt()
+            val alpha = (255f * ((now - animated.startedAt) / 80f).coerceIn(0f, 1f)).toInt()
             if (alpha <= 0) continue
             val layer = c.saveLayerAlpha(null, alpha.coerceIn(0, 255))
             if (mode == "match" || animated.item.kind == "film") drawMatch(c, animated.item, W, H) else drawBox(c, animated.item, W, H)
@@ -328,16 +337,16 @@ class OverlayView(ctx: Context) : View(ctx) {
         var lines: List<String>
         while (true) {
             fill.textSize = size
-            lines = wrapText(text, fill::measureText, ow * 1.06f)
+            lines = staticLines(text, ow * 1.06f, size)
             if (lines.size <= nl || size <= base * 0.82f) break
             size *= 0.96f
         }
         if (lines.size > nl) {
             fill.textSize = size
             lines = when {
-                isSub -> wrapText(text, fill::measureText, max(ow, W * 0.82f))
-                it.align == "l" -> wrapText(text, fill::measureText, max(ow, min(W - x0 - 8, ow * 1.6f)))
-                else -> wrapText(text, fill::measureText, max(ow, ow * 1.5f))
+                isSub -> staticLines(text, max(ow, W * 0.82f), size)
+                it.align == "l" -> staticLines(text, max(ow, min(W - x0 - 8, ow * 1.6f)), size)
+                else -> staticLines(text, max(ow, ow * 1.5f), size)
             }
         }
         fill.textSize = size
@@ -351,7 +360,8 @@ class OverlayView(ctx: Context) : View(ctx) {
         val pad = max(2f, lh * 0.16f)
         val cover = RectF(min(x0, tx0) - pad, min(y0, ty0) - pad, max(x1, tx0 + lw) + pad, max(y1, ty0 + th) + pad)
         val prefix = if (it.speaker.isNotEmpty()) "${it.speaker}:" else ""
-        val cached = MatchLayout(lines, widths, size, lineH, lw, th, tx0, ty0, pad, cover, fill.measureText(prefix))
+        val textLayout = makeStaticLayout(text, max(1, (if (lines.size > nl) max(ow, W * 0.82f) else ow * 1.06f).toInt()), size)
+        val cached = MatchLayout(lines, widths, size, lineH, lw, th, tx0, ty0, pad, cover, fill.measureText(prefix), textLayout)
         layoutCache[key] = cached
         return cached
     }
@@ -407,7 +417,7 @@ class OverlayView(ctx: Context) : View(ctx) {
         var lineH: Float
         while (true) {
             fill.textSize = size
-            lines = wrapText(text, fill::measureText, innerW)
+            lines = staticLines(text, innerW, size)
             lineH = fill.fontSpacing
             if (lines.size * lineH <= (cover.height() - 2 * pad) * 1.15f || size <= 16f) break
             size -= 1f
@@ -418,7 +428,7 @@ class OverlayView(ctx: Context) : View(ctx) {
         }
         fill.textSize = size
         val prefix = if (it.speaker.isNotEmpty()) "${it.speaker}:" else ""
-        val result = BoxLayout(cover, lines, lines.map(fill::measureText), size, lineH, pad, fill.measureText(prefix))
+        val result = BoxLayout(cover, lines, lines.map(fill::measureText), size, lineH, pad, fill.measureText(prefix), makeStaticLayout(text, max(1, innerW.toInt()), size))
         boxLayoutCache[key] = result
         return result
     }
@@ -427,5 +437,21 @@ class OverlayView(ctx: Context) : View(ctx) {
         c.drawText(t, x, y, stroke)
         fill.color = color
         c.drawText(t, x, y, fill)
+    }
+
+    private fun staticLines(text: String, width: Float, size: Float): List<String> {
+        fill.textSize = size
+        val layout = makeStaticLayout(text, max(1, width.toInt()), size)
+        return (0 until layout.lineCount).map { i -> text.substring(layout.getLineStart(i), layout.getLineEnd(i)).trimEnd() }
+    }
+
+    private fun makeStaticLayout(text: String, width: Int, size: Float): StaticLayout {
+        fill.textSize = size
+        val paint = TextPaint(fill)
+        return StaticLayout.Builder.obtain(text, 0, text.length, paint, width)
+            .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+            .setIncludePad(false)
+            .setLineSpacing(0f, 1f)
+            .build()
     }
 }

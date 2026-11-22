@@ -68,7 +68,8 @@ data class DiagnosticsSnapshot(
     val dx: Float,
     val dy: Float,
     val sx: Float,
-    val sy: Float
+    val sy: Float,
+    val lastDrawMs: Float
 )
 
 /**
@@ -94,7 +95,7 @@ class OverlayService : Service() {
         fun historySnapshot(): List<HistoryEntry> = activeService?.historySnapshotInternal() ?: emptyList()
         fun isComputerConnected(): Boolean = activeService?.isPcConnected() ?: false
         fun diagnosticsSnapshot(): DiagnosticsSnapshot = activeService?.diagnosticsSnapshotInternal()
-            ?: DiagnosticsSnapshot(false, "—", null, 0, 0, 0, 0, 1f, 0f, 0f, 1f, 1f)
+            ?: DiagnosticsSnapshot(false, "—", null, 0, 0, 0, 0, 1f, 0f, 0f, 1f, 1f, 0f)
         fun changeSetting(key: String, value: Any): Boolean = activeService?.sendSettingToPc(key, value) ?: false
         fun setDisconnectWarning(enabled: Boolean) { activeService?.setConnectionWarningEnabled(enabled) }
         fun suppressOverlayUi(suppressed: Boolean) {
@@ -173,7 +174,7 @@ class OverlayService : Service() {
             connected, computerName,
             if (lastMessageAt == 0L) null else ((now - lastMessageAt).coerceAtLeast(0L) / 1000.0),
             recentItems, view?.visibleItemCount() ?: 0, display.widthPixels, display.heightPixels,
-            display.density, alignDx, alignDy, alignSx, alignSy
+            display.density, alignDx, alignDy, alignSx, alignSy, view?.lastDrawDurationMs() ?: 0f
         )
     }
 

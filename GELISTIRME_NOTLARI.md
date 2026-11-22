@@ -357,6 +357,13 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 ### Codex — Görev 12C — Tanıtım ve indirme sitesi — 2026-11-22
 - Türkçe, mobil uyumlu statik tanıtım sitesi hazırlandı: indirme düğmeleri, kurulum akışı, marka görselleri, 23 profil (Genel + Film/dizi + 21 oyun), film/.srt modu, sorun giderme ve gizlilik metni. `actions/deploy-pages` ile Pages workflow eklendi. README'ye site bağlantısı ve film modu açıklaması eklendi.
 - **Dosyalar:** `site/index.html`, `site/style.css`, `.github/workflows/pages.yml`, `README.md`, bu günlük.
-- **Doğrulama:** Yerel statik dosya/link kontrolü yapılacak; GitHub Pages yayını CI'da doğrulanacak. Android Build 73 tetiklenecek.
+- **Doğrulama:** Yerel statik dosya/link kontrolü yapılacak; Android Build 73 (`ff92b70`, run 73) başarılı. Pages run 1, `Pages'i yapılandır` adımında depo Pages kaynağı etkin olmadığı için başarısız oldu.
 - **Ayar notu:** Repo Pages kaynağı açılmamışsa Settings → Pages → Source → GitHub Actions seçilmeli.
-- **Yarım kalan:** İlk Pages deploy sonucu ve canlı URL açılışı bekleniyor.
+- **Yarım kalan:** GitHub depo ayarından Settings → Pages → Source → GitHub Actions seçilmesi gerekiyor; bu hesapta depo ayarlarını değiştiren yetkili bağlantı bulunmadığından deploy ve canlı URL doğrulaması bekliyor.
+
+
+### Codex — Görev 12D — TV çizim performansı — 2026-11-22
+- Overlay kutuları kimliğe göre güncelleniyor; değişmeyen öğelerin metin düzeni önbellekten kullanılıyor. Metin ölçümü/satır kırılımı için Android `StaticLayout` nesnesi düzen önbelleğinde tutuluyor. İçerik kaldırma ve temizleme animasyonsuz, anında; yeni/yenilenen çeviri 80 ms alfa ile beliriyor. Tanılama'da yalnızca debug derlemesinde son kare çizim süresi gösteriliyor.
+- **Dosyalar:** `app/src/main/java/com/trtv/OverlayView.kt`, `app/src/main/java/com/trtv/OverlayService.kt`, `app/src/main/java/com/trtv/DiagnosticsActivity.kt`, bu günlük.
+- **Doğrulama:** Build 74 CI ile derleme/JVM testleri yapılacak. 1080p'de ≤8 ms hedefi fiziksel TV'de ölçülmedi; debug Tanılama ekranında ölçüm görünür olacak.
+- **Yarım kalan:** Gerçek cihazdaki kare süresi/8 ms hedefi, TV yeniden bağlandığında ölçülmeli.
