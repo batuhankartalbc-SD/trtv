@@ -25,6 +25,7 @@ class SettingsActivity : Activity() {
     private val rows = listOf(
         Row("profile", "Oyun profili"),
         Row("engine", "Çeviri motoru"),
+        Row("auto_mode", "Çevrilecek yer"),
         Row("film_mode", "Bağımsız mod (film/dizi)"),
         Row("film_band", "Altyazı bandı"),
         Row("fps", "Yakalama hızı"),
@@ -184,6 +185,7 @@ class SettingsActivity : Activity() {
         values["font"] = state.font
         values["fps"] = state.fps
         values["instant"] = state.instant
+        values["auto_mode"] = state.autoMode
         values["output"] = state.output
         values["film_mode"] = getSharedPreferences(IndependentModeService.PREFS, MODE_PRIVATE)
             .getBoolean(IndependentModeService.KEY_ENABLED, false)
@@ -220,6 +222,7 @@ class SettingsActivity : Activity() {
         "film_band" -> "%${values[key] ?: 35} alt"
         "fps" -> "${values[key] ?: 20} FPS"
         "instant" -> if (values[key] == true) "Açık" else "Kapalı"
+        "auto_mode" -> if (values[key] == false) "Sadece bölgelerim" else "Tüm ekran"
         "output" -> when (values[key]) { "pc" -> "Bilgisayar"; "both" -> "Bilgisayar + TV"; else -> "TV" }
         else -> if (values[key] == true) "Açık" else "Kapalı"
     }

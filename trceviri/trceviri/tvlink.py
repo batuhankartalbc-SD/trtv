@@ -108,7 +108,7 @@ class TvLink(QObject):
                    "mode": s.display_mode, "match": s.match_colors, "bgm": s.bg_mode,
                    "font": getattr(s, "font_choice", "default"), "fonts": self._fonts(),
                    "pcver": self._pcver(), "refine": getattr(self, "refine_status", None),
-                   "fps": s.fps, "instant": s.instant,
+                   "fps": s.fps, "instant": s.instant, "auto": s.auto_mode,
                    "dx": s.tv_dx / 100, "dy": s.tv_dy / 100, "sx": s.tv_sx / 100, "sy": s.tv_sy / 100,
                    "calib": self.calib,
                    # TV ayar menüsü için mevcut değerler

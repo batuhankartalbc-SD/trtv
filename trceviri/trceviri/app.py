@@ -159,6 +159,13 @@ class AppContext:
                     self.window.change_profile(value)
                     self.window.prof_combo.blockSignals(True); self.window.prof_combo.setCurrentText(value)
                     self.window.prof_combo.blockSignals(False)
+            elif key == "auto_mode":                        # TV: "Çevrilecek yer" tüm ekran / sadece bölgeler
+                if not value and not any(z.enabled for z in self.pipeline.profile.zones):
+                    log.info("TV: bu profilde bölge yok, tüm ekran taramada kalındı")
+                    self.tv.send_style()
+                    return
+                self.window.set_auto(bool(value))
+                return                                       # set_auto kaydeder ve TV'ye bildirir
             elif key == "engine" and value in ("local", "gemini", "free"):
                 if value == "gemini" and not s.api_keys_enc.get("gemini"):
                     log.info("TV'den Gemini seçildi ama anahtar yok; yok sayıldı")

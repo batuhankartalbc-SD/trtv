@@ -408,6 +408,7 @@ class MainWindow(QMainWindow):
             self.auto_toggle.blockSignals(True); self.auto_toggle.setChecked(on); self.auto_toggle.setPos(1.0 if on else 0.0)
             self.auto_toggle.blockSignals(False)
         self.zones_page.update_banner()
+        self.ctx.tv.send_style()                        # TV Ayarlar'daki "Çevrilecek yer" güncel kalsın
         log.info("Otomatik mod %s", "açık" if on else "kapalı (bölgeler kullanılıyor)")
 
     def change_profile(self, name: str):

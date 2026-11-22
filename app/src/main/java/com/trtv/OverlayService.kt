@@ -53,7 +53,9 @@ data class TvSettings(
     val pcEngine: String = "—",
     val pcProfile: String = "—",
     val fps: Int = 20,
-    val instant: Boolean = false
+    val instant: Boolean = false,
+    /** true: PC tüm ekranı tarar; false: yalnızca profilde çizilen bölgeler. */
+    val autoMode: Boolean = true
 )
 
 data class DiagnosticsSnapshot(
@@ -250,6 +252,7 @@ class OverlayService : Service() {
         "font" -> s.copy(font = (value as String).takeIf { it in setOf("default", "condensed", "rounded", "clean") } ?: "default")
         "fps" -> s.copy(fps = (value as Number).toInt().coerceIn(10, 60))
         "instant" -> s.copy(instant = value as Boolean)
+        "auto_mode" -> s.copy(autoMode = value as Boolean)
         "output" -> s.copy(output = (value as String).takeIf { it in setOf("pc", "tv", "both") } ?: s.output)
         else -> s
     }
@@ -269,6 +272,7 @@ class OverlayService : Service() {
             output = o.optString("output", settings.output),
             fps = o.optInt("fps", settings.fps).coerceIn(10, 60),
             instant = o.optBoolean("instant", settings.instant),
+            autoMode = o.optBoolean("auto", settings.autoMode),
             profiles = stringList(o, "profiles", settings.profiles),
             profile = o.optString("profile", settings.profile),
             engine = o.optString("engine", settings.engine),
