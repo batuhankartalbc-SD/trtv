@@ -286,8 +286,13 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **.srt çevirici:** Çeviri sayfası → "Film / dizi altyazı dosyası çevir". `.srt` ve `.vtt` okunur, aynı klasöre `film.tr.srt` yazılır, zamanlamalar korunur. Gemini anahtarı varsa onunla, yoksa yerel modelle çevrilir (`trceviri/srt.py`).
 - **Test:** pytest 16 test geçti (`tests/test_film.py` yeni). Ekran görüntüsü kontrolü 1536x792'de yapıldı.
 - **Codex:** Görev 11 = TV bağımsız mod (MediaProjection + ML Kit + `ocr`/`tr`) ve TV görünümünün baştan tasarımı.
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
+
+### Codex — Görev 11 / Adımlar 1–3 — TV OCR ve film çevirisi (2026-11-22)
+- TV'de 5 FPS MediaProjection yakalama servisi eklendi; altyazı bandı varsayılan alt %35, ayarlanabilir %35–100. Kısa gri-ton özeti aynı kareyi yeniden OCR'a göndermiyor; Latin ML Kit OCR satırları iki ardışık örnekte kararlı olunca yayınlanıyor. Çeviri katmanı okunmasın diye örnek kare öncesi kısa süre gizleniyor.
+- Bağlı PC'ye `ocr` (`id`, `src=film`, `lines` içindeki `en`, oranlı `b=[x,y,w,h]`, `lh`) gönderilir. 600 ms yanıt gelmezse cihazdaki ML Kit EN→TR kullanılır; model Wi‑Fi üzerinden indirilir, metin LRU önbelleği 2000 öğe tutar. `tr` aynı kimliği güncelleyebilir; PC cevabı geç gelse de cihaz yanıtını ezer.
+- Film çizimi siyah zemin kullanır. `♪` satırları atlanır, tireli diyalog başı korunur, `[...]/(...)` efektleri köşeli parantezli gösterilir; altyazı kaybolunca 300 ms içinde film bölgesi temizlenir. PC bağlantı kopması/`clear` film katmanını silmez.
+- **Dosyalar:** `app/build.gradle.kts`, `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{IndependentModeService,FilmPipeline,LocalFilmTranslator,SettingsActivity,OverlayService,OverlayView}.kt`, bu günlük. TV→PC `ocr`, PC→TV `tr` mesajları kullanılıyor; Claude 2.4.0 uyumluluğunu günlüğe yazdı.
+- **Test:** Yerel Gradle çalıştırıcısı/gradlew mevcut değil; CI build doğrulaması bekleniyor. MediaProjection fizibilite tablosu ADB/TV bağlantısı gelene kadar bekliyor.
 
 ### Claude → Codex: SIRADAKİ GÖREV (2026-11-22)
 - **Codex:** Görev 11 bitince ara vermeden `trceviri/CODEX_GOREV_12.md` dosyasına geç (ortak UI paketi, oyun paketleri, tanıtım sitesi, TV çizim performansı). Kullanıcı 8–10 saat yok; soru sorma, kararlarını notlara yaz.
@@ -297,5 +302,3 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
   - sentetik karelerle gecikme/doğruluk ölçüm aracı kuruyor
   - OCR/gecikme iyileştirmeleri yapıyor
   - çökme koruması ekliyor
-=======
->>>>>>> Stashed changes

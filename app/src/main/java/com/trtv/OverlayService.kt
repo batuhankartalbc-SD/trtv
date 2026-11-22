@@ -135,7 +135,7 @@ class OverlayService : Service() {
     private val filmLinesById = LinkedHashMap<Int, List<FilmLine>>()
     private val filmReplies = TranslationRevisionCache(2000)
     private val filmFallbacks = HashMap<Int, Runnable>()
-    private val filmPcTranslations = HashSet<Int>()
+    private val filmPcTranslations = LinkedHashSet<Int>()
     private val filmReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
@@ -476,7 +476,7 @@ class OverlayService : Service() {
                         recordHistory(z, items)
                         main.post { view?.setItems(z, items) }
                     }
-                    "clear" -> main.post { view?.clearAll() }
+                    "clear" -> main.post { view?.clearGameZones() }
                     "style" -> { updateFromStyle(o); main.post { view?.setStyle(o) } }
                     "visible" -> {
                         val vis = o.optBoolean("v", true)
@@ -510,8 +510,9 @@ class OverlayService : Service() {
             FilmLine(item.optString("en"), box, item.optDouble("lh", 0.02).toFloat(), item.optString("prefix"), item.optBoolean("effect"))
         }.filter { it.text.isNotBlank() }
         if (lines.isEmpty()) return
-        latestFilmId = (latestFilmId + 1).coerceAtLeast(1)
+        latestFilmId = maxOf(SystemClock.elapsedRealtime().toInt(), latestFilmId + 1, 1)
         val id = latestFilmId
+        main.post { view?.clearZoneImmediately("film") }
         filmLinesById[id] = lines
         while (filmLinesById.size > 2000) filmLinesById.remove(filmLinesById.keys.first())
         val ocrLines = org.json.JSONArray()
@@ -521,7 +522,10 @@ class OverlayService : Service() {
         val message = JSONObject().put("t", "ocr").put("id", id).put("src", "film").put("lines", ocrLines)
         if (isPcConnected() && sendToClient(message)) {
             IndependentModeService.translationSource = "PC"
-            val fallback = Runnable { if (id == latestFilmId && filmReplies[id] == null) translateFilmLocally(id) }
+            val fallback = Runnable {
+                filmFallbacks.remove(id)
+                if (id == latestFilmId && filmReplies[id] == null) translateFilmLocally(id)
+            }
             filmFallbacks[id] = fallback
             main.postDelayed(fallback, 600L)
             IndependentModeService.publishExternalStatus("PC yanıtı bekleniyor")
@@ -534,6 +538,7 @@ class OverlayService : Service() {
         val translations = (0 until array.length()).map { array.optString(it) }
         val changed = filmReplies.put(id, translations)
         filmPcTranslations.add(id)
+        while (filmPcTranslations.size > 2000) filmPcTranslations.remove(filmPcTranslations.first())
         filmFallbacks.remove(id)?.let(main::removeCallbacks)
         if (changed && id == latestFilmId) showFilmTranslations(id, translations, "PC")
     }
@@ -546,6 +551,7 @@ class OverlayService : Service() {
         val translator = localFilmTranslator ?: LocalFilmTranslator(applicationContext).also { localFilmTranslator = it }
         translator.translate(lines) { translations, error ->
             if (error != null || translations == null) {
+                if (filmPcTranslations.contains(id)) return@translate
                 IndependentModeService.publishExternalStatus("Cihaz çevirisi hazır değil · Wi‑Fi ile modeli indirin")
                 return@translate
             }

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
@@ -26,6 +27,9 @@ class SettingsActivity : Activity() {
         Row("engine", "Çeviri motoru"),
         Row("film_mode", "Bağımsız mod (film/dizi)"),
         Row("film_band", "Altyazı bandı"),
+        Row("fps", "Yakalama hızı"),
+        Row("instant", "Anlık mod"),
+        Row("output", "Çeviri çıkışı"),
         Row("font", "Yazı tipi"),
         Row("visible", "Türkçe yazılar"),
         Row("font_scale", "Yazı boyutu"),
@@ -61,21 +65,21 @@ class SettingsActivity : Activity() {
         val frame = FrameLayout(this)
         val panel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(24, 20, 24, 20)
-            setBackgroundColor(Color.argb(235, 17, 23, 30))
+            setPadding(34, 28, 34, 28)
+            setBackgroundColor(Color.rgb(11, 15, 20))
         }
         val title = TextView(this).apply {
-            text = "Brolis Game Translate · Ayarlar"; textSize = 25f; typeface = Typeface.DEFAULT_BOLD
+            text = "Ayarlar"; textSize = 32f; typeface = Typeface.DEFAULT_BOLD
             setTextColor(Color.rgb(61, 220, 151)); setPadding(10, 4, 10, 18)
         }
         panel.addView(title)
         connectionLabel = TextView(this).apply {
-            textSize = 16f; setTextColor(Color.rgb(255, 190, 100)); setPadding(10, 0, 10, 14)
+            textSize = 20f; setTextColor(Color.rgb(255, 190, 100)); setPadding(10, 0, 10, 14)
         }
         panel.addView(connectionLabel)
         preview = TextView(this).apply {
             text = "Örnek Türkçe yazı"
-            textSize = 19f; setTextColor(Color.WHITE); setPadding(18, 14, 18, 14)
+            textSize = 22f; setTextColor(Color.WHITE); setPadding(18, 14, 18, 14)
         }
         val previewSurface = FrameLayout(this).apply { setBackgroundColor(Color.rgb(91, 108, 124)) }
         previewSurface.addView(preview, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT))
@@ -85,17 +89,24 @@ class SettingsActivity : Activity() {
         rows.forEachIndexed { index, row ->
             val button = Button(this).apply {
                 tag = index
-                textSize = 16f
+                textSize = 20f
                 gravity = Gravity.CENTER_VERTICAL or Gravity.START
                 isAllCaps = false
+                setTextColor(Color.WHITE)
+                background = rowBackground()
+                setOnFocusChangeListener { view, focused ->
+                    view.background = rowBackground(focused)
+                    view.scaleX = if (focused) 1.03f else 1f
+                    view.scaleY = if (focused) 1.03f else 1f
+                }
                 setOnClickListener { activate(row.key) }
             }
             rowViews[row.key] = button
-            list.addView(button, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 74))
+            list.addView(button, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 82).apply { bottomMargin = 6 })
             if (row.key == "engine") {
                 list.addView(TextView(this).apply {
                     text = "Değişince çeviri 1–2 sn durur"
-                    textSize = 13f
+                    textSize = 18f
                     setTextColor(Color.rgb(174, 183, 194))
                     setPadding(18, 0, 18, 8)
                     isFocusable = false
@@ -104,7 +115,7 @@ class SettingsActivity : Activity() {
             if (row.key == "font") {
                 fontPreview = TextView(this).apply {
                     text = "Polisler sahil yolunu kapatmış."
-                    textSize = 18f
+                    textSize = 22f
                     setTextColor(Color.WHITE)
                     setPadding(20, 10, 20, 14)
                     isFocusable = false
@@ -115,13 +126,13 @@ class SettingsActivity : Activity() {
         scroll.addView(list)
         panel.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
         pcStatusLabel = TextView(this).apply {
-            textSize = 13f
+            textSize = 18f
             setTextColor(Color.rgb(165, 174, 186))
             setPadding(10, 10, 10, 0)
             isFocusable = false
         }
         panel.addView(pcStatusLabel)
-        frame.addView(panel, FrameLayout.LayoutParams((resources.displayMetrics.widthPixels * 0.58f).toInt(), FrameLayout.LayoutParams.MATCH_PARENT, Gravity.RIGHT))
+        frame.addView(panel, FrameLayout.LayoutParams((resources.displayMetrics.widthPixels * 0.68f).toInt(), FrameLayout.LayoutParams.MATCH_PARENT, Gravity.RIGHT))
         setContentView(frame)
         renderRows(); renderConnection()
         rowViews["visible"]?.requestFocus()
@@ -171,10 +182,19 @@ class SettingsActivity : Activity() {
         values["engines"] = state.engines
         values["engine"] = state.engine
         values["font"] = state.font
+        values["fps"] = state.fps
+        values["instant"] = state.instant
+        values["output"] = state.output
         values["film_mode"] = getSharedPreferences(IndependentModeService.PREFS, MODE_PRIVATE)
             .getBoolean(IndependentModeService.KEY_ENABLED, false)
         values["film_band"] = getSharedPreferences(IndependentModeService.PREFS, MODE_PRIVATE)
             .getInt(IndependentModeService.KEY_BAND, 35)
+    }
+
+    private fun rowBackground(focused: Boolean = false) = GradientDrawable().apply {
+        cornerRadius = 14f
+        setColor(if (focused) Color.rgb(24, 54, 45) else Color.rgb(18, 24, 33))
+        setStroke(if (focused) 3 else 1, if (focused) Color.rgb(62, 230, 160) else Color.rgb(30, 40, 51))
     }
 
     private fun displayValue(key: String): String = when (key) {
@@ -198,6 +218,9 @@ class SettingsActivity : Activity() {
         "remote_help" -> "Aç"
         "film_mode" -> if (values[key] == true) "TV'de (açık)" else "PC'den (PS5)"
         "film_band" -> "%${values[key] ?: 35} alt"
+        "fps" -> "${values[key] ?: 20} FPS"
+        "instant" -> if (values[key] == true) "Açık" else "Kapalı"
+        "output" -> when (values[key]) { "pc" -> "Bilgisayar"; "both" -> "Bilgisayar + TV"; else -> "TV" }
         else -> if (values[key] == true) "Açık" else "Kapalı"
     }
 
@@ -292,17 +315,11 @@ class SettingsActivity : Activity() {
             startActivity(Intent(this, RemoteKeysActivity::class.java))
             return
         }
+        if (key == "film_band") {
+            change(key, true)
+            return
+        }
         when (key) {
-            "film_band" -> {
-                val choices = listOf(35, 50, 75, 100)
-                val current = choices.indexOf(values[key] as? Int ?: 35).coerceAtLeast(0)
-                val updated = choices[(current + if (increase == false) choices.size - 1 else 1) % choices.size]
-                values[key] = updated
-                getSharedPreferences(IndependentModeService.PREFS, MODE_PRIVATE).edit()
-                    .putInt(IndependentModeService.KEY_BAND, updated).apply()
-                renderRows()
-                return
-            }
             "film_mode" -> {
                 if (IndependentModeService.active || values[key] == true) {
                     startService(Intent(this, IndependentModeService::class.java).setAction(IndependentModeService.ACTION_STOP))
@@ -321,7 +338,7 @@ class SettingsActivity : Activity() {
                 OverlayService.setDisconnectWarning(enabled)
                 renderRows()
             }
-            "font_scale", "bg_mode", "bg_opacity", "font", "film_band" -> change(key, true)
+            "font_scale", "bg_mode", "bg_opacity", "font", "film_band", "fps", "output" -> change(key, true)
             "profile", "engine" -> change(key, true)
             else -> change(key, null)
         }
@@ -342,6 +359,22 @@ class SettingsActivity : Activity() {
                 val current = fonts.indexOf(values[key] as? String ?: "default").coerceAtLeast(0)
                 fonts[(current + if (increase == false) fonts.size - 1 else 1) % fonts.size].also { values[key] = it }
             }
+            "film_band" -> {
+                val choices = listOf(35, 50, 75, 100)
+                val current = choices.indexOf(values[key] as? Int ?: 35).coerceAtLeast(0)
+                choices[(current + if (increase == false) choices.size - 1 else 1) % choices.size]
+                    .also { values[key] = it }
+            }
+            "fps" -> {
+                val rates = listOf(10, 20, 30, 45, 60)
+                val current = rates.indexOf(values[key] as? Int ?: 20).coerceAtLeast(0)
+                rates[(current + if (increase == false) rates.size - 1 else 1) % rates.size].also { values[key] = it }
+            }
+            "output" -> {
+                val outputs = listOf("tv", "pc", "both")
+                val current = outputs.indexOf(values[key] as? String ?: "tv").coerceAtLeast(0)
+                outputs[(current + if (increase == false) outputs.size - 1 else 1) % outputs.size].also { values[key] = it }
+            }
             "profile", "engine" -> {
                 val options = (values[if (key == "profile") "profiles" else "engines"] as? List<*>)
                     ?.filterIsInstance<String>().orEmpty()
@@ -355,6 +388,10 @@ class SettingsActivity : Activity() {
         }
         if (key != "font_scale") values[key] = value
         OverlayService.changeSetting(key, value)
+        if (key == "film_band") {
+            getSharedPreferences(IndependentModeService.PREFS, MODE_PRIVATE).edit()
+                .putInt(IndependentModeService.KEY_BAND, value as Int).apply()
+        }
         renderRows(); renderConnection()
     }
 

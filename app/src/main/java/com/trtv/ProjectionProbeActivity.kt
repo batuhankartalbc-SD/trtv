@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
+import android.os.Build
 import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
@@ -49,7 +50,12 @@ class ProjectionProbeActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode != REQUEST_CAPTURE) return
         if (resultCode != RESULT_OK || data == null) {
-            resultText.text = "Ekran yakalama izni verilmedi."
+            setContentView(TextView(this).apply {
+                text = "Ekran yakalama izni verilmedi. Geri ile tanılamaya dönün."
+                textSize = 22f; setTextColor(Color.WHITE); gravity = Gravity.CENTER
+                setPadding(48, 32, 48, 32)
+                setBackgroundColor(Color.argb(170, 11, 15, 20))
+            })
             return
         }
         val service = Intent(this, ProjectionProbeService::class.java)
