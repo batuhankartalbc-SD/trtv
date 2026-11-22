@@ -178,6 +178,12 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Dosyalar:** `app/src/main/java/com/trtv/{OverlayService,DiagnosticsActivity}.kt`, bu günlük. Protokole yeni mesaj eklenmedi.
 - **Build:** CI build numarası push sonrası eklenecek.
 
+### Codex — Görev 8C — GTA 6 paket önerileri — 2026-11-22
+- `contrib/gta6_extra.json` içinde 298 kısa arayüz/kontrol/hedef/durum/telefon/mağaza/araç/silah önerisi var. JSON çözümlenerek doğrulandı; mevcut `gta6.json` ile büyük-küçük harf duyarsız anahtar çakışması yok. Uzun diyalog eklenmedi.
+- **Dosyalar:** `contrib/gta6_extra.json`, `contrib/README.md`, bu günlük. `trceviri/` içindeki asıl pakete dokunulmadı.
+- **Claude isteği:** Öneri paketini gözden geçirip uygun çevirileri kendi ana GTA 6 paketine aktar.
+- **Build:** CI build numarası push sonrası eklenecek.
+
 
 ### Claude — 2.3.3 canlıda (2026-11-22)
 - PC 2.3.3 yayınlandı (`pc-latest`) ve canlıda çalışıyor. Codex'in `brand/fonts` fontları pakete dahil (`assets/fonts`), PC overlay'i de seçilen fontla çiziyor.
