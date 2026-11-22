@@ -31,7 +31,7 @@
   },
   "ignore": [],
   "style": "Futbol oyunu. Türk futbol yayınlarındaki terimleri kullan (corner = korner, offside = ofsayt, kick-off = başlama vuruşu). Kulüp ve oyuncu adlarını çevirme.",
-  "pack": "",
+  "pack": "ea_fc",
   "speaker_colors": {},
   "window_hint": ""
 }

@@ -186,6 +186,26 @@ def test_control_hint_templates():
     assert c.clean_model_action("Işıklı saldırı.") is None
 
 
+def test_game_packs_bundled_and_backfilled(monkeypatch, tmp_path):
+    import trceviri.config as cfg
+    from trceviri.cache import TranslationCache
+    from trceviri.config import Settings
+    from trceviri.pipeline import Pipeline
+    monkeypatch.setattr(cfg, "PROFILE_DIR", tmp_path)
+    old = json.loads((PROFILES / "tlou2.json").read_text(encoding="utf-8"))
+    old["pack"] = ""                                   # 2.5 öncesi kullanıcı kopyası
+    old["style"] = "kullanıcının kendi notu"
+    (tmp_path / "tlou2.json").write_text(json.dumps(old, ensure_ascii=False), encoding="utf-8")
+    prof = cfg.load_profile("The Last of Us Part II")
+    assert prof.pack == "tlou2" and prof.style == "kullanıcının kendi notu"
+    p = Pipeline(Settings(), prof, TranslationCache(tmp_path / "c.db"))
+    p.load_pack()
+    assert p.lookup("Safe Code") == "Kasa kodu"
+    for f in (PROFILES / "packs").glob("*.json"):       # paketler geçerli ve kontrol ipucu içermiyor (ortak)
+        d = json.loads(f.read_text(encoding="utf-8"))
+        assert all(isinstance(k, str) and isinstance(v, str) and v for k, v in d.items()), f.name
+
+
 def load_from(f):
     return Profile.from_dict(json.loads(Path(f).read_text(encoding="utf-8")))
 

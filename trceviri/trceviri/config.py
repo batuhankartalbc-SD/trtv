@@ -213,23 +213,34 @@ def _profile_path(name: str) -> Path:
 
 
 def ensure_bundled_profiles() -> None:
-    """Hazır profilleri kullanıcı klasörüne kopyalar; aynı adlı profil zaten varsa (kullanıcı düzenlemiş) dokunmaz."""
+    """Hazır profilleri kullanıcı klasörüne kopyalar; aynı adlı profil zaten varsa (kullanıcı düzenlemiş) dokunmaz.
+    Tek istisna: kullanıcı kopyasında hazır çeviri paketi boşsa, sonradan eklenen paket adı doldurulur."""
     PROFILE_DIR.mkdir(parents=True, exist_ok=True)
     if BUNDLED_PROFILES.exists():
-        have = set()
+        have: dict[str, tuple[Path, dict]] = {}
         for f in PROFILE_DIR.glob("*.json"):
             try:
-                have.add(json.loads(f.read_text(encoding="utf-8")).get("name"))
+                d = json.loads(f.read_text(encoding="utf-8"))
+                have.setdefault(d.get("name"), (f, d))
             except Exception:
                 pass
         for f in BUNDLED_PROFILES.glob("*.json"):
             try:
-                name = json.loads(f.read_text(encoding="utf-8")).get("name")
+                bd = json.loads(f.read_text(encoding="utf-8"))
             except Exception:
                 continue
+            name = bd.get("name")
             if name not in have:
                 (PROFILE_DIR / f.name).write_text(f.read_text(encoding="utf-8"), encoding="utf-8")
-                have.add(name)
+                have[name] = (PROFILE_DIR / f.name, bd)
+                continue
+            uf, ud = have[name]
+            if bd.get("pack") and not ud.get("pack"):
+                ud["pack"] = bd["pack"]
+                try:
+                    uf.write_text(json.dumps(ud, ensure_ascii=False, indent=2), encoding="utf-8")
+                except OSError:
+                    pass
 
 
 def list_profiles() -> list[str]:
