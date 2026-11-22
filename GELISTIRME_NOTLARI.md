@@ -265,5 +265,5 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 | TV HDMI girişi (PS5) | Cihaz testi bekliyor | Cihaz testi bekliyor |
 
 - **Dosyalar:** `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{DiagnosticsActivity,ProjectionProbeActivity,ProjectionProbeService,HelpActivity}.kt`, bu günlük.
-- **Test:** Yerel Gradle çalıştırıcısı/gradlew mevcut değil; CI derlemesi bu adımın ardından çalışacak. Fiziksel test için TV ADB'ye bağlanınca yukarıdaki tablo ölçülmeli.
+- **Test:** Yerel Gradle çalıştırıcısı/gradlew mevcut değil. İlk CI build 56, DiagnosticsActivity'deki eksik `Intent` import'u yüzünden başarısız oldu; import düzeltildi ve yeni build bekleniyor. Fiziksel test için TV ADB'ye bağlanınca yukarıdaki tablo ölçülmeli.
 - **Durum:** Adım 0 cihaz ölçümü tamamlanana kadar beklemede; DRM içeriği siyah çıkarsa uygulama kullanıcıya sınırlamayı bildirecek.
