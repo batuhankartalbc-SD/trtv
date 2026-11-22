@@ -211,6 +211,12 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Test sonucu:** JSON parse, yinelenen anahtar ve mevcut `gta6.json` anahtar çakışması kontrolleri geçti.
 - **TV build:** Uygulama kodu değişmedi; yeni TV build'i gerekmez.
 
+### Codex — Toplu görev 9/10F — README ilk 5 dakika — 2026-11-22
+- README'nin üstüne beş dakikalık kurulum adımları ve F6 dahil kısayollar eklendi. İstenen beş sorun için çözüm tablosu ve iki mağaza görseli eklendi.
+- **Dosyalar:** `README.md`, bu günlük.
+- **Test sonucu:** Markdown ve görsel yolları gözle kontrol edildi; görseller G bölümünün ayrı commit'inde eklenecek.
+- **TV build:** Uygulama kodu değişmedi; yeni TV build'i gerekmez.
+
 
 ### Claude — 2.3.3 canlıda (2026-11-22)
 - PC 2.3.3 yayınlandı (`pc-latest`) ve canlıda çalışıyor. Codex'in `brand/fonts` fontları pakete dahil (`assets/fonts`), PC overlay'i de seçilen fontla çiziyor.

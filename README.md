@@ -6,6 +6,22 @@
 
 PS5 oyunlarındaki İngilizce konuşma, menü ve kontrolleri anında Türkçeye çevirir; Türkçe yazı TV'de oyunun tam üstünde, aynı boyutta görünür.
 
+## İlk 5 dakika
+
+1. [PC kurulum dosyasını indirin](https://github.com/batuhankartalbc-SD/trtv/releases/download/pc-latest/TRCeviri-Kurulum.exe) (`pc-latest`) ve Windows bilgisayarınıza kurun.
+2. [TV APK'sını indirin](https://github.com/batuhankartalbc-SD/trtv/releases/download/latest/a.apk) (`latest`); Android TV'ye Downloader ile bağlantıyı açarak veya USB bellekten yükleyin.
+3. Bilgisayar ve TV'nin aynı Wi-Fi ağına bağlı olduğundan emin olun.
+4. PC'deki kurulum sihirbazını sonuna kadar izleyin; TV uygulamasını açıp ekran üstü iznini verin.
+5. Kısayollar: **F8** katman, **F9** duraklat, **F6** son konuşma, **F10** bölgeler, **F11** yeniden çevir.
+
+| Sorun | Çözüm |
+|---|---|
+| TV bulunamadı | PC ve TV'nin aynı Wi-Fi'da olduğunu, TV uygulamasının açık kaldığını ve ağın cihazlar arası iletişimi engellemediğini kontrol edin. |
+| Türkçe gelmiyor | Oyunda altyazıları açın; PC uygulamasının çalıştığını ve TV'de ekran üstü izninin verildiğini doğrulayın. |
+| Yazılar kayıyor | TV'de **Kumandayla hizala** ekranını açın; oklarla kaydırıp OK ile boyut moduna geçin. |
+| Gemini kota doldu | Kota bekleme süresi bitene kadar yerel çeviriyle devam edin. |
+| Pencere bulunamadı | PS Remote Play'i açıp PS5'e bağlanın, oyun görüntüsünü görünür tutun ve PC uygulamasında pencereyi yenileyin. |
+
 ## İndir
 
 - **Bilgisayar (Windows):** [TRCeviri-Kurulum.exe](https://github.com/batuhankartalbc-SD/trtv/releases/download/pc-latest/TRCeviri-Kurulum.exe)
@@ -25,6 +41,16 @@ PS5 → PS Remote Play → Bilgisayar (OCR + çeviri) → Aynı ağdaki Android 
 ```
 
 Bilgisayarda PS Remote Play görüntüsü okunur ve çevrilir. TV uygulaması Türkçe metni PS5'in HDMI görüntüsünün üzerine yerleştirir. Bilgisayar ve TV aynı yerel ağa bağlı olmalıdır.
+
+## Tanıtım görselleri
+
+<p align="center">
+  <img src="brand/store/once-sonra.svg" alt="İngilizce altyazıdan Türkçe altyazıya önce ve sonra" width="720">
+</p>
+
+<p align="center">
+  <img src="brand/store/pc-tv-akis.svg" alt="PC'den TV'ye çeviri bağlantı şeması" width="720">
+</p>
 
 ## Gerekenler
 
