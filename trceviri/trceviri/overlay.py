@@ -137,7 +137,8 @@ class Overlay(QWidget):
         sub = it.kind in ("subtitle", "objective")
 
         def font_for(px):
-            f = QFont(s.font_family); f.setPixelSize(max(9, int(px))); f.setWeight(QFont.DemiBold)
+            from .fonts import family
+            f = QFont(family(s)); f.setPixelSize(max(9, int(px))); f.setWeight(QFont.DemiBold)
             return f, QFontMetricsF(f)
 
         # 1) İngilizceyle aynı satır sayısında, aynı genişliğe sığdır (en çok %18 küçült)
@@ -221,7 +222,8 @@ class Overlay(QWidget):
             # serbest yazı: sağa doğru biraz genişleyebilir (Türkçe daha uzun)
             cover.setWidth(min(W - cover.left(), cover.width() * 1.25))
         px = max(12.0, it.line_h * H * 0.92 * zscale * s.font_scale)
-        font, lines, need = layout_item(text, s.font_family, px, cover.width() - 2 * pad, cover.height() - 2 * pad)
+        from .fonts import family
+        font, lines, need = layout_item(text, family(s), px, cover.width() - 2 * pad, cover.height() - 2 * pad)
         fm = QFontMetricsF(font)
         if need + 2 * pad > cover.height():
             grow = need + 2 * pad - cover.height()

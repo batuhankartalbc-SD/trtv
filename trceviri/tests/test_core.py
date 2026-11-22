@@ -152,3 +152,19 @@ def test_refine_runs_and_pauses_on_quota():
         time.sleep(0.05)
     assert m.refine_pause_until > 0 and "kota" in m.refine_status
     m.stop()
+
+
+def test_fonts_fallback_without_files(tmp_path, monkeypatch):
+    """Font dosyası yoksa sadece 'Varsayılan' seçilebilir ve çizim varsayılan aileyi kullanır."""
+    from PySide6.QtWidgets import QApplication
+    QApplication.instance() or QApplication([])
+    import trceviri.fonts as F
+    monkeypatch.setattr(F, "_DIRS", [tmp_path])
+    monkeypatch.setattr(F, "_families", {})
+    monkeypatch.setattr(F, "_loaded", False)
+
+    class S:
+        font_family = "Segoe UI Semibold"
+        font_choice = "condensed"
+    assert list(F.available().keys()) == ["default"]
+    assert F.family(S()) == "Segoe UI Semibold"

@@ -128,6 +128,13 @@ class AppContext:
                 s.engine = value
                 s.save()
                 self.window.restart_if_running()
+            elif key == "font" and value in ("default", "condensed", "rounded", "clean"):
+                from .fonts import available
+                s.font_choice = value if value in available() else "default"
+                if hasattr(self.window, "font_combo"):
+                    self.window.font_combo.blockSignals(True)
+                    self.window.font_combo.setCurrentIndex(max(0, self.window.font_combo.findData(s.font_choice)))
+                    self.window.font_combo.blockSignals(False)
             elif key == "replay":
                 self.show_history()
                 return

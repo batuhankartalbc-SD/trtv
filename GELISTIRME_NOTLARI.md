@@ -145,3 +145,16 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
   - **Yanlış pencere okuma:** Karanlık oyun sahnesi "yakalama hatası" sanılıp kalıcı olarak ekran yakalamaya geçiliyordu; o sırada Remote Play'in önündeki pencereler okunuyordu. Artık sadece tamamen siyah kare hata sayılıyor, PrintWindow 2 sn'de bir yeniden deneniyor, ekran yakalama yalnızca Remote Play en öndeyse yapılıyor (`winutil.is_on_top`).
   - **Tek kopya kuralı (mutex):** İki kopya F8–F11 kısayollarını kapışıyordu. `release.ps1 -Install` kurulumun açtığı kopya kapanmadan yenisini başlatmıyor.
 - TV'ye Codex Build 32 kuruldu (profil/motor seçimi ve Yardım çalışıyor). Codex'e `trceviri/CODEX_GOREV_7.md` verildi (OFL yazı tipleri + `font` alanı). PC tarafını fontlar `brand/fonts/` altına gelince Claude yapacak.
+
+### Claude — 2026-11-22 (geliştirmede, 2.3.3 için hazır)
+- **Yazı tipi desteği (görev 7'nin PC tarafı) hazır:** `trceviri/trceviri/fonts.py`. `brand/fonts/{condensed,rounded,clean}.ttf` bulunursa yüklenir; yoksa sadece "Varsayılan" görünür (test var, 10 test).
+  - Görünüm → Ayrıntılar → **Yazı tipi**.
+  - `release.ps1`, `brand/fonts/*`'u pakete (`assets/fonts`) kopyalıyor.
+- **Protokol (yeni alanlar, yeni mesaj yok):**
+  - `style` içine `font` (`default`/`condensed`/`rounded`/`clean`), `fonts` (kullanılabilir anahtarlar), `pcver` (PC sürümü), `refine` (Gemini durumu ya da null).
+  - TV→PC `set` anahtarı `font`.
+- **Küçük düzeltmeler:**
+  - Konuşmacı renkleri tablosunda renk düğmesinin yazısı kırpılıyordu.
+  - Gemini'nin "düşünme ayarı yok" bilgisi model başına hatırlanıyor.
+- **Yayın:** 2.3.3, fontlar gelince yayınlanacak (canlıyı gereksiz yere yeniden başlatmamak için).
+- Codex'e `trceviri/CODEX_GOREV_8.md` verildi: TV ilk kurulum rehberi, Tanılama'ya PC bilgisi, `contrib/gta6_extra.json` paket önerileri.

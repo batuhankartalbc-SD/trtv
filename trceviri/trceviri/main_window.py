@@ -408,6 +408,9 @@ class MainWindow(QMainWindow):
     def on_stats(self, d):
         self.m_ocr.set(d["ocr"]); self.m_tr.set(d["ceviri"]); self.m_tot.set(d.get("toplam", 0))
         self.lbl_cache.setText(f"Son 50 satır · önbellekte {d['onbellek']} çeviri")
+        if d.get("refine") != getattr(self.ctx.tv, "refine_status", None):
+            self.ctx.tv.refine_status = d.get("refine")        # TV Tanılama ekranı için (style.refine)
+            self.ctx.tv.send_style()
         if d.get("refine"):
             ok = not any(w in d["refine"] for w in ("kota", "geçersiz"))
             self.st["ceviri"].set(ok, f"Yerel (anlık) + Gemini: {d['refine']}")
@@ -700,6 +703,13 @@ class MainWindow(QMainWindow):
         idx = min(range(self.fsize.count()), key=lambda i: abs(self.fsize.itemData(i) - self.s.font_scale))
         self.fsize.setCurrentIndex(idx)
         self.fsize.currentIndexChanged.connect(lambda _: self._look("font_scale", self.fsize.currentData()))
+        from .fonts import available
+        self.font_combo = QComboBox()
+        for k, t in available().items():
+            self.font_combo.addItem(t, k)
+        self.font_combo.setCurrentIndex(max(0, self.font_combo.findData(self.s.font_choice)))
+        self.font_combo.currentIndexChanged.connect(lambda _: self._look("font_choice", self.font_combo.currentData()))
+        self.font_combo.setToolTip("Türkçe yazının yazı tipi. 'Oyun stili (dar)' oyun altyazılarına en çok benzeyenidir.")
         f.addWidget(QLabel("Metin boyutu"), 0, 0); f.addWidget(self.fsize, 0, 1)
         self.spk_btn = self._color_btn("speaker_color")
         f.addWidget(QLabel("Konuşmacı rengi"), 1, 0); f.addWidget(self.spk_btn, 1, 1)
@@ -739,6 +749,9 @@ class MainWindow(QMainWindow):
         g.addWidget(self.spk, 1, 0); g.addWidget(QLabel("Konuşan kişinin adını göster (ör. Lucia:)"), 1, 1)
         g.addWidget(QLabel("Yazı rengi"), 0, 2); g.addWidget(self._color_btn("text_color"), 0, 3)
         g.addWidget(QLabel("Kutu rengi"), 1, 2); g.addWidget(self._color_btn("box_color"), 1, 3)
+        g.addWidget(QLabel("Yazı tipi"), 2, 2); g.addWidget(self.font_combo, 2, 3)
+        fhint = QLabel("Ek yazı tipleri (Oyun stili, Yuvarlak, Sade) yüklüyse listede görünür; TV'de de aynı yazı tipi kullanılır.")
+        fhint.setObjectName("muted"); fhint.setWordWrap(True); g.addWidget(fhint, 2, 0, 1, 2)
         g.setColumnStretch(1, 1)
         cv2.addLayout(g)
         v.addWidget(c2)
@@ -793,9 +806,10 @@ class MainWindow(QMainWindow):
 
     def _spk_row(self, name, col, edit=False):
         self.spk_table.blockSignals(True)
-        r = self.spk_table.rowCount(); self.spk_table.insertRow(r); self.spk_table.setRowHeight(r, 40)
+        r = self.spk_table.rowCount(); self.spk_table.insertRow(r); self.spk_table.setRowHeight(r, 46)
         self.spk_table.setItem(r, 0, QTableWidgetItem(name))
         b = QPushButton(f"  {col.upper()}"); b.setIcon(self._swatch(col)); b.setProperty("col", col)
+        b.setStyleSheet("QPushButton{padding:2px 12px;margin:4px 0;text-align:left;}")   # tablo satırında kırpılmasın
 
         def pick(_=False, btn=b):
             c = QColorDialog.getColor(QColor(btn.property("col")), self)

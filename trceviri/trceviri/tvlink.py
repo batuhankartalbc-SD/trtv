@@ -105,6 +105,8 @@ class TvLink(QObject):
         self._put({"t": "style", "box": s.box_color, "opacity": s.box_opacity, "text": s.text_color,
                    "speaker": s.speaker_color, "scale": s.font_scale,
                    "mode": s.display_mode, "match": s.match_colors, "bgm": s.bg_mode,
+                   "font": getattr(s, "font_choice", "default"), "fonts": self._fonts(),
+                   "pcver": self._pcver(), "refine": getattr(self, "refine_status", None),
                    "dx": s.tv_dx / 100, "dy": s.tv_dy / 100, "sx": s.tv_sx / 100, "sy": s.tv_sy / 100,
                    "calib": self.calib,
                    # TV ayar menüsü için mevcut değerler
@@ -115,6 +117,19 @@ class TvLink(QObject):
                    # TV Ayarlar: oyun profili ve çeviri motoru seçimi
                    "profiles": self._profiles(), "profile": s.profile, "engine": s.engine,
                    "engines": ["local", "gemini", "free"]})
+
+    @staticmethod
+    def _fonts() -> list:
+        try:
+            from .fonts import available
+            return list(available().keys())
+        except Exception:
+            return ["default"]
+
+    @staticmethod
+    def _pcver() -> str:
+        from . import __version__
+        return __version__
 
     @staticmethod
     def _profiles() -> list:

@@ -119,6 +119,7 @@ class Settings:
     use_gpu: bool = True                  # yazı tespiti DirectML ile ekran kartında (yoksa kendiliğinden işlemci)
     font_family: str = "Segoe UI Semibold"
     font_scale: float = 1.0               # 1.0 = oyundaki İngilizce yazıyla birebir aynı boyut
+    font_choice: str = "default"          # default | condensed | rounded | clean (bkz. fonts.py)
     box_color: str = "#000000"
     box_opacity: int = 250
     display_mode: str = "match"           # match (oyun stili 1:1) | opaque (opak kutu) | semi (yarı saydam) | text (sadece yazı)

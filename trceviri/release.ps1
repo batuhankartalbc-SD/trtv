@@ -19,6 +19,9 @@ Write-Host "1/4 testler"
 if ($LASTEXITCODE -ne 0) { throw "Testler başarısız — yayın durduruldu" }
 
 Write-Host "2/4 .exe derleniyor (PyInstaller)"
+$fontsrc = Join-Path (Split-Path $B) "brand\fonts"
+New-Item -ItemType Directory -Force "$B\assets\fonts" | Out-Null
+if (Test-Path $fontsrc) { Copy-Item "$fontsrc\*" "$B\assets\fonts" -Force }   # OFL fontlar + lisansları pakete
 & $py -m PyInstaller --noconfirm --clean --windowed --name TRCeviri --icon "$B\installer\TRCeviri.ico" --paths "$B" `
   --collect-all rapidocr_onnxruntime --collect-binaries onnxruntime --collect-data onnxruntime --collect-all ctranslate2 `
   --collect-all winrt --collect-submodules winrt --hidden-import win32timezone --hidden-import win32com.client `
