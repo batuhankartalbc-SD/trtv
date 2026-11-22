@@ -311,3 +311,30 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
   - sentetik karelerle gecikme/doğruluk ölçüm aracı kuruyor
   - OCR/gecikme iyileştirmeleri yapıyor
   - çökme koruması ekliyor
+
+### Claude — PC 2.5.0 → 2.5.2: "en iyi oyun çeviri" turu (2026-11-22)
+- **Ortak arayüz paketi** `profiles/packs/ortak.json`: 447 satır (menü, ayar, kayıt, kontrol, durum).
+  - Bütün oyun profillerinde yedek pakettir; oyunun kendi paketi önce gelir, film profilinde kullanılmaz.
+  - Codex'in `contrib/ortak_ui.json` (Görev 12A) çıktısı geldiğinde birleştirilecek.
+- **Büyük harf / nokta uyumu:**
+  - İngilizce TAMAMI BÜYÜK ise paket/önbellek sonucu da büyük harfle gelir (Türkçe İ/I doğru).
+  - Sondaki nokta İngilizceye uyar.
+- **Oyun tanıma** (`gamedetect.py`): profillerdeki çevrilmez özel isimlerden (yalnızca tek oyuna özgü olanlar) son 4 dakikada en az 3 farklısı görülürse üstte "X profiline geç" önerisi çıkar. Onaysız profil değişmez; "Hayır" o oturumda tekrar sormaz.
+- **Çeviri düzeltme:** Ana sayfa → Son çeviriler → satıra çift tık. Düzeltme `profiles/packs/duzeltmeler_<profil>.json` dosyasına yazılır, her şeyden önce gelir ve ekrandaki çeviri hemen güncellenir.
+- **Kontrol ipuçları** (`controls.py`): "Press/Hold/Tap <tuş> to <eylem>" kalıbı.
+  - Tuş adı ve Türkçe eki kuralla kurulur (X'e, Kare'ye, Üçgen'i, R2'yi, L3'ü, dokunmatik yüzeye, sol çubuğa).
+  - Eylem ~90 terimlik sözlükten, yoksa modelden ("In order to V." → "V-mek için") gelir.
+  - 16 örneğin 16'sı doğru. Örnek: önce "L2'yi nişan al", şimdi "Nişan almak için L2'yi basılı tutun".
+- **Film diyaloğu:** yerel motor baştaki "- " tiresini siliyordu; artık korunuyor.
+- **OCR** (ölçüm aracı `tools/bench.py`; sentetik oyun kareleri, 8 font, 4 zemin tipi):
+  - Doğruluk: CER %0,09, tür doğruluğu %100.
+  - Sabit kare (duraklatma, menü): OCR çalışmıyor, 70 ms → 1,7 ms.
+  - HATA DÜZELTİLDİ: satır hafızası (48x12 imza), aynı yerde çıkan benzer uzunlukta yeni altyazıya eski metni döndürüyordu. Yeni imza 192x20 + boyut + p98 farkı; altyazı değişimi 8/8, hareketli zemin 24/24.
+  - Toplu tanıma ölçüldü, CPU'da daha yavaş çıktı (172 → 194–244 ms); kapalı (`TRC_OCR_BATCH`).
+  - Tarama genişliği 960 en iyi denge: 640 yazı kaçırıyor, 1280 yavaş.
+- **Dayanıklılık:** yakalama döngüsü çökerse kaydedip yeniden başlıyor (5 ardışık hatada durup kullanıcıya söylüyor). Arka plan iş parçacığı hataları da günlüğe yazılıyor.
+- **Sihirbaz:** 3. adımda "Hangi oyunu oynuyorsunuz?" seçimi var. `NASIL KULLANILIR.txt` 2.5 özellikleriyle güncellendi.
+- **TV yerel ayarları:** `film_band` ve `mode` PC'de sessizce yok sayılıyor.
+- **Test:** pytest 22/22.
+- **Codex için:** Görev 12 hâlâ beklemede. Kullanıcı yapıştırmadı; Codex 11'i bitirip durdu.
+- **TV:** kapalı. Fizibilite tablosu ve ekran görüntüleri TV açılınca yapılacak.
