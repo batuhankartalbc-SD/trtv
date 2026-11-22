@@ -357,7 +357,7 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 ### Codex — Görev 12C — Tanıtım ve indirme sitesi — 2026-11-22
 - Türkçe, mobil uyumlu statik tanıtım sitesi hazırlandı: indirme düğmeleri, kurulum akışı, marka görselleri, 23 profil (Genel + Film/dizi + 21 oyun), film/.srt modu, sorun giderme ve gizlilik metni. `actions/deploy-pages` ile Pages workflow eklendi. README'ye site bağlantısı ve film modu açıklaması eklendi.
 - **Dosyalar:** `site/index.html`, `site/style.css`, `site/assets/{logo.svg,once-sonra.svg,pc-tv-akis.svg}`, `.github/workflows/pages.yml`, `README.md`, bu günlük.
-- **Doğrulama:** Yerel statik dosya/link kontrolü yapılacak; Android Build 73 (`ff92b70`, run 73) başarılı. Pages run 1, `Pages'i yapılandır` adımında depo Pages kaynağı etkin olmadığı için başarısız oldu.
+- **Doğrulama:** Yerel statik dosya/link kontrolü yapılacak; Android Build 73 (`ff92b70`, run 73) başarılı. Pages run 1 ve 2, depo Pages kaynağı etkin olmadığından `Pages'i yapılandır` adımında başarısız oldu.
 - **Ayar notu:** Repo Pages kaynağı açılmamışsa Settings → Pages → Source → GitHub Actions seçilmeli.
 - **Yarım kalan:** GitHub depo ayarından Settings → Pages → Source → GitHub Actions seçilmesi gerekiyor; bu hesapta depo ayarlarını değiştiren yetkili bağlantı bulunmadığından deploy ve canlı URL doğrulaması bekliyor.
 
@@ -371,8 +371,8 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 
 ### Codex — Görev 12 kapanış — 2026-11-22
 - **A tamamlandı:** 4.165 anahtarlı ortak oyun UI önerisi. **B tamamlandı:** 10 oyun paketi, her biri 170–171 satır. **C kodu tamamlandı:** statik Türkçe tanıtım sitesi, README bağlantısı ve GitHub Pages workflow'u. **D kodu tamamlandı:** önbellekli StaticLayout, yalnızca değişen kutuların dirty-region çizimi, anında silme, 80 ms belirme ve debug çizim süresi.
-- **CI/build:** A Build 71 başarılı; B Build 72 başarılı; C APK Build 73 başarılı; D ilk deneme Build 74 `BuildConfig` hatasıyla başarısız, düzeltme Build 75 başarılı. Build 75 JVM testleri, APK ve release adımları geçti; nihai dirty-region kodu Build 77 ile de doğrulandı. PC test workflow'u bu değişikliklerde tetiklenmedi (`trceviri/` değişmedi); son görülen önceki PC test run 17 başarılıydı.
-- **Yarım kalan dış koşullar:** GitHub Pages run 1, depo Pages etkin olmadığı için `configure-pages` adımında durdu. Depo sahibi Settings → Pages → Source → GitHub Actions seçince workflow yeniden çalıştırılmalı; yayındaki site doğrulaması bekliyor. 1080p/8 ms çizim hedefi ve görsel kalite gerçek Android TV'de ölçülmedi; ADB cihazı bağlı değil.
+- **CI/build:** A Build 71 başarılı; B Build 72 başarılı; C APK Build 73 başarılı; D ilk deneme Build 74 `BuildConfig` hatasıyla başarısız, düzeltme Build 75 başarılı. Build 75 JVM testleri, APK ve release adımları geçti; nihai dirty-region kodu Build 77 ile de doğrulandı; site asset düzeltmesini içeren Build 78 de başarılı. PC test workflow'u bu değişikliklerde tetiklenmedi (`trceviri/` değişmedi); son görülen önceki PC test run 17 başarılıydı.
+- **Yarım kalan dış koşullar:** GitHub Pages run 1 ve varlık düzeltmesi sonrası run 2, depo Pages etkin olmadığı için `configure-pages` adımında durdu. Depo sahibi Settings → Pages → Source → GitHub Actions seçince workflow yeniden çalıştırılmalı; yayındaki site doğrulaması bekliyor. 1080p/8 ms çizim hedefi ve görsel kalite gerçek Android TV'de ölçülmedi; ADB cihazı bağlı değil.
 - **Değiştirilen ana alanlar:** `contrib/`, `site/`, `README.md`, `.github/workflows/pages.yml`, `app/src/main/java/com/trtv/{OverlayView,OverlayService,DiagnosticsActivity}.kt`. `trceviri/` değiştirilmedi. Protokole mesaj eklenmedi.
 
-- **Son TV build:** Build 77 (`f620dc5`) başarılı ve `latest/a.apk` olarak yayımlandı. Bu build Görev 12 uygulama kodunu içerir; site görsellerinin Pages artifact içine eklenmesiyle oluşan Build 78 CI doğrulaması sırada.
+- **Son TV build:** Build 78 (`d5b56b2`) başarılı ve `latest/a.apk` olarak yayımlandı; Görev 12 TV kodu ve site asset dosyalarını içerir.
