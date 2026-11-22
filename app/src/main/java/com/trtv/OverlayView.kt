@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.RectF
 import android.text.Layout
 import android.text.StaticLayout
@@ -57,10 +58,17 @@ class OverlayView(ctx: Context) : View(ctx) {
         override fun run() {
             animationScheduled = false
             val now = SystemClock.uptimeMillis()
-            if (zones.values.flatten().any { now - it.startedAt < 80L }) {
+            val fading = zones.values.flatten().filter { now - it.startedAt < 80L }
+            if (fading.isNotEmpty()) {
+                var dirty: Rect? = null
+                fading.forEach { item ->
+                    val bounds = itemDirtyBounds(item.item)
+                    if (dirty == null) dirty = bounds else dirty!!.union(bounds)
+                }
+                dirty?.let { postInvalidateOnAnimation(it.left, it.top, it.right, it.bottom) }
                 animationScheduled = true
                 postDelayed(this, 16L)
-            } else invalidate()
+            }
         }
     }
     private var boxColor = Color.BLACK
@@ -95,20 +103,47 @@ class OverlayView(ctx: Context) : View(ctx) {
         val entries = zones.getOrPut(zone) { ArrayList() }
         val current = entries.associateBy { it.id }
         val incomingIds = HashSet<String>()
-        var geometryChanged = false
+        var dirty: Rect? = null
+        var needsFade = false
+        fun mark(item: ViewItem) {
+            val bounds = itemDirtyBounds(item)
+            if (dirty == null) dirty = bounds else dirty!!.union(bounds)
+        }
         for (item in items) {
             val id = itemIdentity(item)
             incomingIds.add(id)
             val old = current[id]
             if (old != null) {
-                if (old.item != item) geometryChanged = true
-                if (old.item.tr != item.tr) old.startedAt = now
-                old.item = item // Aynı kutudaki iyileştirilmiş metin anında değişir.
-            } else { entries.add(AnimatedItem(item, id, now)); geometryChanged = true }
+                if (old.item != item) {
+                    mark(old.item)
+                    mark(item)
+                    if (old.item.tr != item.tr) { old.startedAt = now; needsFade = true }
+                    old.item = item
+                }
+            } else {
+                entries.add(AnimatedItem(item, id, now))
+                mark(item)
+                needsFade = true
+            }
         }
-        if (entries.removeAll { it.id !in incomingIds }) geometryChanged = true
-        if (geometryChanged && layoutCache.size > 300) { layoutCache.clear(); boxLayoutCache.clear() }
-        animateUntilSettled()
+        val removed = entries.filter { it.id !in incomingIds }
+        removed.forEach(::mark)
+        if (removed.isNotEmpty()) entries.removeAll { it.id !in incomingIds }
+        if (dirty != null) postInvalidateOnAnimation(dirty!!.left, dirty!!.top, dirty!!.right, dirty!!.bottom)
+        if (layoutCache.size > 400) { layoutCache.clear(); boxLayoutCache.clear() }
+        if (needsFade) animateUntilSettled()
+    }
+
+    private fun itemDirtyBounds(item: ViewItem): Rect {
+        val w = width.toFloat().coerceAtLeast(1f)
+        val h = height.toFloat().coerceAtLeast(1f)
+        val margin = max(24f, h * 0.12f)
+        return Rect(
+            (mx(item.b[0], w) - margin).toInt().coerceAtLeast(0),
+            (my(item.b[1], h) - margin).toInt().coerceAtLeast(0),
+            (mx(item.b[2], w) + margin).toInt().coerceAtMost(w.toInt()),
+            (my(item.b[3], h) + margin).toInt().coerceAtMost(h.toInt())
+        )
     }
 
     fun visibleItemCount(): Int = if (!shown || uiSuppressed || calib) 0 else
@@ -132,7 +167,6 @@ class OverlayView(ctx: Context) : View(ctx) {
     private fun itemIdentity(item: ViewItem) = "${item.kind}|${item.speaker}|${item.b.joinToString(",") { "%.4f".format(java.util.Locale.US, it) }}"
 
     private fun animateUntilSettled() {
-        postInvalidateOnAnimation()
         if (!animationScheduled) {
             animationScheduled = true
             postDelayed(animationTick, 16L)
@@ -279,6 +313,7 @@ class OverlayView(ctx: Context) : View(ctx) {
     private fun drawMatch(c: Canvas, it: ViewItem, W: Float, H: Float) {
         if (it.tr.isEmpty()) return
         val layout = matchLayout(it, W, H)
+        if (c.quickReject(layout.cover)) return
         val lines = layout.lines
         val size = layout.size
         fill.textSize = size
@@ -370,6 +405,7 @@ class OverlayView(ctx: Context) : View(ctx) {
     private fun drawBox(c: Canvas, it: ViewItem, W: Float, H: Float) {
         if (it.tr.isEmpty()) return
         val layout = boxLayout(it, W, H)
+        if (c.quickReject(layout.cover)) return
         val cover = layout.cover
         val pad = layout.pad
         val lines = layout.lines

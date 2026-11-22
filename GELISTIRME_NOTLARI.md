@@ -343,7 +343,7 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 ### Codex — Görev 12A — Ortak oyun arayüzü paketi — 2026-11-22
 - Tüm oyunlarda kullanılabilecek menü/ayar, erişilebilirlik, kayıt, görev/harita, envanter, kontrol ve kısa durum mesajları için **4.165** benzersiz JSON anahtarı eklendi. Tamamı büyük harf kaynak durumlarında hedef metin de büyük harf biçiminde tutuldu; uzun diyalog/emoji yok.
 - **Dosyalar:** `contrib/ortak_ui.json`, `contrib/README.md`, bu günlük.
-- **Doğrulama:** UTF-8 JSON parse edildi, tam anahtar yinelenmesi yok. Build 71 (`f9c5ac3`, run 71) doğrulaması push sonrası yapılacak.
+- **Doğrulama:** UTF-8 JSON parse edildi, tam anahtar yinelenmesi yok. Build 71 (`f9c5ac3`, run 71) başarılı; APK derlemesi ve release tamamlandı.
 - **Yarım kalan:** Claude'un `trceviri/profiles/packs/ortak.json` ile gözden geçirip birleştirmesi bekleniyor.
 
 
@@ -363,7 +363,14 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 
 
 ### Codex — Görev 12D — TV çizim performansı — 2026-11-22
-- Overlay kutuları kimliğe göre güncelleniyor; değişmeyen öğelerin metin düzeni önbellekten kullanılıyor. Metin ölçümü/satır kırılımı için Android `StaticLayout` nesnesi düzen önbelleğinde tutuluyor. İçerik kaldırma ve temizleme animasyonsuz, anında; yeni/yenilenen çeviri 80 ms alfa ile beliriyor. Tanılama'da yalnızca debug derlemesinde son kare çizim süresi gösteriliyor.
+- Overlay kutuları kimliğe göre güncelleniyor; değişmeyen öğelerin metin düzeni önbellekten kullanılıyor. Güncellemede yalnızca eski/yeni kutu alanı kirli dikdörtgen olarak invalidate ediliyor; diğer kutular clip dışındaysa çizilmiyor. Metin ölçümü/satır kırılımı için Android `StaticLayout` nesnesi düzen önbelleğinde tutuluyor. İçerik kaldırma ve temizleme animasyonsuz, anında; yeni/yenilenen çeviri 80 ms alfa ile beliriyor. Tanılama'da yalnızca debug derlemesinde son kare çizim süresi gösteriliyor.
 - **Dosyalar:** `app/src/main/java/com/trtv/OverlayView.kt`, `app/src/main/java/com/trtv/OverlayService.kt`, `app/src/main/java/com/trtv/DiagnosticsActivity.kt`, bu günlük.
-- **Doğrulama:** Build 74 (`6d9fe20`) JVM derlemesinde `BuildConfig` referansı bulunamadığı için başarısız oldu; debug tespiti Android `ApplicationInfo.FLAG_DEBUGGABLE` ile düzeltildi. Build 75 doğrulaması push sonrası yapılacak. 1080p'de ≤8 ms hedefi fiziksel TV'de ölçülmedi; debug Tanılama ekranında ölçüm görünür olacak.
+- **Doğrulama:** Build 74 (`6d9fe20`) JVM derlemesinde `BuildConfig` referansı bulunamadığı için başarısız oldu; debug tespiti Android `ApplicationInfo.FLAG_DEBUGGABLE` ile düzeltildi. Build 75 (`6296ab1`, run 75) önceki sürümde başarılı; kısmi dirty-region iyileştirmesi Build 76 CI ile doğrulanacak. 1080p'de ≤8 ms hedefi fiziksel TV'de ölçülmedi; debug Tanılama ekranında ölçüm görünür olacak.
 - **Yarım kalan:** Gerçek cihazdaki kare süresi/8 ms hedefi, TV yeniden bağlandığında ölçülmeli.
+
+
+### Codex — Görev 12 kapanış — 2026-11-22
+- **A tamamlandı:** 4.165 anahtarlı ortak oyun UI önerisi. **B tamamlandı:** 10 oyun paketi, her biri 170–171 satır. **C kodu tamamlandı:** statik Türkçe tanıtım sitesi, README bağlantısı ve GitHub Pages workflow'u. **D kodu tamamlandı:** önbellekli StaticLayout, anında silme, 80 ms belirme ve debug çizim süresi.
+- **CI/build:** A Build 71 başarılı; B Build 72 başarılı; C APK Build 73 başarılı; D ilk deneme Build 74 `BuildConfig` hatasıyla başarısız, düzeltme Build 75 başarılı. Build 75 JVM testleri, APK ve release adımları geçti. PC test workflow'u bu değişikliklerde tetiklenmedi (`trceviri/` değişmedi); son görülen önceki PC test run 17 başarılıydı.
+- **Yarım kalan dış koşullar:** GitHub Pages run 1, depo Pages etkin olmadığı için `configure-pages` adımında durdu. Depo sahibi Settings → Pages → Source → GitHub Actions seçince workflow yeniden çalıştırılmalı; yayındaki site doğrulaması bekliyor. 1080p/8 ms çizim hedefi ve görsel kalite gerçek Android TV'de ölçülmedi; ADB cihazı bağlı değil.
+- **Değiştirilen ana alanlar:** `contrib/`, `site/`, `README.md`, `.github/workflows/pages.yml`, `app/src/main/java/com/trtv/{OverlayView,OverlayService,DiagnosticsActivity}.kt`. `trceviri/` değiştirilmedi. Protokole mesaj eklenmedi.
