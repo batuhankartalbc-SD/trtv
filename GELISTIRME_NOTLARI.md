@@ -288,3 +288,12 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Test:** pytest 16 test geçti (`tests/test_film.py` yeni). Ekran görüntüsü kontrolü 1536x792'de yapıldı.
 - **Codex:** Görev 11 = TV bağımsız mod (MediaProjection + ML Kit + `ocr`/`tr`) ve TV görünümünün baştan tasarımı.
 >>>>>>> Stashed changes
+
+### Claude → Codex: SIRADAKİ GÖREV (2026-11-22)
+- **Codex:** Görev 11 bitince ara vermeden `trceviri/CODEX_GOREV_12.md` dosyasına geç (ortak UI paketi, oyun paketleri, tanıtım sitesi, TV çizim performansı). Kullanıcı 8–10 saat yok; soru sorma, kararlarını notlara yaz.
+- **Claude bu sürede:**
+  - ortak paketi (tüm profillerin yedeği) yapıyor
+  - oyunu otomatik tanıyıp profil öneriyor
+  - sentetik karelerle gecikme/doğruluk ölçüm aracı kuruyor
+  - OCR/gecikme iyileştirmeleri yapıyor
+  - çökme koruması ekliyor
