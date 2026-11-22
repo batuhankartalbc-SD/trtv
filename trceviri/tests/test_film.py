@@ -171,6 +171,21 @@ def test_user_correction_wins_and_persists(monkeypatch, tmp_path):
     assert p2.lookup("LOSE THE COPS.") == "AYNASIZLARI EKİP AT."
 
 
+def test_control_hint_templates():
+    from trceviri import controls as c
+    assert c.parse("Press X to open the door") == ("press", "x", "open the door")
+    assert c.parse("Hold down the L2 button to aim.") == ("hold", "l2", "aim")
+    assert c.parse("Tap Square repeatedly to break free") == ("mash", "square", "break free")
+    assert c.parse("Lucia: Press X to win") is None
+    assert c.parse("Where are you going?") is None
+    assert c.compose("hold", "r3", "koşmak") == "Koşmak için R3'ü basılı tutun"
+    assert c.compose("press", "left stick", "ıslık çalmak") == "Islık çalmak için sol çubuğa basın"
+    assert c.compose("press", "touchpad", "haritayı açmak") == "Haritayı açmak için dokunmatik yüzeye basın"
+    assert c.compose("hold", "d-pad up", "inceleme") .endswith("yukarı yön tuşunu basılı tutun")
+    assert c.clean_model_action("Lucia ile konuşmak için.") == "Lucia ile konuşmak"
+    assert c.clean_model_action("Işıklı saldırı.") is None
+
+
 def load_from(f):
     return Profile.from_dict(json.loads(Path(f).read_text(encoding="utf-8")))
 

@@ -275,17 +275,45 @@ class LocalEngine(Engine):
         return s.replace("i", "İ").replace("ı", "I").upper()
 
     def translate(self, lines, context, sys):
+        from . import controls
         # TAMAMI BÜYÜK HARF satırlar modelde bozuk harf (⁇) üretiyor: normal yazımla çevir, sonra büyüt
         caps = [l.isupper() and sum(c.isalpha() for c in l) >= 3 for l in lines]
         src = [l.capitalize() if c else l for l, c in zip(lines, caps)]
-        toks = [self.src.encode(l, out_type=str)[:200] + ["</s>"] for l in src]
-        res = self.tr.translate_batch(toks, beam_size=2, max_decoding_length=120, repetition_penalty=1.1)
-        out = []
-        for r, c in zip(res, caps):
+        # kontrol ipuçları ("Press X to ...") kalıpla kurulur; modele sadece eylem kısmı sorulur
+        ctrl = [controls.parse(l) for l in src]
+        fixed: dict[int, str] = {}
+        for i, c in enumerate(ctrl):
+            if c and controls.action_from_dict(c[2]):
+                fixed[i] = controls.compose(c[0], c[1], controls.action_from_dict(c[2]))
+        model_src = [controls.model_input(c[2]) if c and i not in fixed else l
+                     for i, (l, c) in enumerate(zip(src, ctrl))]
+        need = [i for i in range(len(src)) if i not in fixed]
+        toks = [self.src.encode(model_src[i], out_type=str)[:200] + ["</s>"] for i in need]
+        res = self.tr.translate_batch(toks, beam_size=2, max_decoding_length=120, repetition_penalty=1.1) if toks else []
+        got: dict[int, str] = {}
+        for i, r in zip(need, res):
             t = self.tgt.decode(r.hypotheses[0]).replace("⁇", "").strip()
-            t = re.sub(r"^[-–]\s*", "", t)
+            if ctrl[i]:
+                act = controls.clean_model_action(t)
+                if act:
+                    t = controls.compose(ctrl[i][0], ctrl[i][1], act)
+                else:                                   # beklenmeyen biçim: cümlenin tamamını normal çevir
+                    t = self._plain(src[i])
+            got[i] = t
+        out = []
+        for i, (l, c) in enumerate(zip(src, caps)):
+            t = fixed.get(i) or got.get(i, "")
+            if l.lstrip().startswith(("-", "–")):        # film diyaloğu: baştaki konuşma tiresi korunur
+                t = "- " + re.sub(r"^[-–]\s*", "", t)
+            else:
+                t = re.sub(r"^[-–]\s*", "", t)
             out.append(self._tr_upper(t) if c else t)
         return out
+
+    def _plain(self, line: str) -> str:
+        r = self.tr.translate_batch([self.src.encode(line, out_type=str)[:200] + ["</s>"]], beam_size=2,
+                                    max_decoding_length=120, repetition_penalty=1.1)
+        return self.tgt.decode(r[0].hypotheses[0]).replace("⁇", "").strip()
 
 
 ENGINES = {"local": LocalEngine, "gemini": Gemini, "openai": OpenAI, "claude": Claude, "deepl": DeepL, "free": FreeEngine}
