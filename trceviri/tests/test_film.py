@@ -155,6 +155,22 @@ def test_capture_loop_restarts_after_crash(monkeypatch):
     assert len(calls) == 3                      # iki çökmeden sonra yeniden başladı ve normal bitti
 
 
+def test_user_correction_wins_and_persists(monkeypatch, tmp_path):
+    import trceviri.config as cfg
+    from trceviri.cache import TranslationCache
+    from trceviri.config import Settings
+    from trceviri.pipeline import Pipeline
+    monkeypatch.setattr(cfg, "PROFILE_DIR", tmp_path)
+    prof = load_from(PROFILES / "gta6.json")
+    p = Pipeline(Settings(), prof, TranslationCache(tmp_path / "c.db"))
+    p.load_pack()
+    p.save_correction("Lose the cops.", "Aynasızları ekip at.")
+    assert p.lookup("Lose the cops.") == "Aynasızları ekip at."
+    p2 = Pipeline(Settings(), prof, TranslationCache(tmp_path / "c2.db"))
+    p2.load_pack()                                     # yeniden açılışta da geçerli
+    assert p2.lookup("LOSE THE COPS.") == "AYNASIZLARI EKİP AT."
+
+
 def load_from(f):
     return Profile.from_dict(json.loads(Path(f).read_text(encoding="utf-8")))
 

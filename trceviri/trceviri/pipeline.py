@@ -606,7 +606,46 @@ class Pipeline(QObject):
                     except Exception as e:
                         log.warning("paket okunamadı (%s): %s", name, e)
                     break
+        fixes = self._fixes_path()
+        if fixes.exists():                               # kullanıcının düzeltmeleri her şeyden önce gelir
+            try:
+                data = json.loads(fixes.read_text(encoding="utf-8"))
+                pack.update({cache_key(k): v for k, v in data.items() if v})
+                log.info("Kullanıcı düzeltmeleri: %d satır", len(data))
+            except Exception as e:
+                log.warning("düzeltmeler okunamadı: %s", e)
         self.pack = pack
+
+    def _fixes_path(self):
+        from .config import PROFILE_DIR
+        safe = "".join(c if c.isalnum() else "_" for c in self.profile.name).strip("_") or "profil"
+        return PROFILE_DIR / "packs" / f"duzeltmeler_{safe}.json"
+
+    def save_correction(self, src: str, tr: str) -> None:
+        """Kullanıcı bir çeviriyi düzeltti: kalıcı olarak kaydet, hemen kullan, ekrandakini de güncelle."""
+        import json
+        src, tr = src.strip(), tr.strip()
+        if not src or not tr:
+            return
+        f = self._fixes_path()
+        f.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            data = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}
+        except Exception:
+            data = {}
+        data[src] = tr
+        f.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+        self.pack[cache_key(src)] = tr
+        self.cache.put(self.scope, src, tr, "kullanıcı")
+        log.info("Düzeltme kaydedildi: %r → %r", src, tr)
+        for t in list(self.trackers.values()) + ([self.auto] if self.auto else []):
+            with t.lock:
+                hit = False
+                for it in t.items:
+                    if cache_key(it.src) == cache_key(src):
+                        it.tr = tr; hit = True
+                if hit and hasattr(t, "_publish_locked"):
+                    t._publish_locked()
 
     def lookup(self, text: str, fuzzy: bool = True) -> str | None:
         """Sırayla: sözlük (tam eşleşme) → hazır paketler → çeviri önbelleği.

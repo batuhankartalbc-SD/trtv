@@ -274,7 +274,9 @@ class MainWindow(QMainWindow):
         left = QVBoxLayout(); left.setSpacing(16)
         pv = QFrame(); pv.setObjectName("card"); pvl = QVBoxLayout(pv); pvl.setContentsMargins(0, 0, 0, 0); pvl.addWidget(self.preview)
         left.addWidget(pv, 3)
-        rc, rv = card("Son çeviriler", "list")
+        hint = QLabel("Yanlış çeviriye çift tıklayıp düzeltin"); hint.setObjectName("muted")
+        hint.setToolTip("Düzeltmeniz bu oyun profiline kaydedilir; o satır bir daha göründüğünde sizin çeviriniz kullanılır.")
+        rc, rv = card("Son çeviriler", "list", right=hint)
         self.recent = QTableWidget(0, 3)
         self.recent.setHorizontalHeaderLabels(["İngilizce (kaynak)", "Türkçe (çeviri)", ""])
         hh = self.recent.horizontalHeader(); hh.setSectionResizeMode(QHeaderView.Stretch)
@@ -284,6 +286,7 @@ class MainWindow(QMainWindow):
         self.recent.setEditTriggers(QTableWidget.NoEditTriggers)
         self.recent.setSelectionBehavior(QTableWidget.SelectRows); self.recent.setShowGrid(False)
         self.recent.setFocusPolicy(Qt.NoFocus)
+        self.recent.cellDoubleClicked.connect(self.correct_translation)
         rv.addWidget(self.recent)
         left.addWidget(rc, 2)
         body.addLayout(left, 3)
@@ -440,7 +443,9 @@ class MainWindow(QMainWindow):
 
     def on_translated(self, src, tr, engine, ms):
         self.recent.insertRow(0); self.recent.setRowHeight(0, 40)
-        self.recent.setItem(0, 0, QTableWidgetItem(src))
+        it0 = QTableWidgetItem(src); it0.setData(Qt.UserRole, tr)
+        it0.setToolTip("Çeviri yanlışsa satıra çift tıklayıp düzeltin; bir dahaki sefere sizin çeviriniz kullanılır.")
+        self.recent.setItem(0, 0, it0)
         if ": " in tr and len(tr.split(": ", 1)[0]) <= 20:
             spk, rest = tr.split(": ", 1)
             lbl = QLabel(f"<b>{spk}:</b> {rest}")
@@ -452,6 +457,20 @@ class MainWindow(QMainWindow):
         self.recent.setCellWidget(0, 2, b)
         while self.recent.rowCount() > 200:
             self.recent.removeRow(self.recent.rowCount() - 1)
+
+    def correct_translation(self, row: int, _col: int = 0):
+        it = self.recent.item(row, 0)
+        if it is None:
+            return
+        src, cur = it.text(), it.data(Qt.UserRole) or ""
+        from PySide6.QtWidgets import QInputDialog
+        new, ok = QInputDialog.getText(self, "Çeviriyi düzelt", f"İngilizce:\n{src}\n\nDoğru Türkçe:", text=cur)
+        if not ok or not new.strip() or new.strip() == cur:
+            return
+        self.ctx.pipeline.save_correction(src, new)
+        it.setData(Qt.UserRole, new.strip())
+        lbl = QLabel(new.strip()); lbl.setContentsMargins(10, 0, 0, 0)
+        self.recent.setCellWidget(row, 1, lbl)
 
     def on_stats(self, d):
         self.m_ocr.set(d["ocr"]); self.m_tr.set(d["ceviri"]); self.m_tot.set(d.get("toplam", 0))
