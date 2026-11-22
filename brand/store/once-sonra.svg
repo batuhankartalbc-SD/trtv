@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#111923"/><stop offset="1" stop-color="#0A0E13"/></linearGradient>
+    <linearGradient id="mint" x2="1"><stop stop-color="#3EE6A0"/><stop offset="1" stop-color="#73F2BD"/></linearGradient>
+    <filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.5"><feGaussianBlur stdDeviation="14"/></filter>
+  </defs>
+  <rect width="1280" height="720" rx="32" fill="url(#bg)"/>
+  <circle cx="630" cy="360" r="230" fill="#3EE6A0" opacity=".08" filter="url(#shadow)"/>
+  <text x="72" y="86" fill="#F3F7FA" font-family="Segoe UI,Arial,sans-serif" font-size="34" font-weight="700">OYUNDA ANINDA ÇEVİRİ</text>
+  <text x="72" y="128" fill="#9AA9B8" font-family="Segoe UI,Arial,sans-serif" font-size="20">İngilizce metin, doğal Türkçe olarak oyun görüntüsünün üstünde.</text>
+  <rect x="64" y="170" width="550" height="460" rx="24" fill="#17212C" stroke="#344353" stroke-width="2"/>
+  <rect x="666" y="170" width="550" height="460" rx="24" fill="#17212C" stroke="#344353" stroke-width="2"/>
+  <text x="100" y="220" fill="#B79CFF" font-family="Segoe UI,Arial,sans-serif" font-size="22" font-weight="700">ÖNCE · İNGİLİZCE</text>
+  <text x="702" y="220" fill="#3EE6A0" font-family="Segoe UI,Arial,sans-serif" font-size="22" font-weight="700">SONRA · TÜRKÇE</text>
+  <rect x="91" y="253" width="496" height="260" rx="16" fill="#243445"/>
+  <rect x="693" y="253" width="496" height="260" rx="16" fill="#243445"/>
+  <path d="M91 440 Q200 390 300 430 T587 405 V513 H91Z" fill="#101923"/>
+  <path d="M693 440 Q802 390 902 430 T1189 405 V513 H693Z" fill="#101923"/>
+  <circle cx="330" cy="374" r="42" fill="#B79CFF" opacity=".7"/><path d="M280 445 Q330 400 380 445 V490 H280Z" fill="#B79CFF" opacity=".55"/>
+  <circle cx="932" cy="374" r="42" fill="#3EE6A0" opacity=".7"/><path d="M882 445 Q932 400 982 445 V490 H882Z" fill="#3EE6A0" opacity=".55"/>
+  <rect x="132" y="454" width="414" height="47" rx="10" fill="#050709" opacity=".94"/>
+  <text x="339" y="486" text-anchor="middle" fill="#FFFFFF" font-family="Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Get to the car.</text>
+  <rect x="734" y="454" width="414" height="47" rx="10" fill="#000000"/>
+  <text x="941" y="486" text-anchor="middle" fill="#FFFFFF" font-family="Segoe UI,Arial,sans-serif" font-size="24" font-weight="700">Arabaya ulaş.</text>
+  <rect x="64" y="557" width="1152" height="48" rx="14" fill="#121B24"/>
+  <text x="640" y="588" text-anchor="middle" fill="#C9D3DC" font-family="Segoe UI,Arial,sans-serif" font-size="19">Brolis Game Translate  ·  Bilgisayar çevirir, TV oyunun üstünde gösterir</text>
+</svg>

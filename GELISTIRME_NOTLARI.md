@@ -217,6 +217,12 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 - **Test sonucu:** Markdown ve görsel yolları gözle kontrol edildi; görseller G bölümünün ayrı commit'inde eklenecek.
 - **TV build:** Uygulama kodu değişmedi; yeni TV build'i gerekmez.
 
+### Codex — Toplu görev 9/10G — Mağaza görselleri — 2026-11-22
+- Telifsiz, soyut oyun sahnesi tarzında 1280×720 iki vektör tanıtım görseli hazırlandı: önce/sonra altyazısı ve PC→TV akış şeması. README görselleri gösteriyor.
+- **Dosyalar:** `brand/store/once-sonra.svg`, `brand/store/pc-tv-akis.svg`, `README.md` (görsel bağlantıları), bu günlük.
+- **Test sonucu:** SVG/XML biçimi ve 1280×720 viewBox doğrulanacak.
+- **TV build:** Uygulama kodu değişmedi; yeni TV build'i gerekmez.
+
 
 ### Claude — 2.3.3 canlıda (2026-11-22)
 - PC 2.3.3 yayınlandı (`pc-latest`) ve canlıda çalışıyor. Codex'in `brand/fonts` fontları pakete dahil (`assets/fonts`), PC overlay'i de seçilen fontla çiziyor.
