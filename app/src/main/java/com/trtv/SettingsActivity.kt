@@ -42,6 +42,7 @@ class SettingsActivity : Activity() {
     private val values = mutableMapOf<String, Any>()
     private val rowViews = mutableMapOf<String, Button>()
     private lateinit var connectionLabel: TextView
+    private lateinit var pcStatusLabel: TextView
     private lateinit var preview: TextView
     private lateinit var fontPreview: TextView
     private var receiverRegistered = false
@@ -110,6 +111,13 @@ class SettingsActivity : Activity() {
         }
         scroll.addView(list)
         panel.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
+        pcStatusLabel = TextView(this).apply {
+            textSize = 13f
+            setTextColor(Color.rgb(165, 174, 186))
+            setPadding(10, 10, 10, 0)
+            isFocusable = false
+        }
+        panel.addView(pcStatusLabel)
         frame.addView(panel, FrameLayout.LayoutParams((resources.displayMetrics.widthPixels * 0.58f).toInt(), FrameLayout.LayoutParams.MATCH_PARENT, Gravity.RIGHT))
         setContentView(frame)
         renderRows(); renderConnection()
@@ -207,6 +215,7 @@ class SettingsActivity : Activity() {
             }
         }
         if (::fontPreview.isInitialized) fontPreview.typeface = selectedTypeface(values["font"] as? String ?: "default")
+        if (::pcStatusLabel.isInitialized) renderPcStatus()
     }
 
     private fun selectedTypeface(font: String): Typeface {
@@ -225,6 +234,31 @@ class SettingsActivity : Activity() {
     private fun renderConnection() {
         connectionLabel.text = if (OverlayService.isComputerConnected()) "Bilgisayar bağlı" else "Bilgisayar bağlı değil — ayarlar uygulanamaz"
         connectionLabel.setTextColor(if (OverlayService.isComputerConnected()) Color.rgb(110, 235, 175) else Color.rgb(255, 170, 110))
+    }
+
+    private fun renderPcStatus() {
+        val state = OverlayService.currentSettings()
+        val pcVersion = state.pcVersion
+        val updateNeeded = isOlderThanPcMinimum(pcVersion)
+        val tvVersion = try { packageManager.getPackageInfo(packageName, 0).versionName ?: "—" } catch (_: Exception) { "—" }
+        val gemini = if (state.geminiStatus.equals("Kapalı", true)) "kapalı" else state.geminiStatus
+        val text = buildString {
+            append("PC $pcVersion · TV $tvVersion · Gemini: $gemini")
+            if (updateNeeded) append("\nBilgisayardaki uygulamayı güncelleyin")
+        }
+        pcStatusLabel.text = text
+        val warning = updateNeeded || state.geminiStatus.contains("kota", true) || state.geminiStatus.contains("geçersiz", true)
+        pcStatusLabel.setTextColor(if (warning) Color.rgb(255, 205, 92) else Color.rgb(165, 174, 186))
+    }
+
+    private fun isOlderThanPcMinimum(version: String): Boolean {
+        val match = Regex("^(\\d+)\\.(\\d+)\\.(\\d+)").find(version) ?: return true
+        val parts = match.groupValues.drop(1).map { it.toIntOrNull() ?: 0 }
+        val minimum = listOf(2, 3, 0)
+        for (index in minimum.indices) {
+            if (parts[index] != minimum[index]) return parts[index] < minimum[index]
+        }
+        return false
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {

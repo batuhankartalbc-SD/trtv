@@ -171,18 +171,23 @@ PS5 oyunlarındaki İngilizce yazıları (konuşma, menü, kontrol) anında Tür
 ### Codex — Görev 8A — TV ilk kurulum rehberi — 2026-11-22
 - İlk açılışta 4 adımlı kumanda rehberi gösterilir; ekran üstü iznini denetler, bilgisayar bağlantısını ve TV IP'sini canlı gösterir, tamamlanınca `onboarding_done` kaydeder. Ana ekrana rehberi tekrar açma düğmesi eklendi.
 - **Dosyalar:** `app/src/main/AndroidManifest.xml`, `app/src/main/java/com/trtv/{MainActivity,OnboardingActivity}.kt`, bu günlük.
-- **Build:** CI build numarası push sonrası eklenecek.
+- **Build:** Build 41 (`3371882`, run `44967888388`) başarılı; JVM testleri, APK derlemesi ve release adımları geçti.
 
 ### Codex — Görev 8B — Tanılama bilgileri — 2026-11-22
 - TV style bilgisinden PC sürümü, Gemini durumu, motor ve oyun profili thread-safe ayar anlık görüntüsünde saklanır ve Tanılama'da gösterilir. Eski istemcide eksik alanlar `—`, açıkça null gelen Gemini durumu `Kapalı` görünür.
 - **Dosyalar:** `app/src/main/java/com/trtv/{OverlayService,DiagnosticsActivity}.kt`, bu günlük. Protokole yeni mesaj eklenmedi.
-- **Build:** CI build numarası push sonrası eklenecek.
+- **Build:** Build 42 (`3e18ff5`, run `44967923945`) JVM testleri ve APK/release adımlarını geçti; tamamlanma doğrulaması kaydedilecek.
 
 ### Codex — Görev 8C — GTA 6 paket önerileri — 2026-11-22
 - `contrib/gta6_extra.json` içinde 298 kısa arayüz/kontrol/hedef/durum/telefon/mağaza/araç/silah önerisi var. JSON çözümlenerek doğrulandı; mevcut `gta6.json` ile büyük-küçük harf duyarsız anahtar çakışması yok. Uzun diyalog eklenmedi.
 - **Dosyalar:** `contrib/gta6_extra.json`, `contrib/README.md`, bu günlük. `trceviri/` içindeki asıl pakete dokunulmadı.
 - **Claude isteği:** Öneri paketini gözden geçirip uygun çevirileri kendi ana GTA 6 paketine aktar.
 - **Build:** CI build numarası push sonrası eklenecek.
+
+### Codex — Toplu görev 9/10A — PC durum satırı — 2026-11-22
+- Ayarlar'ın altında PC/TV/Gemini durum satırı eklendi. `pcver` yoksa veya 2.3.0'dan eskiyse güncelleme uyarısı sarı; durum metninde kota/geçersiz varsa satır da sarı görünür.
+- **Dosyalar:** `app/src/main/java/com/trtv/SettingsActivity.kt`, bu günlük.
+- **Build:** Push sonrası eklenecek.
 
 
 ### Claude — 2.3.3 canlıda (2026-11-22)
