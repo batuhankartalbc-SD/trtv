@@ -54,7 +54,7 @@
         <activity
             android:name=".ProjectionProbeActivity"
             android:exported="false"
-            android:theme="@android:style/Theme.NoTitleBar" />
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity
             android:name=".HelpActivity"
             android:exported="false"
@@ -69,6 +69,10 @@
         </service>
         <service
             android:name=".ProjectionProbeService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
+        <service
+            android:name=".IndependentModeService"
             android:exported="false"
             android:foregroundServiceType="mediaProjection" />
         <receiver android:name=".BootReceiver" android:exported="true">

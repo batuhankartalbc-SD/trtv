@@ -5,7 +5,9 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
+import android.content.BroadcastReceiver
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.graphics.PixelFormat
 import android.os.Build
@@ -49,7 +51,9 @@ data class TvSettings(
     val pcVersion: String = "—",
     val geminiStatus: String = "—",
     val pcEngine: String = "—",
-    val pcProfile: String = "—"
+    val pcProfile: String = "—",
+    val fps: Int = 20,
+    val instant: Boolean = false
 )
 
 data class DiagnosticsSnapshot(
@@ -126,6 +130,20 @@ class OverlayService : Service() {
     private val warningShow = Runnable { showDisconnectWarning() }
     private val warningHide = Runnable { view?.setConnectionWarning(false) }
     private val warningRepeat = Runnable { showDisconnectWarning() }
+    private var localFilmTranslator: LocalFilmTranslator? = null
+    private var latestFilmId = 0
+    private val filmLinesById = LinkedHashMap<Int, List<FilmLine>>()
+    private val filmReplies = TranslationRevisionCache(2000)
+    private val filmFallbacks = HashMap<Int, Runnable>()
+    private val filmPcTranslations = HashSet<Int>()
+    private val filmReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.action) {
+                IndependentModeService.ACTION_STABLE_LINES -> handleFilmLines(intent.getStringExtra(IndependentModeService.EXTRA_LINES))
+                IndependentModeService.ACTION_CLEAR_FILM -> main.post { view?.clearZoneImmediately("film") }
+            }
+        }
+    }
 
     fun settingsSnapshot(): TvSettings = settings
     fun isPcConnected(): Boolean = connected
@@ -215,6 +233,9 @@ class OverlayService : Service() {
         "profile" -> s.copy(profile = value as String)
         "engine" -> s.copy(engine = value as String)
         "font" -> s.copy(font = (value as String).takeIf { it in setOf("default", "condensed", "rounded", "clean") } ?: "default")
+        "fps" -> s.copy(fps = (value as Number).toInt().coerceIn(10, 60))
+        "instant" -> s.copy(instant = value as Boolean)
+        "output" -> s.copy(output = (value as String).takeIf { it in setOf("pc", "tv", "both") } ?: s.output)
         else -> s
     }
 
@@ -231,6 +252,8 @@ class OverlayService : Service() {
             other = cats?.optBoolean("other", settings.other) ?: settings.other,
             nav = cats?.optBoolean("nav", settings.nav) ?: settings.nav,
             output = o.optString("output", settings.output),
+            fps = o.optInt("fps", settings.fps).coerceIn(10, 60),
+            instant = o.optBoolean("instant", settings.instant),
             profiles = stringList(o, "profiles", settings.profiles),
             profile = o.optString("profile", settings.profile),
             engine = o.optString("engine", settings.engine),
@@ -285,6 +308,11 @@ class OverlayService : Service() {
         super.onCreate()
         activeService = this
         goForeground()
+        val filmFilter = IntentFilter().apply {
+            addAction(IndependentModeService.ACTION_STABLE_LINES)
+            addAction(IndependentModeService.ACTION_CLEAR_FILM)
+        }
+        if (Build.VERSION.SDK_INT >= 33) registerReceiver(filmReceiver, filmFilter, Context.RECEIVER_NOT_EXPORTED) else registerReceiver(filmReceiver, filmFilter)
         running = true
         addOverlay()
         thread(name = "trceviri-server", isDaemon = true) { serve() }
@@ -299,6 +327,9 @@ class OverlayService : Service() {
     override fun onDestroy() {
         running = false
         updates.shutdownNow()
+        try { unregisterReceiver(filmReceiver) } catch (_: Exception) {}
+        localFilmTranslator?.close(); localFilmTranslator = null
+        filmFallbacks.values.forEach(main::removeCallbacks); filmFallbacks.clear()
         if (activeService === this) activeService = null
         try { server?.close() } catch (_: Exception) {}
         try { client?.close() } catch (_: Exception) {}
@@ -453,6 +484,7 @@ class OverlayService : Service() {
                         main.post { view?.setShown(vis); sendBroadcast(Intent(SETTINGS_ACTION).setPackage(packageName)) }
                     }
                     "ping" -> send(w, JSONObject().put("t", "pong"))
+                    "tr" -> receiveFilmTranslation(o)
                 }
             }
         } catch (e: Exception) {
@@ -462,8 +494,85 @@ class OverlayService : Service() {
             if (isMain && client === s) {
                 synchronized(writerLock) { if (client === s) { client = null; clientWriter = null } }
                 status = "Bilgisayar bekleniyor"
-                main.post { connectionChanged(false); view?.clearAll() }
+                main.post { connectionChanged(false); view?.clearGameZones() }
             }
         }
+    }
+
+    private fun handleFilmLines(raw: String?) {
+        if (raw.isNullOrBlank() || !IndependentModeService.active) return
+        val array = runCatching { org.json.JSONArray(raw) }.getOrNull() ?: return
+        val lines = (0 until array.length()).mapNotNull { index ->
+            val item = array.optJSONObject(index) ?: return@mapNotNull null
+            val bounds = item.optJSONArray("b") ?: return@mapNotNull null
+            if (bounds.length() < 4) return@mapNotNull null
+            val box = (0..3).map { bounds.optDouble(it, 0.0).toFloat() }
+            FilmLine(item.optString("en"), box, item.optDouble("lh", 0.02).toFloat(), item.optString("prefix"), item.optBoolean("effect"))
+        }.filter { it.text.isNotBlank() }
+        if (lines.isEmpty()) return
+        latestFilmId = (latestFilmId + 1).coerceAtLeast(1)
+        val id = latestFilmId
+        filmLinesById[id] = lines
+        while (filmLinesById.size > 2000) filmLinesById.remove(filmLinesById.keys.first())
+        val ocrLines = org.json.JSONArray()
+        lines.forEach { line ->
+            ocrLines.put(JSONObject().put("en", line.text).put("b", org.json.JSONArray(line.box)).put("lh", line.lineHeight))
+        }
+        val message = JSONObject().put("t", "ocr").put("id", id).put("src", "film").put("lines", ocrLines)
+        if (isPcConnected() && sendToClient(message)) {
+            IndependentModeService.translationSource = "PC"
+            val fallback = Runnable { if (id == latestFilmId && filmReplies[id] == null) translateFilmLocally(id) }
+            filmFallbacks[id] = fallback
+            main.postDelayed(fallback, 600L)
+            IndependentModeService.publishExternalStatus("PC yanıtı bekleniyor")
+        } else translateFilmLocally(id)
+    }
+
+    private fun receiveFilmTranslation(o: JSONObject) {
+        val id = o.optInt("id", -1)
+        val array = o.optJSONArray("tr") ?: return
+        val translations = (0 until array.length()).map { array.optString(it) }
+        val changed = filmReplies.put(id, translations)
+        filmPcTranslations.add(id)
+        filmFallbacks.remove(id)?.let(main::removeCallbacks)
+        if (changed && id == latestFilmId) showFilmTranslations(id, translations, "PC")
+    }
+
+    private fun translateFilmLocally(id: Int) {
+        val lines = filmLinesById[id] ?: return
+        if (id != latestFilmId) return
+        IndependentModeService.translationSource = "cihazda"
+        IndependentModeService.publishExternalStatus("Cihazda çeviri hazırlanıyor")
+        val translator = localFilmTranslator ?: LocalFilmTranslator(applicationContext).also { localFilmTranslator = it }
+        translator.translate(lines) { translations, error ->
+            if (error != null || translations == null) {
+                IndependentModeService.publishExternalStatus("Cihaz çevirisi hazır değil · Wi‑Fi ile modeli indirin")
+                return@translate
+            }
+            if (filmPcTranslations.contains(id)) return@translate
+            if (id != latestFilmId) return@translate
+            filmReplies.put(id, translations)
+            showFilmTranslations(id, translations, "cihazda")
+        }
+    }
+
+    private fun showFilmTranslations(id: Int, translations: List<String>, source: String) {
+        val lines = filmLinesById[id] ?: return
+        if (id != latestFilmId) return
+        IndependentModeService.translationSource = source
+        val items = lines.mapIndexedNotNull { index, line ->
+            val translated = translations.getOrNull(index)?.trim().orEmpty()
+            if (translated.isBlank()) return@mapIndexedNotNull null
+            val x = line.box[0].coerceIn(0f, 0.999f)
+            val y = line.box[1].coerceIn(0f, 0.999f)
+            val w = line.box[2].coerceIn(0.001f, 1f - x)
+            val h = line.box[3].coerceIn(0.001f, 1f - y)
+            OverlayItem(listOf(x, y, x + w, y + h), line.lineHeight, "", line.formatted(translated), "film", 1, null, null, null, "c")
+        }
+        recordHistory("film", items)
+        main.post { view?.setItems("film", items) }
+        val engine = currentSettings().geminiStatus.takeIf { source == "PC" && !it.equals("Kapalı", true) && it != "—" }
+            ?.let { "PC ($it)" } ?: source
+        IndependentModeService.publishExternalStatus("Çeviri: $engine")
     }
 }

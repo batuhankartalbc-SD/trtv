@@ -118,6 +118,17 @@ class OverlayView(ctx: Context) : View(ctx) {
         animateUntilSettled()
     }
 
+    fun clearZoneImmediately(zone: String) {
+        zones.remove(zone)
+        invalidate()
+    }
+
+    fun clearGameZones() {
+        val now = SystemClock.uptimeMillis()
+        zones.filterKeys { it != "film" }.values.flatten().filter { it.removedAt == null }.forEach { it.removedAt = now }
+        animateUntilSettled()
+    }
+
     private fun itemIdentity(item: ViewItem) = "${item.kind}|${item.speaker}|${item.b.joinToString(",") { "%.4f".format(java.util.Locale.US, it) }}"
 
     private fun animateUntilSettled() {
@@ -206,7 +217,7 @@ class OverlayView(ctx: Context) : View(ctx) {
                 ?: (255f * ((now - animated.startedAt) / 120f).coerceIn(0f, 1f)).toInt()
             if (alpha <= 0) continue
             val layer = c.saveLayerAlpha(null, alpha.coerceIn(0, 255))
-            if (mode == "match") drawMatch(c, animated.item, W, H) else drawBox(c, animated.item, W, H)
+            if (mode == "match" || animated.item.kind == "film") drawMatch(c, animated.item, W, H) else drawBox(c, animated.item, W, H)
             c.restoreToCount(layer)
         }
     }
@@ -265,7 +276,10 @@ class OverlayView(ctx: Context) : View(ctx) {
         val lineH = layout.lineHeight
         val cover = layout.cover
         val pad = layout.pad
-        if (bgMode == "game" && it.bg != null) {
+        if (it.kind == "film") {
+            bg.color = Color.BLACK
+            c.drawRoundRect(cover, pad * 0.8f, pad * 0.8f, bg)
+        } else if (bgMode == "game" && it.bg != null) {
             val b = it.bg
             for ((grow, alpha) in listOf(pad * 1.6f to 50, pad * 0.9f to 120, 0f to 255)) {
                 bg.color = Color.argb(alpha * backgroundAlpha / 255, Color.red(b), Color.green(b), Color.blue(b))

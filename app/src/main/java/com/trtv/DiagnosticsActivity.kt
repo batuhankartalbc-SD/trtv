@@ -28,7 +28,6 @@ class DiagnosticsActivity : Activity() {
     private lateinit var details: TextView
     private lateinit var probeResult: TextView
     private lateinit var probePreview: ImageView
-    private val probeRequest = 812
     private val handler = Handler(Looper.getMainLooper())
     private val refreshTask = object : Runnable {
         override fun run() {
@@ -74,8 +73,8 @@ class DiagnosticsActivity : Activity() {
         }
         root.addView(probePreview, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 160))
         root.addView(Button(this).apply {
-            text = "Ekran yakalama testini aç"; textSize = 18f
-            setOnClickListener { startActivityForResult(Intent(this@DiagnosticsActivity, ProjectionProbeActivity::class.java), probeRequest) }
+            text = "Tek kare testini başlat"; textSize = 18f
+            setOnClickListener { startActivity(Intent(this@DiagnosticsActivity, ProjectionProbeActivity::class.java)) }
         })
         root.addView(Button(this).apply {
             text = "Geri dön"
@@ -88,6 +87,7 @@ class DiagnosticsActivity : Activity() {
     override fun onResume() {
         super.onResume()
         OverlayService.suppressOverlayUi(true)
+        showLastProbe()
         handler.removeCallbacks(refreshTask)
         refreshTask.run()
     }
@@ -130,13 +130,13 @@ class DiagnosticsActivity : Activity() {
         }
     }
 
-    @Deprecated("MediaProjection probe result")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != probeRequest) return
-        val file = data?.getStringExtra(ProjectionProbeService.EXTRA_FILE)?.let(::File)
-        if (resultCode == RESULT_OK && file?.exists() == true) {
-            val black = data.getBooleanExtra(ProjectionProbeService.EXTRA_BLACK, true)
+    private fun showLastProbe() {
+        if (!::probeResult.isInitialized || !::probePreview.isInitialized) return
+        val prefs = getSharedPreferences("projection_probe", MODE_PRIVATE)
+        val file = prefs.getString("file", null)?.let(::File)
+        if (prefs.getLong("captured_at", 0L) <= 0L) return
+        if (file != null && file.exists()) {
+            val black = prefs.getBoolean("black", true)
             probePreview.setImageURI(Uri.fromFile(file))
             probePreview.visibility = ImageView.VISIBLE
             probeResult.text = if (black) "Son kare: siyah içerik (DRM/kaynak kısıtı olabilir)" else "Son kare: görüntü yakalandı"

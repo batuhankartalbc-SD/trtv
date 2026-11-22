@@ -24,6 +24,8 @@ class SettingsActivity : Activity() {
     private val rows = listOf(
         Row("profile", "Oyun profili"),
         Row("engine", "Çeviri motoru"),
+        Row("film_mode", "Bağımsız mod (film/dizi)"),
+        Row("film_band", "Altyazı bandı"),
         Row("font", "Yazı tipi"),
         Row("visible", "Türkçe yazılar"),
         Row("font_scale", "Yazı boyutu"),
@@ -169,6 +171,10 @@ class SettingsActivity : Activity() {
         values["engines"] = state.engines
         values["engine"] = state.engine
         values["font"] = state.font
+        values["film_mode"] = getSharedPreferences(IndependentModeService.PREFS, MODE_PRIVATE)
+            .getBoolean(IndependentModeService.KEY_ENABLED, false)
+        values["film_band"] = getSharedPreferences(IndependentModeService.PREFS, MODE_PRIVATE)
+            .getInt(IndependentModeService.KEY_BAND, 35)
     }
 
     private fun displayValue(key: String): String = when (key) {
@@ -190,6 +196,8 @@ class SettingsActivity : Activity() {
         }
         "replay" -> "Göster"
         "remote_help" -> "Aç"
+        "film_mode" -> if (values[key] == true) "TV'de (açık)" else "PC'den (PS5)"
+        "film_band" -> "%${values[key] ?: 35} alt"
         else -> if (values[key] == true) "Açık" else "Kapalı"
     }
 
@@ -266,7 +274,7 @@ class SettingsActivity : Activity() {
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (event.action == KeyEvent.ACTION_DOWN && (event.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)) {
             val key = (currentFocus?.tag as? Int)?.let { rows.getOrNull(it)?.key }
-            if (key != null && key != "disconnect_warning" && key != "replay" && key != "remote_help") {
+            if (key != null && key != "disconnect_warning" && key != "replay" && key != "remote_help" && key != "film_mode") {
                 change(key, event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)
                 return true
             }
@@ -285,6 +293,27 @@ class SettingsActivity : Activity() {
             return
         }
         when (key) {
+            "film_band" -> {
+                val choices = listOf(35, 50, 75, 100)
+                val current = choices.indexOf(values[key] as? Int ?: 35).coerceAtLeast(0)
+                val updated = choices[(current + if (increase == false) choices.size - 1 else 1) % choices.size]
+                values[key] = updated
+                getSharedPreferences(IndependentModeService.PREFS, MODE_PRIVATE).edit()
+                    .putInt(IndependentModeService.KEY_BAND, updated).apply()
+                renderRows()
+                return
+            }
+            "film_mode" -> {
+                if (IndependentModeService.active || values[key] == true) {
+                    startService(Intent(this, IndependentModeService::class.java).setAction(IndependentModeService.ACTION_STOP))
+                    values[key] = false
+                    renderRows()
+                } else {
+                    val manager = getSystemService(android.media.projection.MediaProjectionManager::class.java)
+                    @Suppress("DEPRECATION")
+                    startActivityForResult(manager.createScreenCaptureIntent(), REQUEST_FILM_MODE)
+                }
+            }
             "disconnect_warning" -> {
                 val enabled = values[key] != true
                 values[key] = enabled
@@ -292,7 +321,7 @@ class SettingsActivity : Activity() {
                 OverlayService.setDisconnectWarning(enabled)
                 renderRows()
             }
-            "font_scale", "bg_mode", "bg_opacity", "font" -> change(key, true)
+            "font_scale", "bg_mode", "bg_opacity", "font", "film_band" -> change(key, true)
             "profile", "engine" -> change(key, true)
             else -> change(key, null)
         }
@@ -333,4 +362,24 @@ class SettingsActivity : Activity() {
         if (keyCode == KeyEvent.KEYCODE_BACK) { finish(); return true }
         return super.onKeyDown(keyCode, event)
     }
+
+    @Deprecated("MediaProjection consent callback")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != REQUEST_FILM_MODE) return
+        if (resultCode == RESULT_OK && data != null) {
+            val service = Intent(this, IndependentModeService::class.java)
+                .putExtra(IndependentModeService.EXTRA_RESULT_CODE, resultCode)
+                .putExtra(IndependentModeService.EXTRA_RESULT_DATA, data)
+            if (Build.VERSION.SDK_INT >= 26) startForegroundService(service) else startService(service)
+            values["film_mode"] = true
+            // İzin sonrası video uygulamasını öne çıkar; OCR, Brolis ayar metnini okumamalı.
+            finishAffinity()
+        } else values["film_mode"] = false
+        getSharedPreferences(IndependentModeService.PREFS, MODE_PRIVATE).edit()
+            .putBoolean(IndependentModeService.KEY_ENABLED, values["film_mode"] == true).apply()
+        renderRows()
+    }
+
+    companion object { private const val REQUEST_FILM_MODE = 813 }
 }

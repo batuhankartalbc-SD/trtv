@@ -40,7 +40,7 @@ class ProjectionProbeService : Service() {
         try {
             val manager = getSystemService(MediaProjectionManager::class.java)
             projection = manager.getMediaProjection(resultCode, data)
-            captureOne(startId)
+            Handler(mainLooper).postDelayed({ captureOne(startId) }, 900L)
         } catch (e: Exception) {
             Log.w("BrolisProjectionProbe", "Ekran yakalama başarısız", e)
             broadcastResult(null, true)
@@ -105,6 +105,11 @@ class ProjectionProbeService : Service() {
     }
 
     private fun broadcastResult(file: File?, black: Boolean) {
+        getSharedPreferences("projection_probe", MODE_PRIVATE).edit()
+            .putString("file", file?.absolutePath)
+            .putBoolean("black", black)
+            .putLong("captured_at", System.currentTimeMillis())
+            .apply()
         sendBroadcast(Intent(ACTION_RESULT).setPackage(packageName)
             .putExtra(EXTRA_FILE, file?.absolutePath).putExtra(EXTRA_BLACK, black))
     }
